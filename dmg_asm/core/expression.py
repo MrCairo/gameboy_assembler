@@ -1,0 +1,279 @@
+"""A numeric or string value expression.
+
+Represents a validated expression.
+An expression is like:
+    0xFFFF
+    $AABC
+    %010101
+    &1777
+    "MY_LABEL"
+"""
+from enum import StrEnum
+from dataclasses import dataclass
+
+from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC
+from .descriptor import LBL_DSC, BaseDescriptor
+from .exception import ExpressionSyntaxError, ExpressionBoundsError
+
+
+class ExpressionType(StrEnum):
+    """The expression type."""
+
+    BINARY = 'binary'
+    CHARACTER = 'character'
+    DECIMAL = 'decimal'
+    HEXIDECIMAL = 'hexidecimal'
+    INVALID = 'invalid'
+    OCTAL = 'octal'
+
+# |-----------------============<***>=============-----------------|
+
+
+@dataclass(frozen=True)
+class ExprParts:
+    """Represent an expression's parts - prefix, word, and suffix."""
+
+    prefix: str
+    word: str  # The value of the expression sans affixes.
+    suffix: str
+
+    def is_valid(self) -> bool:
+        """Return true if the object is valid."""
+        if self.prefix is None or self.suffix is None:
+            return False
+        if self.word is None or len(self.word) == 0:
+            return False
+        return True
+
+    def join(self) -> str:
+        """Join together a split expression."""
+        return self.prefix+self.word+self.suffix if self.is_valid() else None
+
+
+@dataclass(frozen=True)
+class ExprComponents:
+    """Represent an expressions evaluated components."""
+
+    descriptor: BaseDescriptor
+    type: ExpressionType
+    pwords: ExprParts
+
+    def is_valid(self) -> bool:
+        """Return true if the object is valid."""
+        if self.descriptor is None or self.type is None:
+            return False
+        if self.pwords is None:
+            return False
+        return self.pwords.is_valid()
+
+
+# |-----------------============<***>=============-----------------|
+
+# It's important what order the prefixes appear in the array.  The '0x', for
+# example, should be found before '0'. By doing this, we reduce the
+# additional validation. If the array were defined with '0' first, there
+# would need to be another check to see if there is an 'x' following the 0
+# or if it's just 0 (decimal vs. hex definition).
+
+
+class Expression:
+    """Parse and categorize a numerical expression."""
+
+    def __init__(self, exp_str: str):
+        """Initialize an Expression object with a specific value."""
+        if exp_str is None:
+            raise ExpressionSyntaxError("Initial value cannot be None")
+        self._result = Validator.validate(exp_str)
+        self._expr = self._result.pwords.join()
+
+    def __repr__(self):
+        """Return a representation of this object and how to re-create it."""
+        desc = ""
+        if self._result is not None and self._result.is_valid():
+            desc = f"Expression({self._expr}"
+        else:
+            desc = f"Invalid: Expression({self._expr})"
+        return desc
+
+    def __str__(self):
+        """Return a String representation of the object."""
+        desc = ""
+        if self._result is not None and self._result.is_valid():
+            desc = f"Type = {self._result.type}, "
+            desc += f"Prefix = {self._result.pwords.prefix}"
+            desc += f"Orignal: [{self._result.pwords.join()}]"
+        else:
+            desc = "Object not initialized or is not valid."
+        return desc
+
+    @property
+    def value(self) -> str:
+        """Return the value of the expression without the prefix."""
+        return self._result.pwords.word
+
+    @property
+    def type(self) -> ExpressionType:
+        """Return the type of this expression."""
+        return self._result.type
+
+    @property
+    def prefix(self) -> str:
+        """Return the prefix of this expression."""
+        return self._result.pwords.prefix
+
+    @property
+    def descriptor(self) -> BaseDescriptor:
+        """Return the descriptor identified for this expression."""
+        return self._result.descriptor
+
+    @property
+    def raw_str(self) -> str:
+        """Return the raw (or cleaned) value of the expression."""
+        return self._result.pwords.join()
+
+# |-----------------============<***>=============-----------------|
+
+
+class Validator:
+    """Class that handles Expression Validation."""
+
+    _prefixes = ["0x", "0", "$$", "$", "&", "%", "'", '"']
+
+    @staticmethod
+    def validate(expr_str: str) -> ExprComponents:
+        """Validate the expression and return an ExprComponents object.
+
+        Arguments:
+        expr_str -- The expression as a string (i.e. 0xABCD, %10110011)
+        """
+        if expr_str is None:
+            raise ExpressionSyntaxError("Missing expression string.")
+
+        expr = expr_str.strip()
+        components = Validator.get_expr_components(expr)
+        descr = components.descriptor
+
+        # If any characters are NOT in the allowed charactset, fail.
+        Validator.try_in_charset(components)
+
+        # Our range is inclusive of the max whereas the Python range()
+        # is exclusive. The +1 over the limit accounts for this.
+        Validator.try_len_range(components)
+
+        # Ignore base of 0 which is a Label.
+        if descr.args.base > 0:
+            Validator.try_val_range(components)
+
+        # If we get here, the expression is valid.
+        return components
+
+    #
+    # Validation Functions
+    #
+    @staticmethod
+    def try_len_range(source: ExprComponents):
+        """Test if expression is within args.chars.min/max length."""
+        value = source.pwords.word
+        descr = source.descriptor
+        if len(value) not in range(descr.args.chars.min,
+                                   descr.args.chars.max+1):
+            msg = "Expression length is outside of length bounds"
+            raise ExpressionBoundsError(msg)
+
+    @staticmethod
+    def try_val_range(source: ExprComponents):
+        """Test if expression is within min/max value limits."""
+        value = source.pwords.word
+        descr = source.descriptor
+        num = int(value, descr.args.base)
+        if not descr.args.limits.max > num > descr.args.limits.min:
+            msg = "Expression value is outside predefined bounds: "
+            msg += f"[{source.pwords.join()}]"
+            raise ExpressionBoundsError(msg)
+
+    @staticmethod
+    def try_in_charset(source: ExprComponents):
+        """Test if expression uses invalid characters for its type."""
+        descr = source.descriptor
+        word = source.pwords.word
+        bad = [x for x in word if x not in descr.args.charset]
+        if len(bad):
+            msg = f"Invalid character in expression: [{word}:{bad}]"
+            raise ExpressionSyntaxError(msg)
+
+    #
+    # Helper Functions
+    #
+    @staticmethod
+    def get_expr_components(expr_str: str) -> ExprComponents:
+        """Return the descriptor and expression type of the value passed."""
+        if expr_str is None:
+            raise ExpressionSyntaxError("Missing expression string.")
+
+        expr = expr_str.strip()
+        if len(expr) < 3:  # 3 is the min size of an expression (ex. $AB).
+            msg = f"Expression length must be > 2: [{expr}]"
+            raise ExpressionSyntaxError(msg)
+
+        #
+        # While there is an 'is_valid()' function for pwords, we check
+        # individual values so that an appropriate exception can be thrown if
+        # necessary.
+        #
+        pwords = Validator._split_expr(expr)
+        if pwords.prefix is None:
+            msg = f"Invalid prefix in expression: [{expr}]"
+            raise ExpressionSyntaxError(msg)
+
+        # Check for a string/label suffix value (i.e. "Label") The suffix
+        # needs to be equal to the prefix. The _split_expr function will set
+        # suffix to None if the affixes don't match or are not present.
+        if pwords.suffix is None:
+            msg = f"Mismatched string affixes [{expr}]"
+            raise ExpressionSyntaxError(msg)
+
+        match pwords.prefix:
+            case "$" | "0x":
+                descriptor = HEX16_DSC if len(pwords.word) > 2 else HEX_DSC
+                expr_type = ExpressionType.HEXIDECIMAL
+            case "$$":
+                descriptor = HEX16_DSC
+                expr_type = ExpressionType.HEXIDECIMAL
+            case "0":
+                descriptor = DEC_DSC
+                expr_type = ExpressionType.DECIMAL
+            case '"' | "'":
+                descriptor = LBL_DSC
+                expr_type = ExpressionType.CHARACTER
+            case "%":
+                descriptor = BIN_DSC
+                expr_type = ExpressionType.BINARY
+            case "&":
+                descriptor = OCT_DSC
+                expr_type = ExpressionType.OCTAL
+            case _:
+                msg = f"Expression prefix is invalid [{expr}]"
+                raise ExpressionSyntaxError(msg)
+
+        return ExprComponents(descriptor, expr_type, pwords)
+
+    @staticmethod
+    def _split_expr(expr: str) -> ExprParts:
+        """Split the expression into prefix and suffic parts."""
+        _key = [x for idx,
+                x in enumerate(Validator._prefixes) if expr.startswith(x)]
+        if _key is None:
+            return ExprParts(None, None, None)  # Expr has invalid prefix
+        prefix = _key[0]
+        # A string's suffix must be an exact match to the prefix.
+        suffix = ""
+        if prefix in ["'", '"']:
+            suffix = prefix if expr.endswith(prefix) else None
+            if suffix is None:
+                return ExprParts(prefix, None, None)
+        word = expr.removeprefix(prefix).removesuffix(suffix)
+        return ExprParts(prefix, word, suffix)
+
+# |-----------------============<***>=============-----------------|
+
+# expression.py ends here.

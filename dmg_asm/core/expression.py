@@ -30,7 +30,7 @@ class ExpressionType(StrEnum):
 
 
 @dataclass(frozen=True)
-class ExprParts:
+class ExprElements1:
     """Represent an expression's parts - prefix, word, and suffix."""
 
     prefix: str
@@ -51,12 +51,12 @@ class ExprParts:
 
 
 @dataclass(frozen=True)
-class ExprComponents:
+class ExprComponents1:
     """Represent an expressions evaluated components."""
 
     descriptor: BaseDescriptor
     type: ExpressionType
-    pwords: ExprParts
+    pwords: ExprElements1
 
     def is_valid(self) -> bool:
         """Return true if the object is valid."""
@@ -131,7 +131,57 @@ class Expression:
         """Return the raw (or cleaned) value of the expression."""
         return self._result.pwords.join()
 
+    # |++++++++++++++++++++++++++++++++++++++++++++++++++++++++|
+
+    @dataclass
+    class Elements:
+        """Represent an expression's parts - prefix, word, and suffix."""
+
+        prefix: str
+        word: str  # The value of the expression sans affixes.
+        suffix: str
+
+        def is_valid(self) -> bool:
+            """Return true if the object is valid."""
+            if self.prefix is None or self.suffix is None:
+                return False
+            if self.word is None or len(self.word) == 0:
+                return False
+            return True
+
+        def join(self) -> str:
+            """Join together a split expression."""
+            joined = self.prefix+self.word+self.suffix
+            return joined if self.is_valid() else None
+
+    # |++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++|
+
+    @dataclass
+    class Components:
+        """Represent an expressions evaluated components."""
+
+        descriptor: BaseDescriptor
+        type: ExpressionType
+        pwords: 'Expression.Elements'
+
+        def is_valid(self) -> bool:
+            """Return true if the object is valid."""
+            if self.descriptor is None or self.type is None:
+                return False
+            if self.pwords is None:
+                return False
+            return self.pwords.is_valid()
+
+
+# Shorthand
+EXEL = Expression.Elements
+EXCO = Expression.Components
+
 # |-----------------============<***>=============-----------------|
+#
+# This is the class that is used to validate an expression. It's meant to be
+# local to this module and never exported.
+#
 
 
 class Validator:
@@ -140,7 +190,7 @@ class Validator:
     _prefixes = ["0x", "0", "$$", "$", "&", "%", "'", '"']
 
     @staticmethod
-    def validate(expr_str: str) -> ExprComponents:
+    def validate(expr_str: str) -> Expression.Components:
         """Validate the expression and return an ExprComponents object.
 
         Arguments:
@@ -171,7 +221,7 @@ class Validator:
     # Validation Functions
     #
     @staticmethod
-    def try_len_range(source: ExprComponents):
+    def try_len_range(source: Expression.Components):
         """Test if expression is within args.chars.min/max length."""
         value = source.pwords.word
         descr = source.descriptor
@@ -181,7 +231,7 @@ class Validator:
             raise ExpressionBoundsError(msg)
 
     @staticmethod
-    def try_val_range(source: ExprComponents):
+    def try_val_range(source: Expression.Components):
         """Test if expression is within min/max value limits."""
         value = source.pwords.word
         descr = source.descriptor
@@ -192,7 +242,7 @@ class Validator:
             raise ExpressionBoundsError(msg)
 
     @staticmethod
-    def try_in_charset(source: ExprComponents):
+    def try_in_charset(source: Expression.Components):
         """Test if expression uses invalid characters for its type."""
         descr = source.descriptor
         word = source.pwords.word
@@ -205,7 +255,7 @@ class Validator:
     # Helper Functions
     #
     @staticmethod
-    def get_expr_components(expr_str: str) -> ExprComponents:
+    def get_expr_components(expr_str: str) -> Expression.Components:
         """Return the descriptor and expression type of the value passed."""
         if expr_str is None:
             raise ExpressionSyntaxError("Missing expression string.")
@@ -255,24 +305,24 @@ class Validator:
                 msg = f"Expression prefix is invalid [{expr}]"
                 raise ExpressionSyntaxError(msg)
 
-        return ExprComponents(descriptor, expr_type, pwords)
+        return Expression.Components(descriptor, expr_type, pwords)
 
     @staticmethod
-    def _split_expr(expr: str) -> ExprParts:
+    def _split_expr(expr: str) -> Expression.Elements:
         """Split the expression into prefix and suffic parts."""
         _key = [x for idx,
                 x in enumerate(Validator._prefixes) if expr.startswith(x)]
         if _key is None:
-            return ExprParts(None, None, None)  # Expr has invalid prefix
+            return Expression.Elements(None, None, None)
         prefix = _key[0]
         # A string's suffix must be an exact match to the prefix.
         suffix = ""
         if prefix in ["'", '"']:
             suffix = prefix if expr.endswith(prefix) else None
             if suffix is None:
-                return ExprParts(prefix, None, None)
+                return Expression.Elements(prefix, None, None)
         word = expr.removeprefix(prefix).removesuffix(suffix)
-        return ExprParts(prefix, word, suffix)
+        return Expression.Elements(prefix, word, suffix)
 
 # |-----------------============<***>=============-----------------|
 

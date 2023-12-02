@@ -6,5 +6,4 @@ print("\nExpression Tests")
 suite = unittest.TestLoader().loadTestsFromTestCase(ExpressionUnitTests)
 unittest.TextTestRunner(verbosity=2).run(suite)
 
-
 # tests.py ends here.

@@ -3,10 +3,11 @@ Manages EQU tokens
 """
 import string
 
+from .conversions import ExpressionConversion
 from ..core import constants
-from ..convert import Convert
-from ..expression import Expression, ExpressionType
+from ..lexer.lexer_parser import BasicLexer
 
+EC = ExpressionConversion
 # TOK = const.TOK
 # DIR = const.DIR
 # LBL = const.LBL

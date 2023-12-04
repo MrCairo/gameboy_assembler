@@ -16,6 +16,12 @@ class DescriptorArgs():
     base: int
     charset: str
 
+    def __str__(self) -> str:
+        """Return a string representation of this object."""
+        desc = f"Args(chars={self.chars}, limits={self.limits}, "
+        desc += f"base={self.base})"
+        return desc
+
 # |-----------------============<***>=============-----------------|
 
 
@@ -83,6 +89,10 @@ class BaseDescriptor(Validator):
                                    base=base,
                                    charset=self.bases[base])
 
+    def __str__(self) -> str:
+        """Return a string representation of this object."""
+        return f"Descriptor: {self.args}"
+
     def charset(self) -> str:
         """Return the allowable characters for the object's base."""
         return self.args.charset
@@ -143,18 +153,17 @@ class BaseValue:
     _base: int
     _ftypes = {2: 'b', 8: 'o', 10: 'd', 16: 'X'}
 
-    def __init__(self, desc: BaseDescriptor, value):
+    def __init__(self, desc: BaseDescriptor):
         """Initialize the base object."""
         # We need to save off the parms. The Validator's getter
         # will be called when accessing the _descr variable which will
         # return 'value' instead of the Validatior object.
-        self._chars = desc.chars
-        self._limits = desc.limits
-        self._base = desc.base
-        self._descr = BaseDescriptor(chars=desc.chars,
-                                     limits=desc.limits,
-                                     base=desc.base)
-        self._descr = value  # Fails is value is invlaid for desc
+        self._chars = desc.args.chars
+        self._limits = desc.args.limits
+        self._base = desc.args.base
+        self._descr = BaseDescriptor(chars=desc.args.chars,
+                                     limits=desc.args.limits,
+                                     base=desc.args.base)
 
     def __repr__(self):
         """Return a string representation of how re-create this object."""
@@ -176,72 +185,58 @@ class BaseValue:
         """Return the set of valid characters for this object."""
         return self._descr.charset()
 
-    def decimal_value(self):
-        """Convert theobject to its decimial equivalent."""
-        return int(self._descr, self._base)
-
 # |-----------------============<***>=============-----------------|
 
 
-class BinaryValue(BaseValue):
-    """Represent a binary number value."""
+# class BinaryValue(BaseValue):
+#     """Represent a binary number value."""
 
-    def __init__(self, value: str):
-        """Initialize a Binary value descriptor."""
-        super().__init__(BIN_DSC, value)
-
-
-class DecimalValue(BaseValue):
-    """Represent a decimial value of 0 - 65535."""
-
-    def __init__(self, value: str):
-        """Initialize a Decimal value descriptor."""
-        super().__init__(DEC_DSC, value)
+#     def __init__(self, value: str):
+#         """Initialize a Binary value descriptor."""
+#         super().__init__(BIN_DSC, value)
 
 
-class Hex8Value(BaseValue):
-    """Represent an 8-bit hex value."""
+# class DecimalValue(BaseValue):
+#     """Represent a decimial value of 0 - 65535."""
 
-    def __init__(self, value: str):
-        """Initialize a 8-bin Hexidecimal value descriptor."""
-        super().__init__(HEX_DSC, value)
-
-
-class Hex16Value(BaseValue):
-    """Represent a 16-bit hex value."""
-
-    def __init__(self, value: str):
-        """Initialize a 16-bit Hexidecimal value descriptor."""
-        super().__init__(HEX16_DSC, value)
+#     def __init__(self, value: str):
+#         """Initialize a Decimal value descriptor."""
+#         super().__init__(DEC_DSC, value)
 
 
-class OctalValue(BaseValue):
-    """Represent a 16-bit hex value."""
+# class Hex8Value(BaseValue):
+#     """Represent an 8-bit hex value."""
 
-    def __init__(self, value: str):
-        """Initialize an Octal value descriptor."""
-        super().__init__(OCT_DSC, value)
+#     def __init__(self, value: str):
+#         """Initialize a 8-bin Hexidecimal value descriptor."""
+#         super().__init__(HEX_DSC, value)
 
 
-class LabelValue(BaseValue):
-    """Represent a string label value."""
+# class Hex16Value(BaseValue):
+#     """Represent a 16-bit hex value."""
 
-    def __init__(self, value: str):
-        """Initialize a string label value."""
-        super().__init__(LBL_DSC, value)
+#     def __init__(self, value: str):
+#         """Initialize a 16-bit Hexidecimal value descriptor."""
+#         super().__init__(HEX16_DSC, value)
+
+
+# class OctalValue(BaseValue):
+#     """Represent a 16-bit hex value."""
+
+#     def __init__(self, value: str):
+#         """Initialize an Octal value descriptor."""
+#         super().__init__(OCT_DSC, value)
+
+
+# class LabelValue(BaseValue):
+#     """Represent a string label value."""
+
+#     def __init__(self, value: str):
+#         """Initialize a string label value."""
+#         super().__init__(LBL_DSC, value)
 
 #
 # |-----------------============<***>=============-----------------|
 #
 
-
-if __name__ == "__main__":
-    try:
-        print(f'Decimal: {DecimalValue("255").decimal_value()}')
-        print(OctalValue("100").decimal_value())
-        print(OctalValue("100"))
-        x = Hex16Value("E")
-        print(x)
-        print(x.decimal_value())
-    except (ValueError, TypeError) as e:
-        print(f"Failure: {e}")
+# descriptor.py ends here.

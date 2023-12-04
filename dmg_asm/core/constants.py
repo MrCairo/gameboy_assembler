@@ -4,18 +4,18 @@ from enum import IntEnum, Enum, auto
 from dataclasses import dataclass
 from collections import namedtuple
 
-# Token element names
-ARGS = "arguments"
-BAD = "invalid"
-DIR = "directive"
-PARM = "parameters"
-REMN = "remainder"
-TOK = "tokens"
-TELM = "telemetry"  # Location specific information
-NODE = "node"  # Rpresents an internal tokenized node.
+# Token element keys (keys of the token dictionary)
+ARGS_T = "arguments"
+BAD_T = "invalid"
+DIR_T = "directive"
+PARM_T = "parameters"
+REMN_T = "remainder"
+TOK_T = "tokens"
+TYPE_T = "type"
+TELM_T = "telemetry"  # Location specific information
+NODE_T = "node"  # Rpresents an internal tokenized node.
 
-
-#  Code-level element names
+# Token type values
 DEF = "DEFINE"
 EQU = "EQU"
 INST = "INSTRUCTION"
@@ -81,17 +81,17 @@ NodeType = Enum('NodeType', ['DEF',    # Define
 
 
 NODE_TYPES = {
-    NodeType.NODE: NODE,
+    NodeType.NODE: NODE_T,  # Internal type, not a compiler diective
+    NodeType.PARM: PARM_T,  # Internal type, not a compiler diective
+    NodeType.DIR: DIR_T,    # Internal type, not a compiler diective
     NodeType.EQU: EQU,
     NodeType.LBL: LBL,
     NodeType.SYM: SYM,
-    NodeType.PARM: PARM,
     NodeType.INST: INST,
     NodeType.STOR: STOR,
     NodeType.SEC: SEC,
     NodeType.ORG: ORG,
     NodeType.DEF: DEF,
-    NodeType.DIR: DIR
 }
 
 AddressRange = namedtuple("AddressRange", ["start", "end"])
@@ -115,7 +115,16 @@ class NodeDefinition:
     length: int = 0
 
 
-MinMax = namedtuple("MinMax", ['min', 'max'])
+@dataclass
+class MinMax:
+    """Represent a min and max value in a single object."""
+
+    min: int
+    max: int
+
+    def __str__(self) -> str:
+        """Return string representation of this object."""
+        return f"MinMax(min={self.min}, max={self.max})"
 
 
 # NODE_FORMAT = {

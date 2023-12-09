@@ -1,19 +1,33 @@
 """Commonly used constants."""
 
-from enum import IntEnum, Enum, auto
+from enum import auto, Enum, IntEnum
+from strenum import StrEnum
 from dataclasses import dataclass
 from collections import namedtuple
 
 # Token element keys (keys of the token dictionary)
 ARGS_T = "arguments"
-BAD_T = "invalid"
-DIR_T = "directive"
+VAL_T = "value"
 PARM_T = "parameters"
 REMN_T = "remainder"
+NEXT_T = "next"
 TOK_T = "tokens"
 TYPE_T = "type"
 TELM_T = "telemetry"  # Location specific information
 NODE_T = "node"  # Rpresents an internal tokenized node.
+
+
+class TokenType(StrEnum):
+    IDENTIFIER = auto()
+    KEYWORD = auto()
+    PUNCTUATOR = auto()
+    OPERATOR = auto()
+    LITERAL = auto()
+    SYMBOL = auto()
+    COMMENT = auto()
+    DIRECTIVE = auto()
+    MEMORY_BLOCK = auto()
+
 
 # Token type values
 DEF = "DEFINE"
@@ -25,6 +39,8 @@ ORG = "ORIGIN"
 SEC = "SECTION"
 STOR = "STORAGE"
 SYM = "SYMBOL"
+DIR = "DIRECTIVE"
+BAD = "INVALID"
 
 
 LOGGER_FORMAT = '[%(levelname)s] %(asctime)s - %(message)s'
@@ -51,6 +67,18 @@ DIRECTIVES = [
     "UNION",
 ]
 
+
+MEMORY_BLOCKS = [
+    "WRAM0",
+    "VRAM",
+    "ROMX",
+    "ROM0"
+    "HRAM",
+    "WRAMX",
+    "SRAM",
+    "OAM"
+]
+
 STORAGE_DIRECTIVES = ["DS", "DB", "DW", "DL"]
 
 #
@@ -68,7 +96,6 @@ class Lexical(IntEnum):
 
 
 NodeType = Enum('NodeType', ['DEF',    # Define
-                             'DIR',    # Directive (generic)
                              'EQU',    # Equate
                              'INST',   # Instruction
                              'LBL',    # Label
@@ -83,7 +110,6 @@ NodeType = Enum('NodeType', ['DEF',    # Define
 NODE_TYPES = {
     NodeType.NODE: NODE_T,  # Internal type, not a compiler diective
     NodeType.PARM: PARM_T,  # Internal type, not a compiler diective
-    NodeType.DIR: DIR_T,    # Internal type, not a compiler diective
     NodeType.EQU: EQU,
     NodeType.LBL: LBL,
     NodeType.SYM: SYM,

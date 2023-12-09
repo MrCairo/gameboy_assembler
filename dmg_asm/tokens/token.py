@@ -1,13 +1,24 @@
 """Hold a set of lexeme tokens."""
 
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Union
 from collections import OrderedDict
 
-from ..core.constants import DIR_T, ARGS_T, REMN_T, BAD_T, TYPE_T, \
-    DIRECTIVES, INST, SYM
+from ..core.constants import \
+    DIRECTIVES, INST, SYM, DIR, BAD, TokenType, MEMORY_BLOCKS, \
+    VAL_T as value_t, ARGS_T as arguments_t, NEXT_T as next_t, \
+    REMN_T as remainder_t, TYPE_T as type_t
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils
+from ..core.exception import InvalidSymbolName, InvalidSymbolScope
+
+LEXEMES = [
+    value_t,
+    arguments_t,
+    next_t,
+    remainder_t,
+    type_t
+]
 
 
 # A Token represents a set of lexemes that comprise a single line of source
@@ -17,20 +28,27 @@ from ..core.symbol import SymbolUtils
 #
 #   The text: "SECTION 'game_vars', WRAM0[$0100]" would generate tokens like:
 #
-#   {'directive': 'SECTION',
-#    'type': 'ORIGIN',      #  Same as SECTION
-#    'arguments': {'arg00': 'SECTION',
-#                  'arg01': "'game_vars'",
-#                  'arg02': 'WRAM0[$0100]'}}
+#   {'type': 'ORIGIN',
+#    'value': 'SECTION',
+#    'arguments': ['SYMBOL',
+#                  "'game_vars'",
+#                  'WRAM0[$0100]']
 #
-#   {'directive': '.label:',
+#   {'value': '.label:',
 #    'type': 'SYMBOL'
-#    'arguments': {'arg00': '.label:'}}
+#    'arguments': ['.label:'] }
+
+#   {'value': '.label:',
+#    'type': 'SYMBOL'
+#    'arguments': ['.label:'] }
 #
-#     - The 'directive' is the actual command, in this case a SECTION
-#       directive. The next part of the dictionary is an array of
-#       parameters. Parameter 0 is always the directive. The remaining
-#       parameters are there to support the directive.
+#     - The 'value' is the actual command, in this case a SECTION of type
+#       'ORIGIN'. The next part of the dictionary is an array of parameters
+#       which are the arguments to support the value of the token.  Arguments
+#       are always present since element 0 of the argument repeats the
+#       original value of the token. Parameter 0 is always the value of the
+#       toek type followed by the remaining elements. The remaining parameters
+#       are there to support the directive.
 
 
 class Token:
@@ -48,117 +66,185 @@ class Token:
 
     def __repr__(self) -> str:
         """Return representation on how this object can be built."""
-        desc = f"Token.from_elements([{str(self)}])"
+        desc = f"Token.from_elements(['{self.value}'])"
+        if self.next:
+            desc += f"\n{self.next.__repr__()}"
         return desc
 
     def __str__(self) -> str:
         """Return a human readable string for this object."""
-        desc = f"{self.as_string()}"
+        desc = f"Value: '{self.value}', Type: {self.type}"
+        if self.next:
+            desc += f"\n{self.next.__str__()}"
         return desc
-        # desc = f"DIR = {self.directive}\n"
-        # desc += f"TYPE = {self.type_str}\n"
-        # desc += f"ARGS = {self.arguments.values()}"
-        # if REMN_T in self._tok:
-        #     desc += f"REMN = {self.remainder.__str__()}"
-        # return desc
 
-    def as_string(self) -> str:
+    def to_string(self) -> str:
         """Return the token as a string representation of a list."""
-        desc = "'" + "', '".join(self._tok[ARGS_T]) + "'"
+        # Since the arguments lexeme also contains the directive asm
+        # the first element, we can just use arguments here.
+        desc = "'" + "', '".join(self.arguments) + "'"
         if self.remainder is not None:
             tok2 = self.remainder
-            desc += ", "+tok2.as_string()
+            desc += ", "+tok2.to_string()
         return desc
 
+    # Helper functions
     @property
-    def type_str(self) -> Optional[str]:
-        """Return the type string of this token."""
-        return self._tok[TYPE_T]
-
-    @type_str.setter
-    def type_str(self, value: str):
-        """Set the token type string."""
-        self._tok[TYPE_T] = value
+    def value(self) -> str:
+        """Return the token value as a string, or None if empty."""
+        return self.lexeme(value_t)
 
     @property
-    def directive(self) -> Optional[str]:
-        """Property getter to return the DIR_T value."""
-        return self._tok[DIR_T] if DIR_T in self._tok else None
-
-    @directive.setter
-    def directive(self, value: str):
-        """Property setter to set the DIR_T value."""
-        self._tok[DIR_T] = value if value is not None else None
+    def arguments(self) -> Optional[dict]:
+        """Return the directive value as a string, or None if empty."""
+        return self.lexeme(arguments_t)
 
     @property
-    def arguments(self) -> Optional[list]:
-        """Return ARGS for this token."""
-        return self._tok[ARGS_T] if ARGS_T in self._tok else None
-
-    @arguments.setter
-    def arguments(self, value: list):
-        """Set the ARGS for this token."""
-        if value is not None:
-            args = {f'arg{idx:02d}': x for idx, x in enumerate(value)}
-            self._tok[ARGS_T] = args
+    def next(self) -> Optional[Token]:
+        """Return the directive value as a string, or None if empty."""
+        return self.lexeme(next_t)
 
     @property
-    def remainder(self) -> Optional[Token]:
-        """Get the REMN, if any, from this token."""
-        return self._tok[REMN_T] if REMN_T in self._tok else None
+    def remainder(self) -> Optional[list]:
+        """Return the remaining element(s) that aren't part of the token.
 
-    @remainder.setter
-    def remainder(self, value: Token):
-        """Set the REMN value for this token."""
-        if value is not None:
-            self._tok[REMN_T] = value
+        These remaining elements may result in another token but we don't
+        recurse by creating another token here."""
+        return self.lexeme(remainder_t)
+
+    @property
+    def type(self) -> Optional[str]:
+        """Return the directive value as a string, or None if empty."""
+        return self.lexeme(type_t)
+
+    #
+    # Primary getter and setter for the token.
+    #
+
+    def lexeme(self, key: str) -> Optional[str | dict | None]:
+        """Return an entry from the Token dict if present."""
+        return self._tok.get(key, None)
+
+    def set_lexeme(self, key: str, value: Union[str | dict | Token]) -> bool:
+        """Assign a value to a new or existing lexeme in the Token."""
+        if key not in LEXEMES:
+            return False
+        if key == arguments_t:
+            args = [x for idx, x in enumerate(value)]
+            # args = {f'arg{idx:02d}': x for idx, x in enumerate(value)}
+            self._tok[key] = args
+        else:
+            self._tok[key] = value
+        return True
 
     @classmethod
     def from_elements(cls, elements: list) -> Token:
-        """Initialze the objet and backing store."""
-        if elements is None:
-            raise ValueError("Missing list of lexemes as input.")
+        """Create a new token from a list of elements."""
+        if not elements:
+            raise ValueError("List of elements missing.")
         tok = Token()
-        tok.assign(elements)
+        tok._assign(elements)
         return tok
 
-    @classmethod
-    def from_components(cls, directive: str, type_str: str, *, args: list,
-                        remainder: Optional[Token] = None) -> Token:
-        """Create a Token object from values."""
-        tok = Token()
-        if directive is not None:
-            tok.directive = directive
-        else:
-            raise ValueError("'directive' must have a value")
-        tok.type_str = type_str
-        if args is not None:
-            tok.arguments = args
-        if remainder is not None:
-            tok.remainder = remainder
-        return tok
-
-    def assign(self, pieces: list):
+    def _assign(self, pieces: list):
         """Assign list values to the Token."""
-        if pieces[0] in DIRECTIVES:
-            self.directive = pieces[0]
-            self.type_str = DIR_T
-            self._tok[ARGS_T] = pieces
-        elif IS().is_mnemonic(pieces[0]):
-            self.directive = pieces[0]
-            self.type_str = INST
-            self._tok[ARGS_T] = pieces
-        elif SymbolUtils.is_valid_symbol(pieces[0]):
-            self.directive = pieces[0]
-            self.type_str = SYM
-            self._tok[ARGS_T] = pieces[:1]
-            # Symbol only has a single value It is possible that more
-            # instructions are on the same line as the symbol. In this case,
-            # we simply recusively add it to the remainder attribute
-            if len(pieces) > 1:
-                self.remainder = Token.from_elements(pieces[1:])
-        else:
-            self.directive = BAD_T
-            self._tok[ARGS_T] = pieces
+        if pieces is None or len(pieces) == 0:
+            return
+        try:
+            if pieces[0] in DIRECTIVES:
+                self._assign_directive(pieces)
+            elif pieces[0] in MEMORY_BLOCKS:
+                self._assign_mem_block(pieces)
+            elif IS().is_mnemonic(pieces[0]):
+                self._assign_instruction(pieces)
+            elif SymbolUtils.is_valid_symbol(pieces[0]):
+                self._assign_symbol(pieces)
+            elif len(pieces[0]) == 1 and pieces[0] in "\"'([{}])":
+                self._assign_delimiter(pieces)
+            else:
+                self._assign_literal(pieces)
+        except (InvalidSymbolName, InvalidSymbolScope) as err:
+            self._assign_invalid([err] + pieces)
+
+    def _assign_invalid(self, elements):
+        self.set_lexeme(type_t, BAD)
+        self.set_lexeme(value_t, BAD)
+        if len(elements):
+            self.set_lexeme(value_t, elements[0])
+            self.set_lexeme(arguments_t, elements)
+
+    def _assign_directive(self, elements) -> bool:
+        """Assigns the Token's lexems for a directive."""
+        if elements is None:
+            return False
+        self.set_lexeme(value_t, elements[0])
+        self.set_lexeme(type_t, TokenType.DIRECTIVE)
+        if len(elements) > 1:
+            self._assign_next(elements[1:])
+        return True
+
+    def _assign_mem_block(self, elements) -> bool:
+        """Assigns the Token's lexems for a directive."""
+        if elements is None:
+            return False
+        self.set_lexeme(value_t, elements[0])
+        self.set_lexeme(type_t, TokenType.MEMORY_BLOCK)
+        if len(elements) > 1:
+            self._assign_next(elements[1:])
+        return True
+
+    def _assign_instruction(self, elements) -> bool:
+        if elements is None or len(elements) == 0:
+            return False
+        # ins = IS().instruction_from_mnemonic(elements[0].upper())
+        self.set_lexeme(value_t, elements[0].upper())
+        self.set_lexeme(type_t, TokenType.KEYWORD)
+        if len(elements) > 1:
+            self._assign_next(elements[1:])
+        return True
+
+    def _assign_symbol(self, elements) -> bool:
+        if elements is None or len(elements) == 0:
+            return False
+        self.set_lexeme(value_t, elements[0])
+        self.set_lexeme(type_t, TokenType.SYMBOL)
+        if len(elements) > 1:
+            self._assign_next(elements[1:])
+        return True
+
+    def _assign_delimiter(self, elements) -> bool:
+        if elements is None or len(elements) == 0:
+            return False
+        self.set_lexeme(value_t, elements[0])
+        self.set_lexeme(type_t, TokenType.PUNCTUATOR)
+        if len(elements) > 1:
+            self._assign_next(elements[1:])
+        return True
+
+    def _assign_literal(self, elements) -> bool:
+        if elements is None or len(elements) == 0:
+            return False
+        self.set_lexeme(value_t, elements[0])
+        self.set_lexeme(type_t, TokenType.LITERAL)
+        if len(elements) > 1:
+            self._assign_next(elements[1:])
+        return True
+
+    def _assign_next(self, elements) -> bool:
+        tok = Token.from_elements(elements)
+        self.set_lexeme(next_t, tok)
+        return True
+        # if elements is None or len(elements) == 0:
+        #     return False
+        # tok = Token.from_elements(elements)
+        # if tok.type is not BAD:
+        #     self.set_lexeme(next_t, tok)
+        # return True
+
+    def _assign_remainder(self, elements) -> bool:
+        if elements is None or len(elements) == 0:
+            return False
+        self.set_lexeme(remainder_t, elements)
+        return True
 
     # --------========[ End of Token class ]========-------- #

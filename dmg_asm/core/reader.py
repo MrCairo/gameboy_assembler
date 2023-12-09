@@ -11,10 +11,10 @@ class Reader:
     """
 
     def __init__(self, strip_comments=False):
-        self._strip_comments = strip_comments
-        self._line = None
-        self._eof = False
-        self._read_position = 0
+        self._strip_comments: bool = strip_comments
+        self._line: str = None
+        self._eof: bool = False
+        self._read_position: int = 0
 
     @property
     def line(self) -> str:

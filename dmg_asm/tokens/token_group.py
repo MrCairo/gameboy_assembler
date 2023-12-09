@@ -48,9 +48,9 @@ class TokenGroup:
         """Add an aditional token to the end of tokens group."""
         if token is None:
             raise ValueError("Passed token must have a value.")
-        if token.directive in self._group_store:
+        if token.value in self._group_store:
             raise ValueError("Duplicate token directive in group.")
-        key = token.directive
+        key = token.value
         self._group_store[key] = token
 
     def remove(self, key):

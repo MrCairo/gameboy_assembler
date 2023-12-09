@@ -70,12 +70,12 @@ import string
 from enum import StrEnum
 
 from singleton_decorator import singleton
-from ..cpu.instruction_pointer import InstructionPointer
 from .constants import SYM
 from .exception import UpdateSymbolAddressError, ExpressionBoundsError, \
-    ExpressionSyntaxError
+    ExpressionSyntaxError, InvalidSymbolName, InvalidSymbolScope
 from .expression import Expression
 from .descriptor import LBL_DSC
+from ..cpu.instruction_pointer import InstructionPointer
 
 
 class SymbolScope(StrEnum):
@@ -97,6 +97,73 @@ class SymbolAffix(StrEnum):
 # ============================================================================
 
 
+class SymbolUtils:
+    """Symbol utility functions."""
+
+    @classmethod
+    def is_valid_symbol(cls, name: str) -> bool:
+        """Return True if 'name' represents a valid symbol.
+
+        This function checks the vailidity of the Symbol. Note that this
+        function does not check to see if a symbol already exists or not.
+        """
+        try:
+            # Can we create a symbol from the name?
+            Symbol(name.strip(), 0x00)
+        except (InvalidSymbolName, InvalidSymbolScope):
+            return False
+        return True
+
+    @classmethod
+    def clean_name(cls, name: str) -> str:
+        """Return a name less the ending punctuation."""
+        return name.strip(".:")
+
+    @classmethod
+    def valid_symbol_chars(cls):
+        """Return a string of all valid characters of a symbol."""
+        return string.ascii_letters + string.digits + ".:_"
+
+    @classmethod
+    def valid_name_chars(cls):
+        """Return a string of only valid characters of a name."""
+        return LBL_DSC.charset()
+
+    @classmethod
+    def valid_symbol_first_char(cls):
+        """Return a string of all valid 1st characters of a symbol."""
+        return string.ascii_letters + "."
+
+    @classmethod
+    def symbol_has_valid_chars(cls, name: str) -> bool:
+        """Return True if the symbol only has supported chars."""
+        valid = True
+        chars = SymbolUtils.valid_symbol_chars()
+        for c in name:
+            if c in chars:
+                continue
+            valid = False
+            break
+        return valid
+
+    @classmethod
+    def name_has_valid_chars(cls, line: str) -> bool:
+        """Return True if symbol's name contains valid chars."""
+        valid = True
+        clean = SymbolUtils.clean_name(line)
+        try:
+            Expression(f"'{clean}'")
+        except (TypeError, ExpressionBoundsError, ExpressionSyntaxError):
+            valid = False
+
+        return valid
+
+    # --------========[ End of class ]========-------- #
+
+
+SU = SymbolUtils
+
+
 class Symbol():
     """A String name used to represent an address in memory.
 
@@ -111,14 +178,14 @@ class Symbol():
         """Initialize a new Symbol with addressing flag."""
         self._addressing = addressing
         if not name:
-            raise ValueError(name)
-
-        self._scope = self._scope_and_validate(name)
-        if self._scope is None:
-            raise ValueError(name)
+            raise InvalidSymbolName(name)
 
         self._original_symbol = name
-        self._clean_name = SymbolUtils.clean_name(name)
+        self._clean_name = SU.clean_name(name)
+
+        self._scope = self._scope_and_validate(self.name)
+        if self._scope is None:
+            raise InvalidSymbolScope(self.name)
 
         if addressing is True:
             self._base_address = InstructionPointer().base_address
@@ -132,7 +199,7 @@ class Symbol():
         if self._scope is not None:
             scope = self._scope
 
-        desc = f"\nSymbol: {self._clean_name}"
+        desc = f"\nSymbol: {self.clean_name}"
         desc += f", scope: {scope}"
 
         if self._addressing:
@@ -144,7 +211,7 @@ class Symbol():
 
     def __repr__(self):
         """Return a description of this symbol object."""
-        desc = f"Symbol(\"{self._original_symbol}\", "
+        desc = f"Symbol(\"{self.name}\", "
         desc += f"addressing =  bool({self._addressing}))"
         return desc
 
@@ -153,17 +220,15 @@ class Symbol():
         """Return the string name of this class's type."""
         return SYM
 
+    @property
     def clean_name(self) -> str:
         """Return the cleaned valid symbol name."""
         return self._clean_name
 
+    @property
     def name(self) -> str:
         """Return the name of the symbol from initialization."""
         return self._original_symbol
-
-    def value(self) -> int:
-        """Return the value passed when the object was created."""
-        return self._value
 
     @property
     def scope(self) -> SymbolScope:
@@ -197,11 +262,9 @@ class Symbol():
     # ----------===========[ End of public funcs ]===========---------- #
 
     def _scope_and_validate(self, name: str) -> SymbolScope:
-        clean = SymbolUtils.clean_name(name)
-
-        if len(clean) > 15 or self._has_valid_decorators(name) is False:
+        #
+        if len(name) > 15 or self._has_valid_decorators(name) is False:
             return None
-
         symbol_scope = None
         if name.startswith(SymbolAffix.PRIVATE):
             symbol_scope = SymbolScope.PRIVATE
@@ -214,103 +277,54 @@ class Symbol():
 
     def _has_valid_decorators(self, name: str) -> bool:
         # Does the symbol only contain valid chars?
-        if SymbolUtils.symbol_has_valid_chars(name) is False:
-            return False
-
         # Does the symbol name (less decorators of ':' or '.') only contain
         # valid chars?
-        if SymbolUtils.name_has_valid_chars(name) is False:
+
+        if SU.symbol_has_valid_chars(name) is False or \
+           SU.name_has_valid_chars(name) is False:
             return False
 
-        # Symbol name must start with an alpha
-        clean = SymbolUtils.clean_name(name)
-        if clean[0].isalpha is False:
+        # Symbol name must start with an alpha and cannot have
+        # embedded "." or ":" characters.
+        clean = self.clean_name
+        if clean[0].isalpha is False or \
+           clean.count(".") or \
+           clean.count(":"):
             return False
+
+        # Valid symbols are:
+        # local:
+        # .private (means private relative to the current local symbol)
+        # global::
 
         stop_count = name.count(".")
         colon_count = name.count(":")
 
-        # There can NEVER be more than one stop and two colons.
-        if stop_count > 1 or colon_count > 2:
-            return False
+        extern = name.endswith("::") and \
+            colon_count == 2 and \
+            stop_count == 0
 
-        extern = name.endswith("::")
-        local = name.endswith(":") and not extern and colon_count == 1
-        priv = name.startswith(".") and local  # Meaning ".something:"
+        local = name.endswith(":") and \
+            colon_count == 1 and \
+            stop_count == 0
 
-        # Must be local or global (priv still is local)
-        if not extern and not local:
-            return False
+        priv = name.startswith(".") and \
+            not extern and \
+            not local and stop_count == 1
 
-        # Cannot have a stop with an external decoration
-        if extern and stop_count > 0:
-            return False
+        invalid = False
+        # Symbol must be at least one of etxernal/local/private categories.
+        invalid = not priv and not local and not extern
+        # Symbol cannot have more than one '.' or more than two ':'
+        invalid |= stop_count > 1 or colon_count > 2
+        # Extern symbol cannot have any stop characters (.)
+        invalid |= extern and stop_count
+        # A  symbol cannot start with a colon or end with a stop
+        invalid |= name.startswith(":") or name.endswith(".")
 
-        # If there is a stop it must be a private symbol (or else....)
-        if stop_count and not priv:
-            return False
-
-        return True
+        return not invalid
 
     # --------========[ End of class ]========-------- #
-
-
-class SymbolUtils:
-    """Symbol utility functions."""
-
-    @classmethod
-    def is_valid_symbol(cls, name: str):
-        """Return True if 'name' represents a valid symbol.
-
-        This function checks the vailidity of the Symbol. Note that this
-        function does not check to see if a symbol already exists or not.
-        """
-        symbol = Symbol(name.strip(), 0x00)  # Can we create a symbol from it?
-        return symbol is not None
-
-    @classmethod
-    def clean_name(cls, name: str) -> str:
-        """Return a name less the ending punctuation."""
-        return name.strip(".:")
-
-    @classmethod
-    def valid_symbol_chars(cls):
-        """Return a string of all valid characters of a symbol."""
-        return string.ascii_letters + string.digits + ".:_"
-
-    @classmethod
-    def valid_name_chars(cls):
-        """Return a string of only valid characters of a name."""
-        return LBL_DSC.charset()
-
-    @classmethod
-    def valid_symbol_first_char(cls):
-        """Return a string of all valid 1st characters of a symbol."""
-        return string.ascii_letters + "."
-
-    @classmethod
-    def symbol_has_valid_chars(cls, name: str):
-        """Return True if the symbol only has supported chars."""
-        valid = True
-        chars = SymbolUtils.valid_symbol_chars()
-        for c in name:
-            if c in chars:
-                continue
-            valid = False
-            break
-        return valid
-
-    @classmethod
-    def name_has_valid_chars(cls, line: str):
-        """Return True if symbol's name contains valid chars."""
-        valid = True
-        clean = SymbolUtils.clean_name(line)
-        try:
-            Expression(f"'{clean}'")
-        except (TypeError, ExpressionBoundsError, ExpressionSyntaxError):
-            valid = False
-
-        return valid
 
 
 @singleton
@@ -330,7 +344,7 @@ class Symbols(dict):
     def __init__(self):
         """Initialize a Symbol object."""
         super().__init__()
-        self._symbols = dict()
+        self._symbols = {}
 
     def __repr__(self):
         """Print the object."""
@@ -368,8 +382,8 @@ class Symbols(dict):
             self._symbols[symbol.clean_name().upper()] = symbol
 
     def remove(self, symbol: Symbol):
-        """Remove a symbol from the dictionary."""
-        """
+        """Remove a symbol from the dictionary.
+
         The clean_name of the symbol is used as the key of the element to
         remove.
         """
@@ -379,7 +393,6 @@ class Symbols(dict):
                 new_d = dict(self._symbols)
                 del new_d[symbol.clean_name().upper()]
                 self._symbols = new_d
-        return
 
     def local_symbols(self) -> dict:
         """Return symbols that are local in scope."""

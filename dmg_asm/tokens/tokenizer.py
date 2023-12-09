@@ -1,51 +1,25 @@
 """Classes that convert text into Tokens."""
 
 from typing import Optional
-from ..core.convert import Convert
 from .token_group import TokenGroup
 from .token import Token
 
-"""
-The Tokenizer simply breaks up a line of text into a dictionary. The
-dictionary starts off with a DIRECTIVE entry which identifies what the root
-command of the input line is. If the directive contains other directives, an
-additional DIRECTIVE entry is included.
 
-------------------------------------------------------------------------------
-
-It's important to note that tokenizing a line of text isn't the same thing as
-validating the conents. While the actual basic items are identified -
-Directive, instructions, or symbols - the parameters that appear after the
-directive are not checked against syntax.
-
-------------------------------------------------------------------------------
-
-  The text: "SECTION 'game_vars', WRAM0[$0100]" would generate tokens like:
-
-  {'directive': 'SECTION',
-   'arguments': {'arg00': 'SECTION',
-                 'arg01': "'game_vars'",
-                 'arg02': 'WRAM0[$0100]'}}
-
-    - The 'directive' is the actual command, in this case a SECTION
-      directive. The next part of the dictionary is an array of
-      parameters. Parameter 0 is always the directive. The remaining
-      parameters are there to support the directive.
-
-  --------------------------------------------------
-
-  {'directive': 'SYMBOL',
-   'arguments': {'arg00': '.label:'},
-   'remainder': {'directive': 'INSTRUCTION',
-                 'arguments': {'arg00': 'LD',
-                               'arg01': 'A',
-                               'arg02': '(BC)'}}}
-
-    - The presence of the 'tokens' key indicates that there are additional
-      tokens that were processed as part of the input line. In the example
-      above, the SYMBOL was on the same line as an INSTRUCTION.
-
-"""
+#
+# The Tokenizer simply breaks up a line of text into a dictionary. The
+# dictionary starts off with a DIRECTIVE entry which identifies what the root
+# command of the input line is. If the directive contains other directives, an
+# additional DIRECTIVE entry is included.
+#
+# ------------------------------------------------------------------------------
+#
+# It's important to note that tokenizing a line of text isn't the same thing as
+# validating the conents. While the actual basic items are identified -
+# Directive, instructions, or symbols - the parameters that appear after the
+# directive are not checked against syntax.
+#
+# ------------------------------------------------------------------------------
+#
 
 
 class Tokenizer:
@@ -63,6 +37,11 @@ class Tokenizer:
         """Reset (clear) the current token group."""
         self._group = TokenGroup()
 
+    @property
+    def token_group(self) -> TokenGroup:
+        """Return the TokenGroup token store."""
+        return self._group
+
     def tokenize_string(self, line_of_text: str) -> Optional[TokenGroup]:
         """Convert text to a token and add it to the token group."""
         elements = self._elements_from_string(line_of_text)
@@ -77,16 +56,19 @@ class Tokenizer:
         except TypeError:
             return None
         self._group.add(token)
+        remn = token.remainder
+        if remn:
+            self.tokenize_elements(remn)
 
         # Add the token to the group. If there is remnant token data
         # go into that remnant token and add it to the group as well.
         # Continue to add remnant tokens until there are none. Generally,
         # there should only be at the most one remnant token but the
         # TokenGroup class is meant to handle as many as needed.
-        rmn_token = token.remainder
-        while rmn_token is not None:
-            self._group.add(rmn_token)
-            rmn_token = rmn_token.remainder
+        # rmn_token = token.remainder
+        # while rmn_token is not None:
+        #     self._group.add(rmn_token)
+        #     rmn_token = rmn_token.remainder
         return self._group
 
     def list_to_dict(self, arr: list) -> dict:
@@ -117,6 +99,7 @@ class Tokenizer:
         elements = [x for x in clean.split(" ") if x != ""]
         # Starting/ending Commas are irrelevant so ignore them
         elements = [s.strip(",") for s in elements]
+        elements = [x for x in elements if len(x)]
 
         return elements
 

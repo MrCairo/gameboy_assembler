@@ -54,7 +54,7 @@ class ExpressionSyntaxError(Exception):
         super().__init__(message)
 
 
-class ExpressionBoundsError(Exception):
+class ExpressionBoundsError1(Exception):
     """Thrown when an exception it outside of it's predefined bounds."""
 
     def __init__(self, message):
@@ -70,6 +70,11 @@ class UpdateSymbolAddressError(ParserException):
     def __init__(self, message=_def_msg, line_text="", line_number=-1):
         """Initialize Exception."""
         super().__init__(message, line_text, line_number)
+
+
+InvalidSymbolName = ExpressionSyntaxError
+InvalidSymbolScope = ExpressionSyntaxError
+ExpressionBoundsError = ExpressionSyntaxError
 
 
 # ##############################################################################
@@ -114,10 +119,10 @@ class Error:
         "Error: The resulting instruction did not produce any machine code",
 
         ErrorCode.INVALID_LABEL_NAME:
-        "Error: The label name is not in a valid format.",
+        "Error: The symbol name is not in a valid format.",
 
         ErrorCode.INVALID_LABEL_POSITION:
-        "Error: The label name is not in a valid position.",
+        "Error: The symbol name is not in a valid position.",
 
         ErrorCode.INVALID_SYMBOL_NAME:
         "Error: The symbol name is not in a valid format.",

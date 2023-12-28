@@ -4,7 +4,8 @@ Manages EQU tokens
 import string
 
 from ..core import constants
-from ..convert import Convert
+from ..core import Convert
+from ..tokens import Token, TokenGroup, Tokenizer
 from ..expression import Expression, ExpressionType
 
 # TOK = const.TOK
@@ -20,7 +21,7 @@ class Equate:
 
     def __init__(self, tokens: dict):
         """Create an Equate object instance given an initial dictionary."""
-        self._label: Label = None
+        self._label: Symbol = None
         self._tok = tokens
 
     def __str__(self):
@@ -44,10 +45,7 @@ class Equate:
     def from_string(cls, line: str):
         """Create a new Equate object from a string."""
         if line:
-            tok = BasicLexer.from_string(line)
-            if tok:
-                tok.tokenize()
-                return cls(tok.tokenized_list())
+            group = Tokenizer().tokenize_string(line)
         return cls({})
 
     def parse(self):
@@ -90,7 +88,7 @@ class _EquateParser:
             return None
         return self.validate()
 
-    def validate(self) -> Label:
+    def validate(self) -> Symbol:
         """Validate the EQU statement."""
         """
         An tokenized EQU consists of a LABEL and an EQU node.
@@ -115,11 +113,5 @@ class _EquateParser:
                 return None
         val = EC().decimal_from_expression(equ_val)
         if val:
-            return Label(label_name, val, constant=True)
+            return Symbol(label_name, val, constant=True)
         return None
-
-
-if __name__ == "__main__":
-    e = Equate.from_string("COUNT_LABEL EQU $FFD2")
-    e.parse()
-    print(e)

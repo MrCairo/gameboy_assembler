@@ -39,8 +39,6 @@ def _gen_LR35902_inst() -> dict:
         if mnemonic is None or mnemonic == "PREFIX":
             continue
         try:
-            if hex_code == "$00":
-                print("Here.")
             conv = Convert(Expression(hex_code))
             expr = conv.to_decimal()
             term = {"!": expr}

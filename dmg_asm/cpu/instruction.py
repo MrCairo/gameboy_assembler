@@ -5,6 +5,40 @@ Class(es) that implements a Z80/LR35902 instruction and Instruction Set
 
 from .lexer_results import LexerResults
 from .lexer_parser import InstructionParser, BasicLexer
+from dataclasses import dataclass
+
+"""
+ {
+  "r8": {
+    "!": "Expression(024)"
+  },
+  "NZ": {
+    "r8": {
+      "!": "Expression(032)"
+    }
+  },
+  "Z": {
+    "r8": {
+      "!": "Expression(040)"
+    }
+  },
+  "NC": {
+    "r8": {
+      "!": "Expression(048)"
+    }
+  },
+  "C": {
+    "r8": {
+      "!": "Expression(056)"
+    }
+  }
+}
+"""
+
+
+class Mneumonic(dataclass):
+
+    major: str
 
 
 class Instruction():

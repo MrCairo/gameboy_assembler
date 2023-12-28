@@ -1,8 +1,9 @@
 """Classes that convert text into Tokens."""
 
+from copy import copy
 from typing import Optional
 from .token_group import TokenGroup
-from .token import Token
+from .token import Token, TokenFactory
 
 
 #
@@ -14,9 +15,12 @@ from .token import Token
 # ------------------------------------------------------------------------------
 #
 # It's important to note that tokenizing a line of text isn't the same thing as
-# validating the conents. While the actual basic items are identified -
+# validating the contents. While the actual basic items are identified -
 # Directive, instructions, or symbols - the parameters that appear after the
-# directive are not checked against syntax.
+# directive are not checked against any syntax. For example, a token could be
+# an expression (i.e. $FF) but there is nothing to validate that the
+# expression should have been 16-bit instead of 8-bit. The expression is just
+# evaluated as an expression and stored.
 #
 # ------------------------------------------------------------------------------
 #
@@ -37,11 +41,6 @@ class Tokenizer:
         """Reset (clear) the current token group."""
         self._group = TokenGroup()
 
-    @property
-    def token_group(self) -> TokenGroup:
-        """Return the TokenGroup token store."""
-        return self._group
-
     def tokenize_string(self, line_of_text: str) -> Optional[TokenGroup]:
         """Convert text to a token and add it to the token group."""
         elements = self._elements_from_string(line_of_text)
@@ -52,13 +51,14 @@ class Tokenizer:
     def tokenize_elements(self, elements: list) -> Optional[TokenGroup]:
         """Convert elements to a token and add it to the token group."""
         try:
-            token = Token.from_elements(elements)
+            token = TokenFactory(elements).token
         except TypeError:
             return None
-        self._group.add(token)
-        remn = token.remainder
-        if remn:
-            self.tokenize_elements(remn)
+        self._group.add(token.shallow_copy())
+        _next_tok = token.next
+        while _next_tok is not None:
+            self._group.add(_next_tok.shallow_copy())
+            _next_tok = _next_tok.next
 
         # Add the token to the group. If there is remnant token data
         # go into that remnant token and add it to the group as well.
@@ -67,8 +67,8 @@ class Tokenizer:
         # TokenGroup class is meant to handle as many as needed.
         # rmn_token = token.remainder
         # while rmn_token is not None:
-        #     self._group.add(rmn_token)
-        #     rmn_token = rmn_token.remainder
+        #     self._group.add(next_token)
+        #     next_token = next_token.remainder
         return self._group
 
     def list_to_dict(self, arr: list) -> dict:
@@ -79,7 +79,7 @@ class Tokenizer:
         """Remove comments, leading/trailing spaces, and explode brackets."""
         cleaned = self._drop_comments(line_of_text)
         if len(cleaned) > 0:
-            cleaned = self._explode_brackets(cleaned)
+            cleaned = self._explode_delimiters(cleaned)
         return cleaned
 
     def _drop_comments(self, line_of_text) -> str:
@@ -96,14 +96,13 @@ class Tokenizer:
             return None
 
         # Break up into pieces and remove any empty elements
-        elements = [x for x in clean.split(" ") if x != ""]
-        # Starting/ending Commas are irrelevant so ignore them
-        elements = [s.strip(",") for s in elements]
-        elements = [x for x in elements if len(x)]
-
+        # Starting/ending ',' are irrelevant so ignore them
+        elements = [x.strip(",") for x in clean.split(" ") if x != ""]
+        # Drop any empty elements
+        elements = list(filter(None, elements))
         return elements
 
-    def _explode_brackets(self, text: str) -> str:
+    def _explode_delimiters(self, text: str) -> str:
         """Return a string with brackets exploded for splitting.
 
         There are three types of brackets recognized:
@@ -113,11 +112,11 @@ class Tokenizer:
         Also, the double quote and single quote values are also
         added to this as then also are used to enclose data.
         """
-        brackets = "\"'([{}])"
+        delimiters = "\"'([{}]),"
         exploded = text
-        if any(char in text for char in brackets):
-            for char in brackets:
+        if any(char in text for char in delimiters):
+            for char in delimiters:
                 exploded = exploded.replace(char, f" {char} ")
         return exploded
 
-        # --------========[ End of Tokenizer class ]========-------- #
+    # --------========[ End of Tokenizer class ]========-------- #

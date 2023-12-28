@@ -43,7 +43,7 @@ class Expression:
         """Initialize an Expression object with a specific value."""
         if exp_str is None:
             raise ExpressionSyntaxError("Initial value cannot be None")
-        self._result = Validator.validate(exp_str)
+        self._result = _Validator.validate(exp_str)
         self._expr = self._result.pwords.join()
 
     def __repr__(self):
@@ -63,6 +63,11 @@ class Expression:
         else:
             desc = "Object not initialized or is not valid."
         return desc
+
+    @classmethod
+    def has_valid_prefix(cls, expr: str) -> bool:
+        """Return True if the expression string starts with a prefix."""
+        return _Validator.has_valid_prefix(expr)
 
     def is_valid(self) -> bool:
         """Return a bool indicating if this Expression is valid."""
@@ -159,10 +164,16 @@ EXCO = Expression.Components
 #
 
 
-class Validator:
+class _Validator:
     """Class that handles Expression Validation."""
 
     _prefixes = ["0x", "0", "$$", "$", "&", "%", "'", '"']
+
+    @classmethod
+    def has_valid_prefix(cls, expr: str) -> bool:
+        """Return True if the expression string starts with a prefix."""
+        elements = _Validator.split_expr(expr)
+        return elements.prefix is not None
 
     @classmethod
     def validate(cls, expr_str: str) -> Expression.Components:
@@ -245,13 +256,13 @@ class Validator:
         # individual values so that an appropriate exception can be thrown if
         # necessary.
         #
-        pwords = cls._split_expr(expr)
+        pwords = cls.split_expr(expr)
         if pwords.prefix is None:
             msg = f"Invalid prefix in expression: [{expr}]"
             raise ExpressionSyntaxError(msg)
 
         # Check for a string/label suffix value (i.e. "Label") The suffix
-        # needs to be equal to the prefix. The _split_expr function will set
+        # needs to be equal to the prefix. The split_expr function will set
         # suffix to None if the affixes don't match or are not present.
         if pwords.suffix is None:
             msg = f"Mismatched string affix [{expr}]"
@@ -283,11 +294,11 @@ class Validator:
         return Expression.Components(descriptor, expr_type, pwords)
 
     @classmethod
-    def _split_expr(cls, expr: str) -> Expression.Elements:
+    def split_expr(cls, expr: str) -> Expression.Elements:
         """Split the expression into prefix and suffic parts."""
         _key = [x for idx,
                 x in enumerate(cls._prefixes) if expr.startswith(x)]
-        if _key is None:
+        if _key is None or len(_key) == 0:
             return Expression.Elements(None, None, None)
         prefix = _key[0]
         # A string's suffix must be an exact match to the prefix.

@@ -1,2 +1,5 @@
-from ..core import constants
-import label
+from .equate import Equate
+
+__all__ = [
+    "Equate"
+]

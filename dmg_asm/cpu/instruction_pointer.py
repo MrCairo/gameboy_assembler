@@ -13,7 +13,7 @@ from ..core.exception import ExpressionBoundsError, ExpressionSyntaxError
 
 
 @singleton
-class InstructionPointer():
+class InstructionPointer:
     """The CPU's IP or Instruction Pointer."""
     _pointer = None
     _section_base = None
@@ -43,8 +43,9 @@ class InstructionPointer():
             self._pointer = value
 
     def move_pointer_relative(self, val) -> bool:
-        """Move the IP relative to it's current position."""
-        """This is another name for move_location_relative()."""
+        """Move the IP relative to it's current position.
+
+        This is another name for move_location_relative()."""
         return self.move_location_relative(val)
 
     @property
@@ -60,8 +61,8 @@ class InstructionPointer():
             self._pointer = value
 
     def move_location_relative(self, val) -> bool:
-        """Move the IP relative to it's current position."""
-        """
+        """Move the IP relative to it's current position.
+
         Moves the location (pointer) val distance positive or negative
         relative to the current location. If the move can be made within
         the range of 0 to 65535 then the return value will be True,
@@ -71,7 +72,8 @@ class InstructionPointer():
         """
         newloc = self._pointer + val
         if 65536 > newloc >= 0:
-            # print(f"IP(): Moving pointer {hex(val)} bytes. New Address = {hex(newloc)}")
+            # print(f"IP(): Moving pointer {hex(val)} bytes. New Address =
+            # {hex(newloc)}")
             self._pointer = newloc
             return True
         return False

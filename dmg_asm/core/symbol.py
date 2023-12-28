@@ -70,7 +70,7 @@ import string
 from enum import StrEnum
 
 from singleton_decorator import singleton
-from .constants import SYM
+from .constants import SYM, MAX_SYMBOL_LENGTH
 from .exception import UpdateSymbolAddressError, ExpressionBoundsError, \
     ExpressionSyntaxError, InvalidSymbolName, InvalidSymbolScope
 from .expression import Expression
@@ -263,7 +263,8 @@ class Symbol():
 
     def _scope_and_validate(self, name: str) -> SymbolScope:
         #
-        if len(name) > 15 or self._has_valid_decorators(name) is False:
+        if len(name) > MAX_SYMBOL_LENGTH or \
+           self._has_valid_decorators(name) is False:
             return None
         symbol_scope = None
         if name.startswith(SymbolAffix.PRIVATE):

@@ -1,32 +1,42 @@
 """Commonly used constants."""
 
-from enum import auto, Enum, IntEnum
-from strenum import StrEnum
 from dataclasses import dataclass
 from collections import namedtuple
+from enum import auto, Enum, IntEnum
+from strenum import StrEnum
 
 # Token element keys (keys of the token dictionary)
 ARGS_T = "arguments"
-VAL_T = "value"
+BAD_T = "unknown"
+DATA_T = "data"
+DIR_T = "directive"
+INST_T = "instruction"
+MULT_T = "multiple"
+NEXT_T = "next"
+NODE_T = "node"  # Rpresents an internal tokenized node.
 PARM_T = "parameters"
 REMN_T = "remainder"
-NEXT_T = "next"
+STOR_T = "storage"
+SYM_T = "symbol"
+TELM_T = "telemetry"  # Location specific information
 TOK_T = "tokens"
 TYPE_T = "type"
-TELM_T = "telemetry"  # Location specific information
-NODE_T = "node"  # Rpresents an internal tokenized node.
+VAL_T = "value"
 
 
 class TokenType(StrEnum):
-    IDENTIFIER = auto()
-    KEYWORD = auto()
-    PUNCTUATOR = auto()
-    OPERATOR = auto()
-    LITERAL = auto()
-    SYMBOL = auto()
+    """Convenient enums for token used during parsing."""
     COMMENT = auto()
     DIRECTIVE = auto()
+    EXPRESSION = auto()
+    IDENTIFIER = auto()
+    INVALID = auto()
+    KEYWORD = auto()
+    LITERAL = auto()
     MEMORY_BLOCK = auto()
+    OPERATOR = auto()
+    PUNCTUATOR = auto()
+    SYMBOL = auto()
 
 
 # Token type values
@@ -42,6 +52,7 @@ SYM = "SYMBOL"
 DIR = "DIRECTIVE"
 BAD = "INVALID"
 
+MAX_SYMBOL_LENGTH = 25
 
 LOGGER_FORMAT = '[%(levelname)s] %(asctime)s - %(message)s'
 

@@ -59,7 +59,6 @@ class Tokenizer:
         while _next_tok is not None:
             self._group.add(_next_tok.shallow_copy())
             _next_tok = _next_tok.next
-
         # Add the token to the group. If there is remnant token data
         # go into that remnant token and add it to the group as well.
         # Continue to add remnant tokens until there are none. Generally,
@@ -90,11 +89,9 @@ class Tokenizer:
     def _elements_from_string(self, line: str) -> list:
         if len(line) == 0 or line is None:
             return None
-
         clean = self.clean_text(line)
         if len(clean) == 0:
             return None
-
         # Break up into pieces and remove any empty elements
         # Starting/ending ',' are irrelevant so ignore them
         elements = [x.strip(",") for x in clean.split(" ") if x != ""]

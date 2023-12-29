@@ -12,9 +12,13 @@ class Convert:
             err = "Input Expression object is not in a valid state."
             raise ValueError(err)
         self._expr = expr
-        self._value_str = expr.value
+        self._value_str = expr.prefixless_value
         self._value_base = expr.descriptor.args.base
         self._dec_value = int(self._value_str, self._value_base)
+
+    def to_decimal_int(self) -> int:
+        """Return the decimal equivalent of the expression."""
+        return self._dec_value
 
     def to_decimal(self) -> Expression:
         """Convert expression to a decimial valued expression."""

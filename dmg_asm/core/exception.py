@@ -75,6 +75,8 @@ class UpdateSymbolAddressError(ParserException):
 InvalidSymbolName = ExpressionSyntaxError
 InvalidSymbolScope = ExpressionSyntaxError
 ExpressionBoundsError = ExpressionSyntaxError
+EquateSymbolError = ExpressionSyntaxError
+EquateExpressionError = ExpressionSyntaxError
 
 
 # ##############################################################################
@@ -97,6 +99,8 @@ class ErrorCode(IntEnum):
     INVALID_SECTION_POSITION = auto()
     INVALID_DECLARATION = auto()
     INVALID_SYNTAX = auto()
+    INVALID_EQUATE_SYMBOL = auto()
+    INVALID_EQUATE_EXPRESSION = auto()
     # Eventually have Warnings here as well?
 
 

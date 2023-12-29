@@ -93,7 +93,7 @@ class InstructionPointer:
         This relates to the SECTION value that the IP is in.
         """
         # A value can be an expression such as $FFD2
-        address = EC(Expression(new_value)).to_decimal().raw_str
+        address = EC(Expression(new_value)).to_decimal().clean_str
         # address = _conv.decimal_from_expression(new_value)
         # print(f"IP: Setting Address to {hex(address)}")
         if address is None:

@@ -10,7 +10,7 @@ from .constants import MinMax
 @dataclass
 class DescriptorArgs():
     """The format that describes a value."""
-
+    __slots__ = ('chars', 'limits', 'base', 'charset')
     chars: MinMax
     limits: MinMax
     base: int
@@ -43,7 +43,7 @@ class Validator(ABC):
 
     @abstractmethod
     def validate(self, value):
-        """Override this in any subclass ti validate the value."""
+        """Override this in any subclass to validate the value."""
 
 
 class OneOf(Validator):

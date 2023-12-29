@@ -9,6 +9,7 @@ An expression is like:
     "MY_LABEL"
 """
 # from enum import StrEnum
+from __future__ import annotations
 from dataclasses import dataclass
 
 from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC
@@ -37,7 +38,24 @@ class ExpressionType:
 
 
 class Expression:
-    """Parse and categorize a numerical expression."""
+    """Parse and categorize a numerical expression.
+
+    Expression prefixes are as follows:
+    +-------+---------------------------------------------------------------+
+    | $, 0x | An 8 or 16-bit hexidecimal value. Must be at least two digits.|
+    +-------+---------------------------------------------------------------+
+    |   $$  | A 16-bit hexidecimal value only. Must be 4 digits in length.  |
+    +-------+---------------------------------------------------------------+
+    |   0   | A decimal value. Must be at least two digits (001 for 1)      |
+    +-------+---------------------------------------------------------------+
+    |   %   | An 8-bit only binary digit (i.e %10101011)                    |
+    +-------+---------------------------------------------------------------+
+    | ", '  | Encloses a Symbolic string expression. Must start and end with|
+    |       | the same character. 'Hello' "World"                           |
+    +-------+---------------------------------------------------------------+
+    |   &   | An 8-bit octal value.                                         |
+    +-------+---------------------------------------------------------------+
+    """
 
     def __init__(self, exp_str: str):
         """Initialize an Expression object with a specific value."""
@@ -74,8 +92,15 @@ class Expression:
         return self._result.is_valid()
 
     @property
-    def value(self) -> str:
-        """Return the value of the expression without the prefix."""
+    def prefixless_value(self) -> str:
+        """Return the value of the expression without the prefix.
+
+        A call to this function that has the expression of $0100 will result
+        in a returned string of 0100.
+
+        Also, a value with a prefix an suffix (i.e. "String") will be returned
+        without a prefix NOR a suffix - "Hello" is returned as Hello
+        """
         return self._result.pwords.word
 
     @property
@@ -94,8 +119,8 @@ class Expression:
         return self._result.descriptor
 
     @property
-    def raw_str(self) -> str:
-        """Return the raw (or cleaned) value of the expression."""
+    def clean_str(self) -> str:
+        """Return the cleaned expression and includes prefix/suffix values."""
         return self._result.pwords.join()
 
     # |++++++++++++++++++++++++++++++++++++++++++++++++++++++++|
@@ -133,9 +158,10 @@ class Expression:
     class Components:
         """Represent an expressions evaluated components."""
 
+        __slots__ = ('descriptor', 'type', 'pwords')
         descriptor: BaseDescriptor
         type: ExpressionType
-        pwords: 'Expression.Elements'
+        pwords: Expression.Elements
 
         def __str__(self) -> str:
             """Return string representation of this object."""

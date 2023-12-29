@@ -39,6 +39,17 @@ class TokenGroup:
         """Return the number of keys in the dictionary."""
         return len(self._group_store)
 
+    def find_first_value(self, value) -> int | None:
+        """Return the index in the group that matches the passed value.
+
+        If the value element appears more than once in the group, only the
+        first one found is returned.
+        """
+        for index, item in enumerate(self._group_store):
+            if item.value == value:
+                return index
+        return None
+
     def add(self, token: Token):
         """Add an aditional token to the end of tokens group."""
         if token is None:
@@ -49,9 +60,9 @@ class TokenGroup:
         """Return a list of Tokens in the group."""
         return self._group_store
 
-    def element_at(self, index: int) -> Optional[Token]:
+    def element_at(self, index: int) -> Token:
         """Return the Token at the 0-based index provided."""
         if 0 <= index < len(self._group_store):
             return self._group_store[index]
-        return None
+        raise IndexError
         # raise IndexError("Index out of range")

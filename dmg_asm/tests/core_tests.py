@@ -19,7 +19,7 @@ class ConvertUnitTests(unittest.TestCase):
         except (ExpressionBoundsError, ExpressionSyntaxError):
             self.fail("Unable convert decimal 0100 to hex.")
         else:
-            self.assertTrue(expr_hex.raw_str == "$64")
+            self.assertTrue(expr_hex.clean_str == "$64")
 
     def test_16bit_hex_expr_conversion(self):
         """Test decimal conversion to a 16-bit hex value."""
@@ -29,7 +29,7 @@ class ConvertUnitTests(unittest.TestCase):
         except (ExpressionBoundsError, ExpressionSyntaxError):
             self.fail("Unable convert decimal 0100 to hex.")
         else:
-            self.assertTrue(expr_hex.raw_str == "$0064")
+            self.assertTrue(expr_hex.clean_str == "$0064")
 
     def test_octal_expr_conversion(self):
         """Test decimal conversion to an 8-bit octal value."""
@@ -39,7 +39,7 @@ class ConvertUnitTests(unittest.TestCase):
         except (ExpressionBoundsError, ExpressionSyntaxError):
             self.fail("Unable convert decimal 0100 to octal.")
         else:
-            self.assertTrue(expr_oct.raw_str == "&144")
+            self.assertTrue(expr_oct.clean_str == "&144")
 
     def test_binary_expr_conversion(self):
         """Test decimal conversion to an 8-bit binary value."""
@@ -49,7 +49,7 @@ class ConvertUnitTests(unittest.TestCase):
         except (ExpressionBoundsError, ExpressionSyntaxError):
             self.fail("Unable convert decimal 0100 to binary.")
         else:
-            self.assertTrue(expr_bin.raw_str == "%01100100")
+            self.assertTrue(expr_bin.clean_str == "%01100100")
 
 
 class ExpressionUnitTests(unittest.TestCase):
@@ -63,7 +63,7 @@ class ExpressionUnitTests(unittest.TestCase):
             self.fail("Expression Syntax Error")
         except ExpressionBoundsError:
             self.fail("Expression bounds error.")
-        self.assertTrue(expr1.value == "1A0B")
+        self.assertTrue(expr1.prefixless_value == "1A0B")
 
         try:
             expr1 = Expression("$$BAAD")
@@ -71,7 +71,7 @@ class ExpressionUnitTests(unittest.TestCase):
             self.fail("Expression Syntax Error")
         except ExpressionBoundsError:
             self.fail("Expression bounds error.")
-        self.assertTrue(expr1.value == "BAAD")
+        self.assertTrue(expr1.prefixless_value == "BAAD")
 
     def test_valid_8bit_hex_expr(self):
         """Test 8-bit hex expression."""
@@ -81,7 +81,7 @@ class ExpressionUnitTests(unittest.TestCase):
             self.fail("Hex value $F2 failed to parse.")
         except ExpressionBoundsError:
             self.fail("Hex value $F2 failed bounds check.")
-        self.assertTrue(expr2.value == "F2")
+        self.assertTrue(expr2.prefixless_value == "F2")
 
     def test_invalid_hex_expr(self):
         """Test invalid hex expression."""

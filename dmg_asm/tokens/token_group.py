@@ -45,8 +45,9 @@ class TokenGroup:
         If the value element appears more than once in the group, only the
         first one found is returned.
         """
+        up = value.upper()
         for index, item in enumerate(self._group_store):
-            if item.value == value:
+            if item.value.upper() == up:
                 return index
         return None
 

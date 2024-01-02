@@ -3,18 +3,21 @@
 # import os
 import unittest
 from icecream import ic
+import pprint
 
-from ..tokens.token import Token
+from ..tokens.token import Token, TokenType
 from ..tokens.token_group import TokenGroup
 from ..tokens.tokenizer import Tokenizer
-from ..core.constants import SYM, TokenType
+from ..core.constants import SYM
 from ..core.reader import BufferReader
 from ..lex import lexer_parser, lexer_results, lexical_analyzer, lexical_node
+from ..cpu.mnemonic import Mnemonic
 
 ASM_1 = """
 ;; Program
 
 USER_IO    EQU $FF00
+DEF USER_ID = $FFD2
 SECTION "CoolStuff",WRAM0
 CLOUDS_X: DB $FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,\\
              $00,$FF,$00
@@ -54,14 +57,12 @@ class TokenUnitTests(unittest.TestCase):
         self.assertTrue(group[4].value == "WRAM0")
         self.assertTrue(tok.type == TokenType.DIRECTIVE)
         self.assertTrue(group[2].type == TokenType.LITERAL)
-        self.print_group(group)
 
     def test_token_group_from_elements(self):
         """Test Tokenize an array of instructions and data."""
         line = "CLOUDS_Y: DB $FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,$00," \
             "$FF,$00,$FF,$00,$FF,$00"
         group = Tokenizer().tokenize_string(line)
-        self.print_group(group)
         self.assertTrue(group is not None)
         self.assertTrue(len(group) == 18)
         self.assertTrue(group[0].type == TokenType.SYMBOL)
@@ -73,6 +74,66 @@ class TokenUnitTests(unittest.TestCase):
         self.assertTrue(group is not None)
         self.assertTrue(group[0].type == TokenType.KEYWORD)
 
+        inst = "LD (HL), $ff"
+        ic(inst)
+        tokens = Tokenizer().tokenize_string(inst)
+        self.assertIsNotNone(tokens)
+        mnemonic = Mnemonic(tokens)
+        self.assertIsNotNone(mnemonic)
+        detail = mnemonic.instruction_detail
+        self.assertIsNotNone(detail)
+        self.assertTrue(detail.operand2 == "$FF")
+
+    def test_instruction_with_expression(self):
+        """Create instruction detail from code that includes an expression."""
+        inst = "LD (HL), $ff"
+        ic(inst)
+        tokens = Tokenizer().tokenize_string(inst)
+        self.assertIsNotNone(tokens)
+        mnemonic = Mnemonic(tokens)
+        self.assertIsNotNone(mnemonic)
+        detail = mnemonic.instruction_detail
+        self.assertIsNotNone(detail)
+        self.assertTrue(detail.operand2 == "$FF")
+
+    def test_one_word_instruction(self):
+        """Create instruction detail from an instruction like 'NOP'"""
+        inst = "HALT"
+        ic(inst)
+        tokens = Tokenizer().tokenize_string(inst)
+        self.assertIsNotNone(tokens)
+        mnemonic = Mnemonic(tokens)
+        self.assertIsNotNone(mnemonic)
+        detail = mnemonic.instruction_detail
+        self.assertIsNotNone(detail)
+
+    def test_expressionless_instruction(self):
+        """Return detail from an instruction that doesn't require an
+        expression."""
+        inst = "ADD A, (HL)"
+        ic(inst)
+        tokens = Tokenizer().tokenize_string(inst)
+        self.assertIsNotNone(tokens)
+        mnemonic = Mnemonic(tokens)
+        self.assertIsNotNone(mnemonic)
+        detail = mnemonic.instruction_detail
+        self.assertIsNotNone(detail)
+        self.assertTrue(detail.operand2 == "(HL)")
+
+    def test_instruction_with_register(self):
+        """Return detail from an instruction that doesn't require an
+        expression."""
+        inst = "ADD SP, D"
+        ic(inst)
+        tokens = Tokenizer().tokenize_string(inst)
+        self.assertIsNotNone(tokens)
+        mnemonic = Mnemonic(tokens)
+        self.assertIsNotNone(mnemonic)
+        detail = mnemonic.instruction_detail
+        self.assertIsNotNone(detail)
+        self.assertTrue(detail.operand2 == "D")
+        self.assertTrue(detail.addr == "$e8")
+
     def test_tokenize_lines(self):
         """Test tokenization of a small set of program lines."""
         _reader = BufferReader(ASM_1)
@@ -82,20 +143,13 @@ class TokenUnitTests(unittest.TestCase):
             # chunks = lexer_parser.tokenize_line(_line)
             # ic(chunks)
             if _line and len(_line) > 0:
-                ic("")
-                ic("***** BEGIN Parse Line *****")
                 ic(_line)
                 groups = Tokenizer().tokenize_string(_line)
                 if len(groups) == 0:
-                    ic("line ignored")
                     continue
-                self.print_group(groups)
-                ic("***** END Parse Line *****")
-                ic("")
-            else:
-                ic("line ignored.")
 
     def print_group(self, group):
+        """Print the token group."""
         ic("--------------------------------------")
         ic("Token Group(s):")
         index = 0

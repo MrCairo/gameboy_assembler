@@ -29,9 +29,15 @@ class Convert:
         """Convert expression to a 16-bit hexidecimal value."""
         return Expression(f"${self._dec_value:04X}")
 
+    def to_hex16_string(self) -> str:
+        return f"${self._dec_value:04X}"
+
     def to_hex(self) -> Expression:
         """Convert expression to an 8-bit hexidecimal value."""
         return Expression(f"${self._dec_value:02X}")
+
+    def to_hex_string(self) -> str:
+        return f"${self._dec_value:02X}"
 
     def to_octal(self) -> Expression:
         """Convert expression to an Octal value."""

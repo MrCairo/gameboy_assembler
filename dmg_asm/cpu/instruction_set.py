@@ -3,17 +3,30 @@
 import io
 import json
 from singleton_decorator import singleton
+from dataclasses import dataclass, make_dataclass
 
 from .LR35902.lr35902_data import LR35902Data
 from ..core.convert import Convert
 from ..core.expression import Expression
 from ..core.exception import ExpressionBoundsError, ExpressionSyntaxError
 
-#
-# Special internal functions.
-#
+
+@dataclass
+class InstructionDetail:
+    # __slots__ = ('addr', 'cycles', 'flags', 'length', 'mnemonic',
+    #              'operand1', 'operand2')
+    addr: str
+    cycles = []
+    flags = []
+    length = 0
+    mnemonic = ""
+    operand1 = None
+    operand2 = None
 
 
+#
+# Special internal functions to generate a Python dictionary from JSON
+#
 def _gen_LR35902_inst() -> dict:
     # -------------------------------------------------------
     def _load_cpu_data() -> dict:
@@ -43,7 +56,7 @@ def _gen_LR35902_inst() -> dict:
             expr = conv.to_decimal()
             term = {"!": expr}
         except ExpressionSyntaxError:
-            print(f"Invalid hex code")
+            print(f"Invalid hex code: {hex_code}")
             term = {"!": "00"}
         op1 = node["operand1"] if "operand1" in node else None
         op2 = node["operand2"] if "operand2" in node else None
@@ -74,7 +87,7 @@ def _gen_LR35902_inst() -> dict:
 # ############################################################################
 
 
-@singleton
+# @singleton
 class InstructionSet():
     """The LR35902 CPU instruction set.
 
@@ -106,24 +119,41 @@ class InstructionSet():
            mnemonic roamer. If lets the roamer know when it has reached the end
            of a specific mnemonic within the dictionary list.
 
-           It's value represents the actual instruction
+           It's value represents the Opcode of the mnemonic.
     """
+
+    __slots__ = ('data', 'lr35902', 'lr35902_detail')
+
+    def __new__(cls):
+        """Implement a singleton by returning the existing or new instance."""
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(InstructionSet, cls).__new__(cls)
+            cls.instance.data = _gen_LR35902_inst()
+            cls.instance.lr35902 = cls.instance.data["instructions"]
+            cls.instance.lr35902_detail = cls.instance.data["raw_data"]
+        return cls.instance
 
     def __init__(self):
         """Initialize the InstructionSet object."""
-        self.data = _gen_LR35902_inst()
-        self.lr35902 = self.data["instructions"]
-        self.lr35902_detail = self.data["raw_data"]
+        # self.data = _gen_LR35902_inst()
+        # self.lr35902 = self.data["instructions"]
+        # self.lr35902_detail = self.data["raw_data"]
         # -----=====< End of __init__() >=====----- #
 
     def instruction_from_mnemonic(self, mnemonic: str) -> dict:
         """Get the instruction definition dict for the given mnemonic."""
         return self.lr35902[mnemonic] if mnemonic in self.lr35902 else None
 
-    def instruction_detail_from_byte(self, byte: str) -> dict:
+    def instruction_detail_from_byte(self, byte: str) -> InstructionDetail:
         """Get the instruction detail from a specific byte."""
-        return self.lr35902_detail[byte] \
+        detail: InstructionDetail = None
+        data = self.lr35902_detail[byte] \
             if byte in self.lr35902_detail else None
+        if data:
+            detail = make_dataclass(
+                "InstructionDetail", ((k, type(v)) for k, v
+                                      in data.items()))(**data)
+        return detail
 
     @property
     def instruction_set(self):

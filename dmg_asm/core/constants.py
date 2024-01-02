@@ -23,22 +23,6 @@ TOK_T = "tokens"
 TYPE_T = "type"
 VAL_T = "value"
 
-
-class TokenType(StrEnum):
-    """Convenient enums for token used during parsing."""
-    COMMENT = auto()
-    DIRECTIVE = auto()
-    EXPRESSION = auto()
-    IDENTIFIER = auto()
-    INVALID = auto()
-    KEYWORD = auto()
-    LITERAL = auto()
-    MEMORY_BLOCK = auto()
-    OPERATOR = auto()
-    PUNCTUATOR = auto()
-    SYMBOL = auto()
-
-
 # Token type values
 DEF = "DEFINE"
 EQU = "EQU"

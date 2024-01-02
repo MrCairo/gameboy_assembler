@@ -1,20 +1,17 @@
 """
 Manages EQU tokens
 """
-from __future__ import annotations
-import string
 from icecream import ic
 from ..core import constants
-from ..core import Convert, Expression, ExpressionType, Symbol, \
-    EquateExpressionError, EquateSymbolError
-from ..tokens import Tokenizer, Token, TokenGroup, TokenFactory
+from ..core import Expression, EquateSymbolError
+from ..tokens import Tokenizer, TokenGroup, TokenType
 
 # TOK = const.TOK
 # DIR = const.DIR
 # LBL = const.LBL
 # EQU = const.EQU
 
-###############################################################################
+# #############################################################################
 
 
 class Equate:
@@ -47,7 +44,7 @@ class Equate:
         return desc
 
     @classmethod
-    def from_string(cls, line: str) -> Equate:
+    def from_string(cls, line: str) -> "Equate":
         """Create a new Equate object from a string."""
         if line and constants.EQU in line.upper():
             group = Tokenizer().tokenize_string(line)

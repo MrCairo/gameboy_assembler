@@ -36,11 +36,6 @@ from dataclasses import dataclass
 """
 
 
-class Mneumonic(dataclass):
-
-    major: str
-
-
 class Instruction():
     """ Encapsulates an individual Z80 instruction """
 

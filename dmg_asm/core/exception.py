@@ -77,6 +77,10 @@ InvalidSymbolScope = ExpressionSyntaxError
 ExpressionBoundsError = ExpressionSyntaxError
 EquateSymbolError = ExpressionSyntaxError
 EquateExpressionError = ExpressionSyntaxError
+DefineExpressionError = ExpressionSyntaxError
+DefineSymbolError = ExpressionSyntaxError
+DefineAssignmentError = ExpressionSyntaxError
+DefineExpressionError = ExpressionSyntaxError
 
 
 # ##############################################################################
@@ -162,7 +166,7 @@ class Error:
         self._file = source_file
         self._line = source_line
 
-    def __repr__(self):
+    def __str__(self):
         if self._code in Error.__messages:
             message = Error.__messages[self._code]
             if self._supplimental:

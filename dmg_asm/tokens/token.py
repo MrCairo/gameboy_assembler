@@ -1,15 +1,30 @@
 """Hold a set of lexeme tokens."""
 
 from __future__ import annotations   # Forward references
-
+from enum import StrEnum, auto
 from ..core.constants import \
-    DIRECTIVES, TokenType, MEMORY_BLOCKS, \
-    VAL_T as value_t, ARGS_T as arguments_t, NEXT_T as next_t, \
-    TYPE_T as type_t, DATA_T as datum_t
+    DIRECTIVES, MEMORY_BLOCKS, VAL_T as value_t, ARGS_T as arguments_t, \
+    NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils, Symbol
 from ..core.exception import InvalidSymbolName, InvalidSymbolScope
 from ..core import Expression
+
+
+class TokenType(StrEnum):
+    """Convenient enums for token used during parsing."""
+    COMMENT = auto()
+    DIRECTIVE = auto()
+    EXPRESSION = auto()
+    IDENTIFIER = auto()
+    INVALID = auto()
+    KEYWORD = auto()
+    LITERAL = auto()
+    MEMORY_BLOCK = auto()
+    OPERATOR = auto()
+    PUNCTUATOR = auto()
+    SYMBOL = auto()
+
 
 LEXEMES = [
     datum_t,

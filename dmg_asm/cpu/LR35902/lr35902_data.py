@@ -1,15 +1,22 @@
 """The LR35902 Instruction set as a big JSON blob."""
 
-from singleton_decorator import singleton
 
-
-@singleton
 class LR35902Data():
     """The LR35902 Instruction set as a big JSON blob."""
 
-    def __init__(self):
+    __slots__ = ('json', 'length')
+
+    def __repr__(self):
+        return "None"
+
+    def __str__(self):
+        return f"Raw minified JSON {self.length} bytes in length"
+
+    def __new__(cls):
         """Initialize the JSON blob."""
-        self.json = """
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(LR35902Data, cls).__new__(cls)
+            cls.instance.json = """
 {"$00":{"mnemonic":"NOP","length":1,"cycles":[4],"flags":["-","-","-","-"],"addr\
 ":"$00"},"$01":{"mnemonic":"LD","length":3,"cycles":[12],"flags":["-","-","-","-\
 "],"addr":"$01","operand1":"BC","operand2":"d16"},"$02":{"mnemonic":"LD","length\
@@ -733,3 +740,6 @@ bfe":{"mnemonic":"SET","length":2,"cycles":[16],"flags":["-","-","-","-"],"addr"
 "cycles":[8],"flags":["-","-","-","-"],"addr":"$cbff","operand1":"7","operand2":\
 "A"}}
 """
+        # if not instance....
+            cls.instance.length = len(cls.instance.json)
+        return cls.instance

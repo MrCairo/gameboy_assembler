@@ -1,7 +1,6 @@
 """
 A set of helper functions used during processing of instructions.
 """
-from singleton_decorator import singleton
 from ..core.convert import Convert as EC
 from ..core.expression import Expression
 from ..core.exception import ExpressionBoundsError, ExpressionSyntaxError
@@ -12,7 +11,6 @@ from ..core.exception import ExpressionBoundsError, ExpressionSyntaxError
 #
 
 
-@singleton
 class InstructionPointer:
     """The CPU's IP or Instruction Pointer."""
     _pointer = None

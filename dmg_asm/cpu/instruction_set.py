@@ -2,7 +2,6 @@
 
 import io
 import json
-from singleton_decorator import singleton
 from dataclasses import dataclass, make_dataclass
 
 from .LR35902.lr35902_data import LR35902Data

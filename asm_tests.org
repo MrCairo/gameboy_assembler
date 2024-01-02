@@ -1,0 +1,100 @@
+#+title: GameBoy Python Tests
+#+author: Mitch Fisher
+#+date: <2023-12-02 Sat>
+#+PROPERTY: header-args:python :tangle ./asm_tests.py :mkdirp yes
+#+auto_tangle: t
+
+Press "C-c C-c" on the =begin_src= line below to execute the Python script. This will run the unit tests.
+
+#+begin_src python :python python3 :results output
+
+  """GameBoy assembler unit tests."""
+  import unittest
+  import sys
+  from dmg_asm.tests.core_tests import ExpressionUnitTests, ConvertUnitTests
+  from dmg_asm.tests.token_tests import TokenUnitTests
+
+  print("\nExpression Tests")
+  loader = unittest.TestLoader()
+  suite = loader.loadTestsFromTestCase(ExpressionUnitTests)
+  unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+  print("\nConversion Unit Tests")
+  suite = loader.loadTestsFromTestCase(ConvertUnitTests)
+  unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+  print("\nToken Unit Tests.")
+  suite = loader.loadTestsFromTestCase(TokenUnitTests)
+  unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Expression Tests
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.000s
+
+OK
+
+Conversion Unit Tests
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK
+
+Token Unit Tests.
+Here.
+.E.
+00. Token.from_elements(['arg00', 'arg01', 'arg02', 'arg03', 'arg04'])
+
+00. Token.from_elements(['arg00', 'arg01', 'arg02', 'arg03', 'arg04'])
+01. Token.from_elements(['arg00', 'arg00', 'arg01'])
+02. Token.from_elements(['arg00', 'arg01'])
+E
+======================================================================
+ERROR: test_token_group_from_elements (dmg_asm.tests.token_tests.TokenUnitTests.test_token_group_from_elements)
+Test Tokenize an array of instructions and data.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/tests/token_tests.py", line 44, in test_token_group_from_elements
+    self.assertTrue(token.directive == "CLOUDS_Y:")
+                    ^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'directive'
+
+======================================================================
+ERROR: test_tokenize_lines (dmg_asm.tests.token_tests.TokenUnitTests.test_tokenize_lines)
+Test tokenization of a small set of program lines.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/tests/token_tests.py", line 63, in test_tokenize_lines
+    group = _tokenizer.tokenize_string(_line)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/tokens/tokenizer.py", line 75, in tokenize_string
+    self.tokenize_elements(elements)
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/tokens/tokenizer.py", line 81, in tokenize_elements
+    token = Token(from_elements=elements)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/tokens/token.py", line 59, in __init__
+    self._assign(from_elements)
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/tokens/token.py", line 144, in _assign
+    Token(from_elements=pieces[1:]))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/tokens/token.py", line 59, in __init__
+    self._assign(from_elements)
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/tokens/token.py", line 135, in _assign
+    elif SymbolUtils.is_valid_symbol(pieces[0]):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/core/symbol.py", line 268, in is_valid_symbol
+    symbol = Symbol(name.strip(), 0x00)  # Can we create a symbol from it?
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/strider/Developer/Python/GB_asm/dmg_asm/core/symbol.py", line 118, in __init__
+    raise ValueError(name)
+ValueError: DS
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.005s
+
+FAILED (errors=2)
+#+end_example

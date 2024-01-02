@@ -58,7 +58,10 @@ SECTION "game", ROMX
     CP A
 ```
 
-The code located in the gbz80asm.py file will generate logs as to what the assembler is doing and what binary values are being generated. Again, this is strictly alpha software and doesn't generate a binary file (yet). It's almost to that point though :)
+The code located in the gbz80asm.py file will generate logs as to what the
+assembler is doing and what binary values are being generated. Again, this is
+strictly alpha software and doesn't generate a binary file (yet). It's almost
+to that point though :)
 
 Cheers,
 - mitch

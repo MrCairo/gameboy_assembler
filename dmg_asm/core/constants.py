@@ -1,21 +1,29 @@
 """Commonly used constants."""
 
-from enum import IntEnum, Enum, auto
 from dataclasses import dataclass
 from collections import namedtuple
+from enum import auto, Enum, IntEnum
+from strenum import StrEnum
 
-# Token element names
-ARGS = "arguments"
-BAD = "invalid"
-DIR = "directive"
-PARM = "parameters"
-REMN = "remainder"
-TOK = "tokens"
-TELM = "telemetry"  # Location specific information
-NODE = "node"  # Rpresents an internal tokenized node.
+# Token element keys (keys of the token dictionary)
+ARGS_T = "arguments"
+BAD_T = "unknown"
+DATA_T = "data"
+DIR_T = "directive"
+INST_T = "instruction"
+MULT_T = "multiple"
+NEXT_T = "next"
+NODE_T = "node"  # Rpresents an internal tokenized node.
+PARM_T = "parameters"
+REMN_T = "remainder"
+STOR_T = "storage"
+SYM_T = "symbol"
+TELM_T = "telemetry"  # Location specific information
+TOK_T = "tokens"
+TYPE_T = "type"
+VAL_T = "value"
 
-
-#  Code-level element names
+# Token type values
 DEF = "DEFINE"
 EQU = "EQU"
 INST = "INSTRUCTION"
@@ -25,7 +33,10 @@ ORG = "ORIGIN"
 SEC = "SECTION"
 STOR = "STORAGE"
 SYM = "SYMBOL"
+DIR = "DIRECTIVE"
+BAD = "INVALID"
 
+MAX_SYMBOL_LENGTH = 25
 
 LOGGER_FORMAT = '[%(levelname)s] %(asctime)s - %(message)s'
 
@@ -51,6 +62,18 @@ DIRECTIVES = [
     "UNION",
 ]
 
+
+MEMORY_BLOCKS = [
+    "WRAM0",
+    "VRAM",
+    "ROMX",
+    "ROM0"
+    "HRAM",
+    "WRAMX",
+    "SRAM",
+    "OAM"
+]
+
 STORAGE_DIRECTIVES = ["DS", "DB", "DW", "DL"]
 
 #
@@ -68,7 +91,6 @@ class Lexical(IntEnum):
 
 
 NodeType = Enum('NodeType', ['DEF',    # Define
-                             'DIR',    # Directive (generic)
                              'EQU',    # Equate
                              'INST',   # Instruction
                              'LBL',    # Label
@@ -81,17 +103,16 @@ NodeType = Enum('NodeType', ['DEF',    # Define
 
 
 NODE_TYPES = {
-    NodeType.NODE: NODE,
+    NodeType.NODE: NODE_T,  # Internal type, not a compiler diective
+    NodeType.PARM: PARM_T,  # Internal type, not a compiler diective
     NodeType.EQU: EQU,
     NodeType.LBL: LBL,
     NodeType.SYM: SYM,
-    NodeType.PARM: PARM,
     NodeType.INST: INST,
     NodeType.STOR: STOR,
     NodeType.SEC: SEC,
     NodeType.ORG: ORG,
     NodeType.DEF: DEF,
-    NodeType.DIR: DIR
 }
 
 AddressRange = namedtuple("AddressRange", ["start", "end"])
@@ -115,7 +136,16 @@ class NodeDefinition:
     length: int = 0
 
 
-MinMax = namedtuple("MinMax", ['min', 'max'])
+@dataclass
+class MinMax:
+    """Represent a min and max value in a single object."""
+
+    min: int
+    max: int
+
+    def __str__(self) -> str:
+        """Return string representation of this object."""
+        return f"MinMax(min={self.min}, max={self.max})"
 
 
 # NODE_FORMAT = {

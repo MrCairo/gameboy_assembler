@@ -54,7 +54,7 @@ class ExpressionSyntaxError(Exception):
         super().__init__(message)
 
 
-class ExpressionBoundsError(Exception):
+class ExpressionBoundsError1(Exception):
     """Thrown when an exception it outside of it's predefined bounds."""
 
     def __init__(self, message):
@@ -70,6 +70,17 @@ class UpdateSymbolAddressError(ParserException):
     def __init__(self, message=_def_msg, line_text="", line_number=-1):
         """Initialize Exception."""
         super().__init__(message, line_text, line_number)
+
+
+InvalidSymbolName = ExpressionSyntaxError
+InvalidSymbolScope = ExpressionSyntaxError
+ExpressionBoundsError = ExpressionSyntaxError
+EquateSymbolError = ExpressionSyntaxError
+EquateExpressionError = ExpressionSyntaxError
+DefineExpressionError = ExpressionSyntaxError
+DefineSymbolError = ExpressionSyntaxError
+DefineAssignmentError = ExpressionSyntaxError
+DefineExpressionError = ExpressionSyntaxError
 
 
 # ##############################################################################
@@ -92,6 +103,8 @@ class ErrorCode(IntEnum):
     INVALID_SECTION_POSITION = auto()
     INVALID_DECLARATION = auto()
     INVALID_SYNTAX = auto()
+    INVALID_EQUATE_SYMBOL = auto()
+    INVALID_EQUATE_EXPRESSION = auto()
     # Eventually have Warnings here as well?
 
 
@@ -114,10 +127,10 @@ class Error:
         "Error: The resulting instruction did not produce any machine code",
 
         ErrorCode.INVALID_LABEL_NAME:
-        "Error: The label name is not in a valid format.",
+        "Error: The symbol name is not in a valid format.",
 
         ErrorCode.INVALID_LABEL_POSITION:
-        "Error: The label name is not in a valid position.",
+        "Error: The symbol name is not in a valid position.",
 
         ErrorCode.INVALID_SYMBOL_NAME:
         "Error: The symbol name is not in a valid format.",
@@ -153,7 +166,7 @@ class Error:
         self._file = source_file
         self._line = source_line
 
-    def __repr__(self):
+    def __str__(self):
         if self._code in Error.__messages:
             message = Error.__messages[self._code]
             if self._supplimental:

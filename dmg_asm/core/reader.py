@@ -2,6 +2,7 @@
 Basic stream readers.
 """
 import locale
+from typing import Optional
 
 
 class Reader:
@@ -11,10 +12,10 @@ class Reader:
     """
 
     def __init__(self, strip_comments=False):
-        self._strip_comments = strip_comments
-        self._line = None
-        self._eof = False
-        self._read_position = 0
+        self._strip_comments: bool = strip_comments
+        self._line: str = None
+        self._eof: bool = False
+        self._read_position: int = 0
 
     @property
     def line(self) -> str:
@@ -25,7 +26,6 @@ class Reader:
         """Read the next line in the stream."""
         if self._strip_comments is True:
             self.strip_comment()
-        print("read_line")
 
     def get_position(self):
         """Return the current read position"""
@@ -71,28 +71,18 @@ class BufferReader(Reader):
         self._dlen = len(self._delimiter)
 
     def read_line(self) -> str:
-        """Read the next line from the file stream."""
-        if self._read_position < self._len:
-            next_delim = self._buffer.find(self._delimiter,
-                                           self._read_position)
-            if self._debug:
-                print(f"Slice = {self._read_position}:{next_delim}")
-            if next_delim == -1:
-                #                if self._strip_comments:
-                #                    self.strip_comment()
-                self._line = self._buffer[self._read_position:]
-                self._read_position = self._len
-                self._eof = True
+        """Get the next line from the file stream."""
+        _preread = self._readline()
+
+        # Line continuation
+        while _preread is not None:
+            if len(_preread) > 1 and _preread[-1] == "\\":
+                _preread = _preread[0:-1]
+                _preread += self._readline().strip()
             else:
-                self._line = self._buffer[self._read_position:next_delim]
-                self._read_position = next_delim + self._dlen
-                if self._read_position >= self._len:
-                    self._eof = True
-            if self._debug:
-                print(f"line == '{self._line}'")
-            return self._line
-        self._line = None
-        self._eof = True
+                break
+
+        self._line = _preread
         return self._line
 
     def get_position(self):
@@ -107,6 +97,29 @@ class BufferReader(Reader):
             self._eof = False
             return True
         return False
+
+    def _readline(self) -> Optional[str]:
+        """Read the next line from the file stream."""
+        _line = None
+        if self._read_position < self._len:
+            next_delim = self._buffer.find(self._delimiter,
+                                           self._read_position)
+            if self._debug:
+                print(f"Slice = {self._read_position}:{next_delim}")
+            if next_delim == -1:
+                _line = self._buffer[self._read_position:]
+                self._read_position = self._len
+                self._eof = True
+            else:
+                _line = self._buffer[self._read_position:next_delim]
+                self._read_position = next_delim + self._dlen
+                if self._read_position >= self._len:
+                    self._eof = True
+            if self._debug:
+                print(f"line == '{_line}'")
+            return _line
+        self._eof = True
+        return None
 
     def filename(self) -> str:
         return "no_filename_required"
@@ -134,7 +147,14 @@ class FileReader (Reader):
         """Reads one line from the data source.
         Line is a sequence of bytes ending with \n.
         """
-        self._line = self._filestream.readline()
+        _preread = self._filename.readline()
+        if _preread is not None and len(_preread) > 1:
+            while _preread[-1] == "\\":  # Line continuation
+                _preread = _preread[0:-1]
+                line = self._filename.readline()
+                if line:
+                    _preread.append(line.strip())
+        self._line = _preread
         if self._line:
             return self._line
 

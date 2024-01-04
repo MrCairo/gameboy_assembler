@@ -7,7 +7,7 @@ from dataclasses import dataclass, make_dataclass
 from .LR35902.lr35902_data import LR35902Data
 from ..core.convert import Convert
 from ..core.expression import Expression
-from ..core.exception import ExpressionBoundsError, ExpressionSyntaxError
+from ..core.exception import DescriptorException, ExpressionSyntaxError
 
 
 @dataclass
@@ -54,7 +54,7 @@ def _gen_LR35902_inst() -> dict:
             conv = Convert(Expression(hex_code))
             expr = conv.to_decimal()
             term = {"!": expr}
-        except ExpressionSyntaxError:
+        except (ExpressionSyntaxError, DescriptorException):
             print(f"Invalid hex code: {hex_code}")
             term = {"!": "00"}
         op1 = node["operand1"] if "operand1" in node else None
@@ -131,13 +131,6 @@ class InstructionSet():
             cls.instance.lr35902 = cls.instance.data["instructions"]
             cls.instance.lr35902_detail = cls.instance.data["raw_data"]
         return cls.instance
-
-    def __init__(self):
-        """Initialize the InstructionSet object."""
-        # self.data = _gen_LR35902_inst()
-        # self.lr35902 = self.data["instructions"]
-        # self.lr35902_detail = self.data["raw_data"]
-        # -----=====< End of __init__() >=====----- #
 
     def instruction_from_mnemonic(self, mnemonic: str) -> dict:
         """Get the instruction definition dict for the given mnemonic."""

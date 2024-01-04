@@ -54,14 +54,6 @@ class ExpressionSyntaxError(Exception):
         super().__init__(message)
 
 
-class ExpressionBoundsError1(Exception):
-    """Thrown when an exception it outside of it's predefined bounds."""
-
-    def __init__(self, message):
-        """Initiaze the exception with a relevant message."""
-        super().__init__(message)
-
-
 class UpdateSymbolAddressError(ParserException):
     """Attempt to update the address of a non-addressing Symbol."""
 
@@ -72,9 +64,56 @@ class UpdateSymbolAddressError(ParserException):
         super().__init__(message, line_text, line_number)
 
 
+class DescriptorException(Exception):
+    """The base class of all Descriptor exceptions."""
+
+    def __init__(self, message: str):
+        """Initialize the base exception."""
+        super().__init__(message)
+
+
+class DescriptorRadixError(DescriptorException):
+    """An unsupported base value was specified"""
+    _def_msg = "Base can only 2, 8, 10 or 16"
+
+    def __init__(self, message=_def_msg):
+        """Initialize Exception."""
+        super().__init__(message)
+
+
+class DescriptorRadixDigitValueError(DescriptorException):
+    """An exception when an invalid base character was encountered.
+
+    For example, a HEX (base-16) value of "FH" is invlid since "H" is outside
+    of the supported characters (0-9, A-F)"""
+    _def_msg = ("A character was used outside of the defined "
+                "base numbering character set")
+
+    def __init__(self, message=_def_msg):
+        """Initialize the exception."""
+        super().__init__(message)
+
+
+class DescriptorMinMaxValueError(DescriptorException):
+    """A value is outside of the descriptor's defined limits."""
+    _def_msg = "A value is outside of the min/max limits of this descriptor."
+
+    def __init__(self, message=_def_msg):
+        """Initialize Exception."""
+        super().__init__(message)
+
+
+class DescriptorMinMaxLengthError(DescriptorException):
+    """A value is outside of the descriptor's defined length."""
+    _def_msg = "A value is outside of the min/max length of this descriptor."
+
+    def __init__(self, message=_def_msg):
+        """Initialize Exception."""
+        super().__init__(message)
+
+
 InvalidSymbolName = ExpressionSyntaxError
 InvalidSymbolScope = ExpressionSyntaxError
-ExpressionBoundsError = ExpressionSyntaxError
 EquateSymbolError = ExpressionSyntaxError
 EquateExpressionError = ExpressionSyntaxError
 DefineExpressionError = ExpressionSyntaxError

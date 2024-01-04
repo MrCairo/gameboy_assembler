@@ -4,7 +4,8 @@ from __future__ import annotations   # Forward references
 from enum import StrEnum, auto
 from ..core.constants import \
     DIRECTIVES, MEMORY_BLOCKS, VAL_T as value_t, ARGS_T as arguments_t, \
-    NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t
+    NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
+    DEFINE_OPERATORS
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils, Symbol
 from ..core.exception import InvalidSymbolName, InvalidSymbolScope
@@ -151,18 +152,21 @@ class TokenFactory:
         if elements is None or len(elements) == 0:
             return
         try:
-            if len(elements[0]) == 1 and elements[0] in "\"'([{}])":
+            first = elements[0]
+            if len(first) == 1 and first in "\"'([{}])":
                 self._assign_values(elements, TokenType.PUNCTUATOR)
-            elif elements[0] in DIRECTIVES:
+            elif first in DIRECTIVES:
                 self._assign_values(elements, TokenType.DIRECTIVE)
-            elif elements[0] in MEMORY_BLOCKS:
+            elif first in MEMORY_BLOCKS:
                 self._assign_values(elements, TokenType.MEMORY_BLOCK)
-            elif Expression.has_valid_prefix(elements[0]):
+            elif Expression.has_valid_prefix(first):
                 self._assign_values(elements, TokenType.EXPRESSION)
-            elif SymbolUtils.is_valid_symbol(elements[0]):
+            elif SymbolUtils.is_valid_symbol(first):
                 self._assign_values(elements, TokenType.SYMBOL)
-            elif IS().is_mnemonic(elements[0]):
+            elif IS().is_mnemonic(first):
                 self._assign_values(elements, TokenType.KEYWORD)
+            elif first in DEFINE_OPERATORS:
+                self._assign_values(elements, TokenType.OPERATOR)
             else:
                 self._assign_values(elements, TokenType.LITERAL)
         except (InvalidSymbolName, InvalidSymbolScope) as err:

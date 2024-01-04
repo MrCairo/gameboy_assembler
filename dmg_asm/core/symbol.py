@@ -71,7 +71,7 @@ from enum import StrEnum
 
 from singleton_decorator import singleton
 from .constants import SYM, MAX_SYMBOL_LENGTH
-from .exception import UpdateSymbolAddressError, ExpressionBoundsError, \
+from .exception import UpdateSymbolAddressError, DescriptorException, \
     ExpressionSyntaxError, InvalidSymbolName, InvalidSymbolScope
 from .expression import Expression
 from .descriptor import LBL_DSC
@@ -153,7 +153,7 @@ class SymbolUtils:
         clean = SymbolUtils.clean_name(line)
         try:
             Expression(f"'{clean}'")
-        except (TypeError, ExpressionBoundsError, ExpressionSyntaxError):
+        except (TypeError, DescriptorException, ExpressionSyntaxError):
             valid = False
 
         return valid
@@ -328,7 +328,6 @@ class Symbol():
     # --------========[ End of class ]========-------- #
 
 
-@singleton
 class Symbols(dict):
     """A specialized dictionary that maintains all symbols.
 
@@ -337,10 +336,17 @@ class Symbols(dict):
 
     """
 
-    first_chars = string.ascii_letters + "."
-    valid_chars = string.ascii_letters + string.digits + ".:_"
+    __slots__ = ('symbols', 'first_chars', 'valid_chars')
 
-    _symbols = {}
+    def __new__(cls):
+        """Implement a singleton by returning the existing or new instance."""
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(Symbols, cls).__new__(cls)
+            cls.instance.symbols = {}
+            cls.instance.first_chars = string.ascii_letters + "."
+            cls.instance.valid_chars = string.ascii_letters + \
+                string.digits + ".:_"
+        return cls.instance
 
     def __init__(self):
         """Initialize a Symbol object."""

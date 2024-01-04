@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from collections import namedtuple
 from enum import auto, Enum, IntEnum
-from strenum import StrEnum
 
 # Token element keys (keys of the token dictionary)
 ARGS_T = "arguments"
@@ -48,8 +47,6 @@ DIRECTIVES = [
     "DW",  # Storage
     "ENDM",
     "ENDU",
-    "EQU",
-    "EQUS",
     "EXPORT",
     "GLOBAL",
     "INCBIN",
@@ -60,6 +57,12 @@ DIRECTIVES = [
     "SECTION",
     "SET",
     "UNION",
+]
+
+DEFINE_OPERATORS = [
+    "=",
+    "EQU",
+    "EQUS"
 ]
 
 

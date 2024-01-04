@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from icecream import ic
 from ..core import Convert
 from ..core.expression import Expression
-from ..core.exception import ExpressionBoundsError, ExpressionSyntaxError
+from ..core.exception import DescriptorException, ExpressionSyntaxError
 from ..tokens import TokenGroup, Token, TokenType, Tokenizer
 from .instruction_set import InstructionSet as IS, InstructionDetail
 from .registers import Registers
@@ -13,17 +13,22 @@ from .registers import Registers
 class Mnemonic:
     """Represent a Z80 instruction."""
 
-    __slots__ = ('opcode', 'operands', 'token_group', 'elements',
-                 'instruction_detail')
+    __slots__ = ('opcode', 'token_group', 'instruction_detail',
+                 'elements')
+    opcode: str
+    token_group: TokenGroup
+    instruction_detail: InstructionDetail
+    elements: list
 
-    def __init__(self, mnemonic_tokens: TokenGroup):
-        if mnemonic_tokens is None or len(mnemonic_tokens) == 0:
+    def __init__(self, tokenized_instruction: TokenGroup):
+        """Initialize a mnemonic with an instruction that has been
+        tokenized."""
+        if tokenized_instruction is None or len(tokenized_instruction) == 0:
             raise ExpressionSyntaxError("Invalid Mnemonic")
-        if mnemonic_tokens[0].type != TokenType.KEYWORD:
+        if tokenized_instruction[0].type != TokenType.KEYWORD:
             raise ExpressionSyntaxError("Invalid Mnemonic")
-        self.token_group = mnemonic_tokens
+        self.token_group = tokenized_instruction
         self.opcode = None
-        self.operands = []
         self.elements = None
         self.instruction_detail = self._instruction_detail
 
@@ -40,55 +45,52 @@ class Mnemonic:
         """Evaluate the token group into an identified mnemonic."""
         self.elements = self._listify(self.token_group)
         length = len(self.elements)
-        index = 0
-        element = self.elements[index]
-        self.opcode = element
+        self.opcode = self.elements[0]
         node = IS().instruction_from_mnemonic(self.opcode)
-        if node is None:
-            return None
-
-        # If the instruction does not have operands (i.e. NOP) then
-        self.operands = []
+        operands = []
         index = 1
         detail = None
-        while length >= index:
+        while node is not None and length >= index:
             if "!" in node:
                 hex_str = Convert(node["!"]).to_hex_string()
                 detail = IS().instruction_detail_from_byte(hex_str.lower())
-                if len(self.operands) > 0:
-                    detail.operand1 = self.operands[0]
-                if len(self.operands) > 1:
-                    detail.operand2 = self.operands[1]
+                if len(operands) > 0:
+                    detail.operand1 = operands[0]
+                if len(operands) > 1:
+                    detail.operand2 = operands[1]
                 break
             element = self.elements[index]
             if node is not None and "!" not in node:
                 node = self._assign_operand(element, node)
-                # element = expr if expr is not None else element
-                self.operands.append(element)
+                operands.append(element)
             index += 1
         return detail
 
-    def _assign_operand(self, item, node) -> dict:
-        if "!" in node.keys():
+    def _assign_operand(self, operand, node) -> dict:
+        if "!" in node:
             return node
-        if item in node.keys():
-            return node[item]
-        if Expression.has_valid_prefix(item):
-            idx = self.token_group.find_first_value(item)
+        if operand in node:
+            return node[operand]
+        if Expression.has_valid_prefix(operand):
+            idx = self.token_group.find_first_value(operand)
             if idx is not None:
                 tok = self.token_group[idx]
                 new_node = self._data_placeholder(node, tok.data)
                 return new_node
-        if Registers().is_valid_register(item):
-            new_node = self._register_placeholder(node, item)
+        if Registers().is_valid_register(operand):
+            new_node = self._register_placeholder(node, operand)
             return new_node
         return None
 
     def _data_placeholder(self, node: dict, expression: Expression) -> dict:
-        # placeholders = ["d8", "d16", "a8", "a16", "r8"]
+        """Convert an expression into a corresponding placeholder.
+
+        Placeholders are ["d8", "d16", "a8", "a16"]
+        """
+        #
         # Get the maximum value of the expression...
         # item = [x for x in placeholders if x in text]
-        maxi = expression.descriptor.args.limits.max
+        maxi = expression.descriptor.args.limits.max-1
         # get the number of bits for that max value (should be 8 or 16)
         bits = f'{maxi:b}'
         dkey = f'd{len(bits)}'
@@ -101,6 +103,12 @@ class Mnemonic:
         # item = [x for x in placeholders if x in text]
 
     def _register_placeholder(self, node: dict, register: str) -> dict:
+        """Convert a register into a corresponding placeholder.
+
+        So a register like 'H' will return a placeholder of 'r8' whereas a
+        register like 'SP' will return an 'r16'. This only works because single
+        length register names are always 8 bit and two are always 16 bit.
+        """
         length = len(register)
         rkey = "r8" if length == 1 else "r16" if length == 2 else None
         if rkey is not None:
@@ -108,7 +116,16 @@ class Mnemonic:
         return None
 
     def _listify(self, token_group: TokenGroup) -> list:
-        """Create a list of values from a token group."""
+        """Create a list of values from a token group.
+
+        The main difference of this list vs. a token_group list is that
+        an element will combine delimeters '(' or ')' into a single element
+        whereas a token group keeps these values distinct.
+
+        For the purposes of the mnemonic, it's important to turn a list like:
+        ['(', 'HL', ')']
+        into a single element "(HL)".
+        """
         elements = []
         value = ""
         in_paren = False

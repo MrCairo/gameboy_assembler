@@ -1,10 +1,7 @@
 """Classes that convert text into Tokens."""
 
 # from __future__ import annotations
-from collections import OrderedDict
-from icecream import ic
-from typing import Optional
-from .token import Token
+from .token import Token, TokenType
 
 
 class TokenGroup:
@@ -12,8 +9,6 @@ class TokenGroup:
 
     def __init__(self):
         """Initialize the object."""
-        # if primary_token is None:
-        #     raise ValueError("The primary_token must have a value.")
         self._group_store = []
 
     def __repr__(self):
@@ -48,6 +43,17 @@ class TokenGroup:
         up = value.upper()
         for index, item in enumerate(self._group_store):
             if item.value.upper() == up:
+                return index
+        return None
+
+    def find_first_type(self, token_type: TokenType) -> int | None:
+        """Return the index in the group that matches the passed type.
+
+        If the type appears more than once in the group, only the first one
+        found is returned.
+        """
+        for index, item in enumerate(self._group_store):
+            if item.type == token_type:
                 return index
         return None
 

@@ -5,7 +5,15 @@ import unittest
 
 from ..core.convert import Convert
 from ..core.expression import ExpressionType, Expression
-from ..core.exception import ExpressionBoundsError, ExpressionSyntaxError
+from ..core.descriptor import BaseDescriptor, BaseValue, HEX_DSC, HEX16_DSC, \
+    DEC_DSC, BIN_DSC, OCT_DSC, LBL_DSC
+from ..core.constants import MinMax
+from ..core.exception import ExpressionSyntaxError, \
+    DescriptorMinMaxLengthError, \
+    DescriptorMinMaxValueError, \
+    DescriptorRadixDigitValueError, \
+    DescriptorRadixError, \
+    DescriptorException
 
 
 class ConvertUnitTests(unittest.TestCase):
@@ -16,7 +24,7 @@ class ConvertUnitTests(unittest.TestCase):
         expr = Expression("0100")
         try:
             expr_hex = Convert(expr).to_hex()
-        except (ExpressionBoundsError, ExpressionSyntaxError):
+        except (DescriptorException, ExpressionSyntaxError):
             self.fail("Unable convert decimal 0100 to hex.")
         else:
             self.assertTrue(expr_hex.clean_str == "$64")
@@ -26,7 +34,7 @@ class ConvertUnitTests(unittest.TestCase):
         expr = Expression("0100")
         try:
             expr_hex = Convert(expr).to_hex16()
-        except (ExpressionBoundsError, ExpressionSyntaxError):
+        except (DescriptorException, ExpressionSyntaxError):
             self.fail("Unable convert decimal 0100 to hex.")
         else:
             self.assertTrue(expr_hex.clean_str == "$0064")
@@ -36,7 +44,7 @@ class ConvertUnitTests(unittest.TestCase):
         expr = Expression("0100")
         try:
             expr_oct = Convert(expr).to_octal()
-        except (ExpressionBoundsError, ExpressionSyntaxError):
+        except (DescriptorException, ExpressionSyntaxError):
             self.fail("Unable convert decimal 0100 to octal.")
         else:
             self.assertTrue(expr_oct.clean_str == "&144")
@@ -46,10 +54,48 @@ class ConvertUnitTests(unittest.TestCase):
         expr = Expression("0100")
         try:
             expr_bin = Convert(expr).to_binary()
-        except (ExpressionBoundsError, ExpressionSyntaxError):
+        except (DescriptorException, ExpressionSyntaxError):
             self.fail("Unable convert decimal 0100 to binary.")
         else:
             self.assertTrue(expr_bin.clean_str == "%01100100")
+
+
+class DescriptorUnitTests(unittest.TestCase):
+    """Descriptor unit tests."""
+
+    dec_value = DEC_DSC
+    hex_value = HEX_DSC
+
+    generic: BaseDescriptor = None
+
+    def test_decimal_descriptor(self):
+        self.dec_value = "100"
+        try:
+            self.hex_value = "AF"
+        except (TypeError, ValueError, DescriptorException) as err:
+            self.fail(err)
+        try:
+            self.hex_value = "ABCD"
+        except (TypeError, ValueError, DescriptorException):
+            pass
+        else:
+            self.fail("The 8-bit hex value descriptor assignment failed.")
+
+        DescriptorUnitTests.generic = BaseDescriptor(chars=MinMax(2, 5),
+                                                     limits=MinMax(0, 65536),
+                                                     base=16)
+        try:
+            self.generic = "FFFE"
+        except (TypeError, ValueError, DescriptorException) as err:
+            self.fail(err)
+
+        DescriptorUnitTests.generic = HEX16_DSC
+        try:
+            self.generic = "AHGB"
+        except (TypeError, ValueError, DescriptorException):
+            pass
+        else:
+            self.fail("AHGB isn't a valid 16-bit hex value but passed.")
 
 
 class ExpressionUnitTests(unittest.TestCase):
@@ -61,7 +107,7 @@ class ExpressionUnitTests(unittest.TestCase):
             expr1 = Expression("0x1A0B")
         except ExpressionSyntaxError:
             self.fail("Expression Syntax Error")
-        except ExpressionBoundsError:
+        except DescriptorException:
             self.fail("Expression bounds error.")
         self.assertTrue(expr1.prefixless_value == "1A0B")
 
@@ -69,7 +115,7 @@ class ExpressionUnitTests(unittest.TestCase):
             expr1 = Expression("$$BAAD")
         except ExpressionSyntaxError:
             self.fail("Expression Syntax Error")
-        except ExpressionBoundsError:
+        except DescriptorException:
             self.fail("Expression bounds error.")
         self.assertTrue(expr1.prefixless_value == "BAAD")
 
@@ -79,7 +125,7 @@ class ExpressionUnitTests(unittest.TestCase):
             expr2 = Expression("$F2")
         except ExpressionSyntaxError:
             self.fail("Hex value $F2 failed to parse.")
-        except ExpressionBoundsError:
+        except DescriptorException:
             self.fail("Hex value $F2 failed bounds check.")
         self.assertTrue(expr2.prefixless_value == "F2")
 
@@ -87,14 +133,14 @@ class ExpressionUnitTests(unittest.TestCase):
         """Test invalid hex expression."""
         try:
             Expression("0xHZKL")
-        except ExpressionSyntaxError as syntax:
+        except DescriptorRadixDigitValueError as syntax:
             self.assertTrue(len(syntax.args) >= 1)
         else:
             self.fail("Hex 0xHZKL was not flagged as invalid")
 
         try:
             Expression("$FFD210")
-        except ExpressionBoundsError as bounds:
+        except DescriptorMinMaxLengthError as bounds:
             self.assertTrue(len(bounds.args) >= 1)
         else:
             self.fail("$FFD210 was not flagged with a bounds error.")
@@ -103,7 +149,7 @@ class ExpressionUnitTests(unittest.TestCase):
         """Test hex expression type."""
         try:
             expr = Expression("$1A")
-        except (ExpressionBoundsError, ExpressionSyntaxError):
+        except (DescriptorException, TypeError, ValueError):
             self.fail("Unable to parse $1A")
         self.assertTrue(expr.type == ExpressionType.HEXIDECIMAL)
 
@@ -111,7 +157,7 @@ class ExpressionUnitTests(unittest.TestCase):
         """Test octal expression."""
         try:
             expr = Expression("&10")
-        except (ExpressionBoundsError, ExpressionSyntaxError):
+        except (DescriptorException, TypeError, ValueError):
             self.fail("Unable to parse &10")
         self.assertTrue(expr.type == ExpressionType.OCTAL)
 
@@ -119,7 +165,7 @@ class ExpressionUnitTests(unittest.TestCase):
         """Test binary expression."""
         try:
             expr = Expression("%10011101")
-        except (ExpressionBoundsError, ExpressionSyntaxError):
+        except (DescriptorException, ValueError, TypeError):
             self.fail("Unable to parse binary value")
         self.assertTrue(expr.type == ExpressionType.BINARY)
 
@@ -127,8 +173,8 @@ class ExpressionUnitTests(unittest.TestCase):
         """Test if an invalid binary expression fails properly."""
         try:
             Expression("%100111001")
-        except ExpressionBoundsError as bounds:
-            self.assertTrue(len(bounds.args) >= 1)
+        except DescriptorMinMaxLengthError as bounds:
+            print(bounds)
         else:
             self.fail("%100111001 did not generate a bounds exception.")
 
@@ -136,7 +182,7 @@ class ExpressionUnitTests(unittest.TestCase):
         """Test label expression."""
         try:
             expr = Expression("'Hello'")
-        except (ExpressionBoundsError, ExpressionSyntaxError):
+        except (DescriptorException, ExpressionSyntaxError):
             self.fail("Unable to parse 'Hello' expression")
         self.assertTrue(expr.type == ExpressionType.CHARACTER)
 
@@ -144,7 +190,7 @@ class ExpressionUnitTests(unittest.TestCase):
         """Test an invalid label properly fails."""
         try:
             Expression("'Hello World\"")
-        except ExpressionSyntaxError as syntax:
+        except (DescriptorException, ExpressionSyntaxError) as syntax:
             self.assertTrue(len(syntax.args) > 0)
         else:
             self.fail("Invalid label passed validation.")

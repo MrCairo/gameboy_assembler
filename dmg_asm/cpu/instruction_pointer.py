@@ -3,7 +3,7 @@ A set of helper functions used during processing of instructions.
 """
 from ..core.convert import Convert as EC
 from ..core.expression import Expression
-from ..core.exception import ExpressionBoundsError, ExpressionSyntaxError
+from ..core.exception import DescriptorException
 
 ###############################################################################
 # Manages the instruction pointer position. Nececesary to compute
@@ -52,13 +52,13 @@ class InstructionPointer:
         return self._pointer
 
     @location.setter
-    def location(self, value):
+    def location(self, value: int):
         """Set the current location or IP."""
         if value in range(0, 65536):
             # print(f"IP(): Setting IP to {hex(value)}")
             self._pointer = value
 
-    def move_location_relative(self, val) -> bool:
+    def move_location_relative(self, val: int) -> bool:
         """Move the IP relative to it's current position.
 
         Moves the location (pointer) val distance positive or negative
@@ -104,7 +104,7 @@ class InstructionPointer:
         """Return the offset value from the original base of the IP."""
         return self.location - self.base_address
 
-    def move_relative(self, relative):
+    def move_relative(self, relative: int):
         """Move the IP relative by a single byte's value.
 
         relative is a single byte. 0 - 127 is positive branch

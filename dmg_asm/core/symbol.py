@@ -69,13 +69,13 @@ Symbols can be one of three types:
 import string
 from enum import StrEnum
 
-from singleton_decorator import singleton
 from .constants import SYM, MAX_SYMBOL_LENGTH
 from .exception import UpdateSymbolAddressError, DescriptorException, \
     ExpressionSyntaxError, InvalidSymbolName, InvalidSymbolScope
 from .expression import Expression
+from .convert import Convert
 from .descriptor import LBL_DSC
-from ..cpu.instruction_pointer import InstructionPointer
+from ..cpu.instruction_pointer import InstructionPointer as IP
 
 
 class SymbolScope(StrEnum):
@@ -100,6 +100,8 @@ class SymbolAffix(StrEnum):
 class SymbolUtils:
     """Symbol utility functions."""
 
+    label: LBL_DSC = LBL_DSC
+
     @classmethod
     def is_valid_symbol(cls, name: str) -> bool:
         """Return True if 'name' represents a valid symbol.
@@ -107,12 +109,8 @@ class SymbolUtils:
         This function checks the vailidity of the Symbol. Note that this
         function does not check to see if a symbol already exists or not.
         """
-        try:
-            # Can we create a symbol from the name?
-            Symbol(name.strip(), 0x00)
-        except (InvalidSymbolName, InvalidSymbolScope):
-            return False
-        return True
+        return cls.has_valid_name_characters(name) and \
+            cls.has_valid_scope_designation(name)
 
     @classmethod
     def clean_name(cls, name: str) -> str:
@@ -135,160 +133,34 @@ class SymbolUtils:
         return string.ascii_letters + "."
 
     @classmethod
-    def symbol_has_valid_chars(cls, name: str) -> bool:
-        """Return True if the symbol only has supported chars."""
-        valid = True
-        chars = SymbolUtils.valid_symbol_chars()
-        for c in name:
-            if c in chars:
-                continue
-            valid = False
-            break
-        return valid
+    def get_valid_scope(cls, name: str) -> SymbolScope:
+        """Return the symbol's scope designation if valid."""
+        scope = None
+        if cls.has_valid_scope_designation(name):
+            if name.startswith(SymbolAffix.PRIVATE):
+                scope = SymbolScope.PRIVATE
+            elif name.endswith(SymbolAffix.EXPORTED):
+                scope = SymbolScope.GLOBAL
+            elif name.endswith(SymbolAffix.LOCAL):
+                scope = SymbolScope.LOCAL
+        return scope
 
     @classmethod
-    def name_has_valid_chars(cls, line: str) -> bool:
-        """Return True if symbol's name contains valid chars."""
-        valid = True
-        clean = SymbolUtils.clean_name(line)
+    def has_valid_name_characters(cls, name: str) -> bool:
+        """Return if the name has valid characters."""
         try:
-            Expression(f"'{clean}'")
-        except (TypeError, DescriptorException, ExpressionSyntaxError):
-            valid = False
-
-        return valid
-
-    # --------========[ End of class ]========-------- #
-
-
-SU = SymbolUtils
-
-
-class Symbol():
-    """A String name used to represent an address in memory.
-
-    The name of the Symbol must follow the convention described in this
-    module. The `addressing` optional boolean specifies if this symbol
-    represents a location in memory (address) or just an alias for something
-    like a string or block of data. By default, the Symbol is defined as an
-    Symbol that records an address.
-    """
-
-    def __init__(self, name: str, addressing: bool = bool(True)):
-        """Initialize a new Symbol with addressing flag."""
-        self._addressing = addressing
-        if not name:
-            raise InvalidSymbolName(name)
-
-        self._original_symbol = name
-        self._clean_name = SU.clean_name(name)
-
-        self._scope = self._scope_and_validate(self.name)
-        if self._scope is None:
-            raise InvalidSymbolScope(self.name)
-
-        if addressing is True:
-            self._base_address = InstructionPointer().base_address
-        else:
-            self._base_address = None
-        self._local_hash: str
-
-    def __str__(self):
-        """Describe the symbol."""
-        scope = "unknown"
-        if self._scope is not None:
-            scope = self._scope
-
-        desc = f"\nSymbol: {self.clean_name}"
-        desc += f", scope: {scope}"
-
-        if self._addressing:
-            desc += f", address: 0x{self._base_address:04x}"
-        else:
-            desc += ", non-addressing"
-
-        return desc
-
-    def __repr__(self):
-        """Return a description of this symbol object."""
-        desc = f"Symbol(\"{self.name}\", "
-        desc += f"addressing =  bool({self._addressing}))"
-        return desc
-
-    @staticmethod
-    def typename():
-        """Return the string name of this class's type."""
-        return SYM
-
-    @property
-    def clean_name(self) -> str:
-        """Return the cleaned valid symbol name."""
-        return self._clean_name
-
-    @property
-    def name(self) -> str:
-        """Return the name of the symbol from initialization."""
-        return self._original_symbol
-
-    @property
-    def scope(self) -> SymbolScope:
-        """Return the scope of the Symbol."""
-        return self._scope
-
-    @property
-    def base_address(self) -> int:
-        """
-        Return the symbol's base address.
-
-        The address that is associated with the location of the symbol.
-        In this way it's different from it's value. The base address
-        can be used to compute, for example, a relative distance between
-        the reference to a symbol and the symbol's base address.
-        """
-        return self._base_address
-
-    @base_address.setter
-    def base_address(self, new_value: int):
-        """
-        Set the base address of the symbol.
-
-        Sets the base address of the symbol. See the base_address property
-        for more information on the functionality of the base address.
-        """
-        if self._addressing is False:
-            raise UpdateSymbolAddressError()
-        self._base_address = new_value
-
-    # ----------===========[ End of public funcs ]===========---------- #
-
-    def _scope_and_validate(self, name: str) -> SymbolScope:
-        #
-        if len(name) > MAX_SYMBOL_LENGTH or \
-           self._has_valid_decorators(name) is False:
-            return None
-        symbol_scope = None
-        if name.startswith(SymbolAffix.PRIVATE):
-            symbol_scope = SymbolScope.PRIVATE
-        elif name.endswith(SymbolAffix.EXPORTED):
-            symbol_scope = SymbolScope.GLOBAL
-        elif name.endswith(SymbolAffix.LOCAL):
-            symbol_scope = SymbolScope.LOCAL
-
-        return symbol_scope
-
-    def _has_valid_decorators(self, name: str) -> bool:
-        # Does the symbol only contain valid chars?
-        # Does the symbol name (less decorators of ':' or '.') only contain
-        # valid chars?
-
-        if SU.symbol_has_valid_chars(name) is False or \
-           SU.name_has_valid_chars(name) is False:
+            cls.label = cls.clean_name(name)
+        except DescriptorException:
             return False
+        return all(c in cls.valid_symbol_chars() for c in name)
 
+    @classmethod
+    def has_valid_scope_designation(cls, name: str) -> bool:
+        """Return True if the name has valid decorator affixes for scope."""
         # Symbol name must start with an alpha and cannot have
         # embedded "." or ":" characters.
-        clean = self.clean_name
-        if clean[0].isalpha is False or \
+        clean = cls.clean_name(name)
+        if clean[0].isalpha() is False or \
            clean.count(".") or \
            clean.count(":"):
             return False
@@ -311,19 +183,87 @@ class Symbol():
 
         priv = name.startswith(".") and \
             not extern and \
-            not local and stop_count == 1
+            not local and \
+            stop_count == 1 and \
+            colon_count <= 1
 
         invalid = False
+        # Symbol must be local or global
+        # invalid = not local and not extern
         # Symbol must be at least one of etxernal/local/private categories.
-        invalid = not priv and not local and not extern
+        invalid = invalid or (not priv and not local and not extern)
         # Symbol cannot have more than one '.' or more than two ':'
-        invalid |= stop_count > 1 or colon_count > 2
+        invalid = invalid or (stop_count > 1 or colon_count > 2)
         # Extern symbol cannot have any stop characters (.)
-        invalid |= extern and stop_count
+        invalid = invalid or (extern and stop_count > 0)
         # A  symbol cannot start with a colon or end with a stop
-        invalid |= name.startswith(":") or name.endswith(".")
+        invalid = invalid or (name.startswith(":") or name.endswith("."))
 
         return not invalid
+
+    # --------========[ End of class ]========-------- #
+
+
+SU = SymbolUtils
+
+
+class Symbol():
+    """A String name used to represent an address in memory.
+
+    The name of the Symbol must follow the convention described in this
+    module. The `addressing` optional boolean specifies if this symbol
+    represents a location in memory (address) or just an alias for something
+    like a string or block of data. By default, the Symbol is defined as an
+    Symbol that records an address.
+    """
+
+    __slots__ = ('_original_symbol', '_scope', '_clean_name', 'base_address')
+    _original_symbol: str
+    _scope: SymbolScope
+    _clean_name: str
+    base_address: Expression
+
+    def __init__(self, name: str, base_address: Expression):
+        """Initialize a new Symbol with addressing flag."""
+        if not name or not SU.has_valid_name_characters(name):
+            raise InvalidSymbolName(name)
+        if not SU.has_valid_scope_designation(name):
+            raise InvalidSymbolScope(name)
+        self._original_symbol = name
+        self._clean_name = SU.clean_name(name)
+        self._scope = SU.get_valid_scope(name)
+        self.base_address = base_address
+
+    def __str__(self):
+        """Describe the symbol."""
+        scope = "unknown"
+        if self._scope is not None:
+            scope = self._scope
+        hex_addr = Convert(self.base_address).to_hex16_string()
+        desc = f"\nSymbol: {self.clean_name}"
+        desc += f", scope: {scope}"
+        desc += f", address: {hex_addr}"
+        return desc
+
+    def __repr__(self):
+        """Return a description of this symbol object."""
+        desc = f"Symbol(\"{self.name}\", {self.base_address})"
+        return desc
+
+    @property
+    def clean_name(self) -> str:
+        """Return the cleaned valid symbol name."""
+        return self._clean_name
+
+    @property
+    def name(self) -> str:
+        """Return the name of the symbol from initialization."""
+        return self._original_symbol
+
+    @property
+    def scope(self) -> SymbolScope:
+        """Return the scope of the Symbol."""
+        return self._scope
 
     # --------========[ End of class ]========-------- #
 
@@ -351,13 +291,13 @@ class Symbols(dict):
     def __init__(self):
         """Initialize a Symbol object."""
         super().__init__()
-        self._symbols = {}
+        self.symbols = {}
 
     def __repr__(self):
         """Print the object."""
         desc = ""
-        if self._symbols:
-            for symbol in self._symbols:
+        if self.symbols:
+            for symbol in self.symbols:
                 desc = symbol.__repr__()
         return desc
 
@@ -368,7 +308,7 @@ class Symbols(dict):
             key = (key.lstrip(".")).rstrip(":.")
             key = key.upper()
         try:
-            sym = self._symbols[key]
+            sym = self.symbols[key]
         except KeyError:
             return None
         return sym
@@ -377,7 +317,7 @@ class Symbols(dict):
         """Set item by key."""
         if not isinstance(value, Symbol):
             raise TypeError(value)
-        self._symbols[value.clean_name().upper()] = value
+        self.symbols[value.clean_name().upper()] = value
 
     def find(self, key: str) -> Symbol:
         """Equal to the __get__() index function."""
@@ -386,7 +326,7 @@ class Symbols(dict):
     def add(self, symbol: Symbol):
         """Add a new Symbol object to the dictionary."""
         if symbol is not None:
-            self._symbols[symbol.clean_name().upper()] = symbol
+            self.symbols[symbol.clean_name().upper()] = symbol
 
     def remove(self, symbol: Symbol):
         """Remove a symbol from the dictionary.
@@ -397,9 +337,9 @@ class Symbols(dict):
         if symbol is not None:
             found = self[symbol.clean_name().upper()]
             if found:
-                new_d = dict(self._symbols)
+                new_d = dict(self.symbols)
                 del new_d[symbol.clean_name().upper()]
-                self._symbols = new_d
+                self.symbols = new_d
 
     def local_symbols(self) -> dict:
         """Return symbols that are local in scope."""
@@ -413,11 +353,11 @@ class Symbols(dict):
 
     def items(self) -> dict:
         """Return the dictionary of Symbol objects."""
-        return self._symbols
+        return self.symbols
 
     def remove_all(self):
         """Remove all objects from the dictionary."""
-        self._symbols.clear()
+        self.symbols.clear()
 
     # --------========[ End of class ]========-------- #
 

@@ -85,6 +85,12 @@ class Expression:
             desc = "Object not initialized or is not valid."
         return desc
 
+    def __eq__(self, other):
+        if isinstance(other, Expression):
+            return (other.prefixless_value == self.prefixless_value and
+                    other.descriptor.args.base == self.descriptor.args.base)
+        return False
+
     @classmethod
     def has_valid_prefix(cls, expr: str) -> bool:
         """Return True if the expression string starts with a prefix."""

@@ -4,11 +4,13 @@
 import unittest
 
 from ..core.convert import Convert
+from ..core.symbol import Symbol, SymbolScope, Symbols
 from ..core.expression import ExpressionType, Expression
 from ..core.descriptor import BaseDescriptor, BaseValue, HEX_DSC, HEX16_DSC, \
     DEC_DSC, BIN_DSC, OCT_DSC, LBL_DSC
 from ..core.constants import MinMax
 from ..core.exception import ExpressionSyntaxError, \
+    InvalidSymbolName, InvalidSymbolScope, \
     DescriptorMinMaxLengthError, \
     DescriptorMinMaxValueError, \
     DescriptorRadixDigitValueError, \
@@ -194,5 +196,77 @@ class ExpressionUnitTests(unittest.TestCase):
             self.assertTrue(len(syntax.args) > 0)
         else:
             self.fail("Invalid label passed validation.")
+
+
+class SymbolUnitTests(unittest.TestCase):
+    """Symbol unit tests."""
+
+    def test_valid_symbol_name(self):
+        """Test that a valid symbol name passes validation."""
+        name = "Valid_symbol:"
+        sym = Symbol(name, Expression("0x1000"))
+        self.assertTrue(sym.clean_name == "Valid_symbol")
+        self.assertTrue(sym.scope == SymbolScope.LOCAL)
+        self.assertTrue(sym.base_address == Expression("$1000"))
+
+    def test_invalid_symbol_names(self):
+        """Pass if name is detected as invalid."""
+        invalid_name = "42Fun:"
+        try:
+            _ = Symbol(invalid_name, Expression("$0100"))
+        except InvalidSymbolName:
+            pass
+        except (TypeError, InvalidSymbolScope):
+            self.fail("Symbol with invalid name raised wrong exception.")
+        else:
+            self.fail("An invalid symbol name failed vailidation.")
+
+        invalid_name = ".no-hypens-allowed"
+        try:
+            _ = Symbol(invalid_name, Expression("$00FF"))
+        except InvalidSymbolName:
+            pass
+        except (TypeError, InvalidSymbolScope):
+            self.fail("Symbol with invalid name raised wrong exception.")
+        else:
+            self.fail("An invalid symbol name failed vailidation.")
+
+        invalid_name = ".local_global::"
+        try:
+            _ = Symbol(invalid_name, Expression("$00FF"))
+        except InvalidSymbolScope:
+            pass
+        except (TypeError, InvalidSymbolName):
+            self.fail("Symbol with invalid scope raised wrong exception.")
+        else:
+            self.fail("An invalid symbol name failed vailidation.")
+
+    def test_private_scope_is_valid(self):
+        """Test valid private scope."""
+        name = ".private_scope:"
+        try:
+            symbol = Symbol(name, Expression("$FFD2"))
+        except (TypeError, InvalidSymbolName, InvalidSymbolScope):
+            self.fail("Valid private scope failed validation.")
+        self.assertTrue(symbol.scope == SymbolScope.PRIVATE)
+
+    def test_local_scope_is_valid(self):
+        """Test valid local scope."""
+        name = "local_scope:"
+        try:
+            symbol = Symbol(name, Expression("$FFD2"))
+        except (TypeError, InvalidSymbolName, InvalidSymbolScope):
+            self.fail("Valid local scope failed validation.")
+        self.assertTrue(symbol.scope == SymbolScope.LOCAL)
+
+    def test_global_scope_is_valid(self):
+        """Test valid global scope."""
+        name = "global_scope::"
+        try:
+            symbol = Symbol(name, Expression("$FFD2"))
+        except (TypeError, InvalidSymbolName, InvalidSymbolScope):
+            self.fail("Valid global scope failed validation.")
+        self.assertTrue(symbol.scope == SymbolScope.GLOBAL)
+
 
 #  End of unit tests

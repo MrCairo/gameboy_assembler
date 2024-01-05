@@ -1,9 +1,16 @@
 """GameBoy assembler unit tests."""
 import unittest
 import sys
-from dmg_asm.tests.core_tests import ExpressionUnitTests, ConvertUnitTests
+from dmg_asm.tests.core_tests import ExpressionUnitTests, ConvertUnitTests, \
+    DescriptorUnitTests, SymbolUnitTests
 from dmg_asm.tests.token_tests import TokenUnitTests
 from dmg_asm.tests.directive_tests import DirectiveUnitTests
+
+# ---------------------------------------------------------------
+print("\n=============== Descriptor Tests ===============")
+loader = unittest.TestLoader()
+suite = loader.loadTestsFromTestCase(DescriptorUnitTests)
+unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 
 # ---------------------------------------------------------------
 print("\n=============== Expression Tests ===============")
@@ -14,6 +21,11 @@ unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 # ---------------------------------------------------------------
 print("\n=============== Conversion Unit Tests ===============")
 suite = loader.loadTestsFromTestCase(ConvertUnitTests)
+unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+
+# ---------------------------------------------------------------
+print("\n=============== Symbol Unit Tests ===============")
+suite = loader.loadTestsFromTestCase(SymbolUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 
 # ---------------------------------------------------------------

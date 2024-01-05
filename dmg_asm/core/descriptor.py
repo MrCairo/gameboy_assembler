@@ -5,6 +5,10 @@ from abc import ABC, abstractmethod
 import string
 from dataclasses import dataclass
 from .constants import MinMax
+from .exception import DescriptorMinMaxLengthError, \
+    DescriptorMinMaxValueError, \
+    DescriptorRadixDigitValueError, \
+    DescriptorRadixError
 
 
 @dataclass
@@ -27,6 +31,8 @@ class DescriptorArgs():
 
 class Validator(ABC):
     """Abstract class to validate something."""
+    private_name = ""
+    public_name = ""
 
     def __set_name__(self, owner, name):
         """Set a named attribute of a generic object."""
@@ -47,11 +53,14 @@ class Validator(ABC):
 
 
 class OneOf(Validator):
-    """Verifie that a value is one of a restricted set of options."""
+    """Verifies that a value is one of a restricted set of options."""
 
     def __init__(self, *options):
         """Initialize the OneOf Object."""
         self.options = set(options)
+
+    def __repr__(self) -> str:
+        return f"OneOf({self.options})"
 
     def validate(self, value):
         """Validate the OneOf object with against specific value."""
@@ -83,7 +92,8 @@ class BaseDescriptor(Validator):
         uppercase letter or numbers 0-9. No spaces or punctuation.
         """
         if base not in self.bases:
-            raise TypeError(f'Base can only 2, 8, 10 or 16 but was {base}')
+            raise DescriptorRadixError(
+                f'Base can only 2, 8, 10 or 16 but was {base}')
         self.args = DescriptorArgs(chars=chars,
                                    limits=limits,
                                    base=base,
@@ -103,19 +113,29 @@ class BaseDescriptor(Validator):
             raise TypeError(f'Expected {value!r} to be a str.')
 
         if all(c in self.args.charset for c in value) is False:
-            raise ValueError(f"{value} bad base {self.args.base} chars.")
+            msg = f"{value} bad base {self.args.base} chars."
+            raise DescriptorRadixDigitValueError(msg)
 
         # -- chars validation --
-        (mini, maxi) = self.args.chars
-        if len(value) not in range(mini, maxi):
-            msg = f'{value} must be between {mini} and {maxi} chars'
-            raise ValueError(msg)
+        minmax = self.args.chars
+        if len(value) not in range(minmax.min, minmax.max):
+            if minmax.min < minmax.max-1:
+                msg = f'{value} must be between {minmax.min} ' + \
+                    f'and {minmax.max-1} characters'
+            else:
+                msg = f'{value} must be exactly {minmax.min} ' + \
+                    'characters in length'
+            raise DescriptorMinMaxLengthError(msg)
 
         # -- limits validation value transformed to base-10 --
-        dec_val = int(value, self.args.base)
-        (mini, maxi) = self.args.limits
-        if dec_val not in range(mini, maxi):
-            raise ValueError(f'{dec_val} outside range of {mini}, {maxi}.')
+        if self.args.base > 0:
+            dec_val = int(value, self.args.base)
+            minmax = self.args.limits
+            if dec_val not in range(minmax.min, minmax.max):
+                raise DescriptorMinMaxValueError(
+                    f'{dec_val} outside range of {minmax.min}, {minmax.max}.')
+
+    # ---- BaseDescriptor class ends here ----
 
 
 # |-----------------============<***>=============-----------------|
@@ -125,19 +145,19 @@ class BaseDescriptor(Validator):
 #       indicates a string that cannot exceed 15 (max-1).
 #
 DEC_DSC = BaseDescriptor(chars=MinMax(1, 6),
-                         limits=MinMax(0, 65535),
+                         limits=MinMax(0, 65536),
                          base=10)
 HEX_DSC = BaseDescriptor(chars=MinMax(2, 3),
-                         limits=MinMax(0, 255),
+                         limits=MinMax(0, 256),
                          base=16)
 HEX16_DSC = BaseDescriptor(chars=MinMax(2, 5),
-                           limits=MinMax(0, 65535),
+                           limits=MinMax(0, 65536),
                            base=16)
 BIN_DSC = BaseDescriptor(chars=MinMax(2, 9),
-                         limits=MinMax(0, 255),
+                         limits=MinMax(0, 256),
                          base=2)
 OCT_DSC = BaseDescriptor(chars=MinMax(1, 7),
-                         limits=MinMax(0, 65535),
+                         limits=MinMax(0, 65536),
                          base=8)
 LBL_DSC = BaseDescriptor(chars=MinMax(1, 16),
                          limits=MinMax(0, 0),
@@ -186,57 +206,5 @@ class BaseValue:
         return self._descr.charset()
 
 # |-----------------============<***>=============-----------------|
-
-
-# class BinaryValue(BaseValue):
-#     """Represent a binary number value."""
-
-#     def __init__(self, value: str):
-#         """Initialize a Binary value descriptor."""
-#         super().__init__(BIN_DSC, value)
-
-
-# class DecimalValue(BaseValue):
-#     """Represent a decimial value of 0 - 65535."""
-
-#     def __init__(self, value: str):
-#         """Initialize a Decimal value descriptor."""
-#         super().__init__(DEC_DSC, value)
-
-
-# class Hex8Value(BaseValue):
-#     """Represent an 8-bit hex value."""
-
-#     def __init__(self, value: str):
-#         """Initialize a 8-bin Hexidecimal value descriptor."""
-#         super().__init__(HEX_DSC, value)
-
-
-# class Hex16Value(BaseValue):
-#     """Represent a 16-bit hex value."""
-
-#     def __init__(self, value: str):
-#         """Initialize a 16-bit Hexidecimal value descriptor."""
-#         super().__init__(HEX16_DSC, value)
-
-
-# class OctalValue(BaseValue):
-#     """Represent a 16-bit hex value."""
-
-#     def __init__(self, value: str):
-#         """Initialize an Octal value descriptor."""
-#         super().__init__(OCT_DSC, value)
-
-
-# class LabelValue(BaseValue):
-#     """Represent a string label value."""
-
-#     def __init__(self, value: str):
-#         """Initialize a string label value."""
-#         super().__init__(LBL_DSC, value)
-
-#
-# |-----------------============<***>=============-----------------|
-#
 
 # descriptor.py ends here.

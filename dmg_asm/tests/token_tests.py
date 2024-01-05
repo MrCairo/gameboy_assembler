@@ -3,11 +3,8 @@
 # import os
 import unittest
 from icecream import ic
-import pprint
 
-from ..tokens.token import Token, TokenType
-from ..tokens.token_group import TokenGroup
-from ..tokens.tokenizer import Tokenizer
+from ..tokens import TokenType, Tokenizer, TokenGroup
 from ..core.constants import SYM
 from ..core.reader import BufferReader
 from ..lex import lexer_parser, lexer_results, lexical_analyzer, lexical_node
@@ -62,20 +59,30 @@ class TokenUnitTests(unittest.TestCase):
         """Test Tokenize an array of instructions and data."""
         line = "CLOUDS_Y: DB $FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,$00," \
             "$FF,$00,$FF,$00,$FF,$00"
+        print_line(line)
         group = Tokenizer().tokenize_string(line)
         self.assertTrue(group is not None)
         self.assertTrue(len(group) == 18)
         self.assertTrue(group[0].type == TokenType.SYMBOL)
 
+    def test_token_equ(self):
+        """Test Tokenize an array of instructions and data."""
+        line = "DEF PORT EQU 0xffd2"
+        print_line(line)
+        group = Tokenizer().tokenize_string(line)
+        self.assertTrue(group is not None)
+        print_group(group)
+
     def test_tokenize_instruction(self):
         """Tokenize a line of CPU instruction."""
         inst = "jr nz, .update_game"
+        print_line(inst)
         group = Tokenizer().tokenize_string(inst)
         self.assertTrue(group is not None)
         self.assertTrue(group[0].type == TokenType.KEYWORD)
 
         inst = "LD (HL), $ff"
-        ic(inst)
+        print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -87,7 +94,7 @@ class TokenUnitTests(unittest.TestCase):
     def test_instruction_with_expression(self):
         """Create instruction detail from code that includes an expression."""
         inst = "LD (HL), $ff"
-        ic(inst)
+        print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -99,7 +106,7 @@ class TokenUnitTests(unittest.TestCase):
     def test_one_word_instruction(self):
         """Create instruction detail from an instruction like 'NOP'"""
         inst = "HALT"
-        ic(inst)
+        print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -111,20 +118,49 @@ class TokenUnitTests(unittest.TestCase):
         """Return detail from an instruction that doesn't require an
         expression."""
         inst = "ADD A, (HL)"
-        ic(inst)
+        print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
         self.assertIsNotNone(mnemonic)
+        self.assertTrue(mnemonic.opcode == "ADD")
+
+    def test_instruction_detail(self):
+        """Test instruction detail for an instruction that doesn't require
+        an external expression."""
+        inst = "ADD A, (HL)"
+        print_line(inst)
+        tokens = Tokenizer().tokenize_string(inst)
+        self.assertIsNotNone(tokens)
+        mnemonic = Mnemonic(tokens)
+        self.assertIsNotNone(mnemonic)
+        self.assertTrue(mnemonic.opcode == "ADD")
         detail = mnemonic.instruction_detail
         self.assertIsNotNone(detail)
-        self.assertTrue(detail.operand2 == "(HL)")
+        self.assertTrue(detail.length == 1)
+        self.assertTrue(detail.addr == "$86")
+
+    def test_instruction_detail_with_expression(self):
+        """Test instruction detail for an instruction that requires
+        an external expression."""
+        inst = "LD (HL), $ff"
+        print_line(inst)
+        tokens = Tokenizer().tokenize_string(inst)
+        self.assertIsNotNone(tokens)
+        mnemonic = Mnemonic(tokens)
+        self.assertIsNotNone(mnemonic)
+        self.assertTrue(mnemonic.opcode == "LD")
+        detail = mnemonic.instruction_detail
+        self.assertIsNotNone(detail)
+        self.assertTrue(detail.length == 2)
+        self.assertTrue(detail.addr == "$36")
+        self.assertTrue(detail.operand2 == "$FF")
 
     def test_instruction_with_register(self):
         """Return detail from an instruction that doesn't require an
         expression."""
         inst = "ADD SP, D"
-        ic(inst)
+        print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -143,24 +179,31 @@ class TokenUnitTests(unittest.TestCase):
             # chunks = lexer_parser.tokenize_line(_line)
             # ic(chunks)
             if _line and len(_line) > 0:
-                ic(_line)
+                print_line(_line)
                 groups = Tokenizer().tokenize_string(_line)
+                print_group(groups)
                 if len(groups) == 0:
                     continue
 
-    def print_group(self, group):
-        """Print the token group."""
-        ic("--------------------------------------")
-        ic("Token Group(s):")
-        index = 0
-        for token in group.tokens():
-            grouping = f"{index:02d}: {str(token)}"
-            ic(grouping)
-            index += 1
-        ic("--------------------------------------")
-
-        #  End of unit tests
+    #  End of unit tests
 
 
-if __name__ == "__main__":
-    unittest.main()
+def print_group(group):
+    """Print the token group."""
+    ic("--------------------------------------")
+    ic("Token Group(s):")
+    index = 0
+    for token in group.tokens():
+        grouping = f"{index:02d}: {str(token)}"
+        ic(grouping)
+        index += 1
+    ic("--------------------------------------")
+
+
+def print_line(line_str):
+    """Print the line to parse."""
+    return
+    ic("++++++++++++++++++++++++++++++++++++++")
+    ic("Code to parse:")
+    ic(line_str)
+    ic("++++++++++++++++++++++++++++++++++++++")

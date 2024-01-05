@@ -30,6 +30,7 @@ class Convert:
         return Expression(f"${self._dec_value:04X}")
 
     def to_hex16_string(self) -> str:
+        """Convert the expression to a 16-bit hex string with a '$' prefix."""
         return f"${self._dec_value:04X}"
 
     def to_hex(self) -> Expression:
@@ -37,6 +38,7 @@ class Convert:
         return Expression(f"${self._dec_value:02X}")
 
     def to_hex_string(self) -> str:
+        """Convert the expression to an 8-bit hex string with a '$' prefix."""
         return f"${self._dec_value:02X}"
 
     def to_octal(self) -> Expression:

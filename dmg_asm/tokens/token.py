@@ -5,7 +5,7 @@ from enum import StrEnum, auto
 from ..core.constants import \
     DIRECTIVES, MEMORY_BLOCKS, VAL_T as value_t, ARGS_T as arguments_t, \
     NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
-    DEFINE_OPERATORS
+    DEFINE_OPERATORS, STORAGE_DIRECTIVES
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils, Symbol
 from ..core.exception import InvalidSymbolName, InvalidSymbolScope
@@ -16,6 +16,7 @@ class TokenType(StrEnum):
     """Convenient enums for token used during parsing."""
     COMMENT = auto()
     DIRECTIVE = auto()
+    STORAGE_DIRECTIVE = auto()
     EXPRESSION = auto()
     IDENTIFIER = auto()
     INVALID = auto()
@@ -159,6 +160,8 @@ class TokenFactory:
                 self._assign_values(elements, TokenType.DIRECTIVE)
             elif first in MEMORY_BLOCKS:
                 self._assign_values(elements, TokenType.MEMORY_BLOCK)
+            elif first in STORAGE_DIRECTIVES:
+                self._assign_values(elements, TokenType.STORAGE_DIRECTIVE)
             elif Expression.has_valid_prefix(first):
                 self._assign_values(elements, TokenType.EXPRESSION)
             elif SymbolUtils.is_valid_symbol(first):

@@ -190,7 +190,6 @@ class TokenUnitTests(unittest.TestCase):
 
 def print_group(group):
     """Print the token group."""
-    return
     ic("--------------------------------------")
     ic("Token Group(s):")
     index = 0

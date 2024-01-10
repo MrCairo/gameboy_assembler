@@ -18,7 +18,8 @@ from .exception import ExpressionSyntaxError, \
     DescriptorMinMaxLengthError, \
     DescriptorMinMaxValueError, \
     DescriptorRadixDigitValueError, \
-    DescriptorRadixError
+    DescriptorRadixError, \
+    DescriptorException
 
 
 @dataclass
@@ -61,11 +62,23 @@ class Expression:
     +-------+---------------------------------------------------------------+
     """
 
+    __slots__ = ("_components", "_int_value")
+
     def __init__(self, exp_str: str):
         """Initialize an Expression object with a specific value."""
         if exp_str is None:
             raise ValueError("Initial value cannot be None")
-        self._components = _Validator().validate(exp_str)
+        try:
+            self._components = _Validator().validate(exp_str)
+        except (ValueError, TypeError, DescriptorException) as err:
+            raise err
+        except ExpressionSyntaxError as syntax_err:
+            raise syntax_err
+        if self._components is None:
+            msg = f'"{exp_str}" is not a valid Expression.'
+            raise ExpressionSyntaxError(msg)
+        self._int_value = -1  # -1 means unintialized.
+        _ = self.integer_value
 
     def __repr__(self):
         """Return a representation of this object and how to re-create it."""
@@ -85,20 +98,51 @@ class Expression:
             desc = "Object not initialized or is not valid."
         return desc
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
+        """Return equality value (==)."""
         if isinstance(other, Expression):
-            return (other.prefixless_value == self.prefixless_value and
-                    other.descriptor.args.base == self.descriptor.args.base)
+            return self.integer_value == other.integer_value
         return False
+
+    def __ne__(self, other) -> bool:
+        if isinstance(other, Expression):
+            return self.integer_value != other.integer_value
+        return False
+
+    def __lt__(self, other) -> bool:
+        if isinstance(other, Expression):
+            return self.integer_value < other.integer_value
+        return False
+
+    def __le__(self, other) -> bool:
+        if isinstance(other, Expression):
+            return self.integer_value <= other.integer_value
+        return False
+
+    def __gt__(self, other) -> bool:
+        if isinstance(other, Expression):
+            return self.integer_value > other.integer_value
+        return False
+
+    def __ge__(self, other) -> bool:
+        if isinstance(other, Expression):
+            return self.integer_value >= other.integer_value
+        return False
+
+    @property
+    def integer_value(self) -> int:
+        """Return the positive decimal integer value of this Expression."""
+        if self._int_value == -1:  # -1 == uninitialized
+            _value_str = self.prefixless_value
+            _value_base = self.descriptor.args.base
+            if _value_base != 0:
+                self._int_value = int(_value_str, _value_base)
+        return self._int_value
 
     @classmethod
     def has_valid_prefix(cls, expr: str) -> bool:
         """Return True if the expression string starts with a prefix."""
         return _Validator.has_valid_prefix(expr)
-
-    def is_valid(self) -> bool:
-        """Return a bool indicating if this Expression is valid."""
-        return self._components.is_valid()
 
     @property
     def prefixless_value(self) -> str:

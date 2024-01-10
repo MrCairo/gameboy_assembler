@@ -7,7 +7,6 @@ from icecream import ic
 from ..tokens import TokenType, Tokenizer, TokenGroup
 from ..core.constants import SYM
 from ..core.reader import BufferReader
-from ..lex import lexer_parser, lexer_results, lexical_analyzer, lexical_node
 from ..cpu.mnemonic import Mnemonic
 
 ASM_1 = """
@@ -52,7 +51,7 @@ class TokenUnitTests(unittest.TestCase):
         self.assertTrue(tok.value == "SECTION")
         self.assertTrue(len(group) == 5)
         self.assertTrue(group[4].value == "WRAM0")
-        self.assertTrue(tok.type == TokenType.DIRECTIVE)
+        self.assertTrue(tok.type == TokenType.MEMORY_DIRECTIVE)
         self.assertTrue(group[2].type == TokenType.LITERAL)
 
     def test_token_group_from_elements(self):
@@ -176,15 +175,12 @@ class TokenUnitTests(unittest.TestCase):
         _line = ''
         while _reader.is_eof() is False:
             _line = _reader.read_line()
-            # chunks = lexer_parser.tokenize_line(_line)
-            # ic(chunks)
             if _line and len(_line) > 0:
                 print_line(_line)
                 groups = Tokenizer().tokenize_string(_line)
                 print_group(groups)
                 if len(groups) == 0:
                     continue
-
     #  End of unit tests
 
 

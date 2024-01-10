@@ -40,11 +40,7 @@ MAX_SYMBOL_LENGTH = 25
 LOGGER_FORMAT = '[%(levelname)s] %(asctime)s - %(message)s'
 
 DIRECTIVES = [
-    "DB",  # Storage
     "DEF",
-    "DL"   # Storage
-    "DS",  # Storage
-    "DW",  # Storage
     "ENDM",
     "ENDU",
     "EXPORT",
@@ -54,9 +50,29 @@ DIRECTIVES = [
     "NEXTU",
     "ORG",
     "Purge",
-    "SECTION",
     "SET",
     "UNION",
+]
+
+STORAGE_DIRECTIVES = [
+    "DS",
+    "DB",
+    "DW",
+    "DL"
+]
+
+MEMORY_DIRECTIVES = [
+    "SECTION",
+    "WRAM0",
+    "VRAM",
+    "ROMX",
+    "ROM0"
+    "HRAM",
+    "WRAMX",
+    "SRAM",
+    "OAM",
+    "BANK",
+    "ALIGN"
 ]
 
 DEFINE_OPERATORS = [
@@ -65,24 +81,11 @@ DEFINE_OPERATORS = [
     "EQUS"
 ]
 
-
-MEMORY_BLOCKS = [
-    "WRAM0",
-    "VRAM",
-    "ROMX",
-    "ROM0"
-    "HRAM",
-    "WRAMX",
-    "SRAM",
-    "OAM"
-]
-
-STORAGE_DIRECTIVES = ["DS", "DB", "DW", "DL"]
-
+PUNCTUATORS = "\"'([{}])"
 #
 # Bracketing is also done by " and ' which is why they are part of
 # this array.
-BRACKETS = "\"'([{}])"
+# BRACKETS = "\"'([{}])"
 
 
 class Lexical(IntEnum):

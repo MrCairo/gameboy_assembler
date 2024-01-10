@@ -51,10 +51,9 @@ def _gen_LR35902_inst() -> dict:
         if mnemonic is None or mnemonic == "PREFIX":
             continue
         try:
-            conv = Convert(Expression(hex_code))
-            expr = conv.to_decimal()
+            expr = Expression(hex_code).integer_value
             term = {"!": expr}
-        except (ExpressionSyntaxError, DescriptorException):
+        except (ExpressionSyntaxError, DescriptorException, ValueError):
             print(f"Invalid hex code: {hex_code}")
             term = {"!": "00"}
         op1 = node["operand1"] if "operand1" in node else None

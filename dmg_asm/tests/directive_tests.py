@@ -5,6 +5,7 @@ import unittest
 from icecream import ic
 from ..directives import Equate, Define
 from ..core import Convert
+from ..tokens import TokenGroup, Tokenizer
 
 
 class DirectiveUnitTests(unittest.TestCase):
@@ -25,6 +26,12 @@ class DirectiveUnitTests(unittest.TestCase):
         self.assertTrue(equ.label.upper() == "MY_VAR")
         self.assertEqual(Convert(equ.expression).to_decimal_int(),
                          4096, "Expression not euqal to 4096.")
+
+    def test_section_from_string(self):
+        """Test the SECTION Directive supplied as a string."""
+        section = 'SECTION "CoolStuff", WRAM0, BANK[2]'
+        group = Tokenizer().tokenize_string(section)
+        ic(str(group))
 
 
 #  End of unit tests

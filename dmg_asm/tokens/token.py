@@ -3,9 +3,9 @@
 from __future__ import annotations   # Forward references
 from enum import StrEnum, auto
 from ..core.constants import \
-    DIRECTIVES, MEMORY_BLOCKS, VAL_T as value_t, ARGS_T as arguments_t, \
-    NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
-    DEFINE_OPERATORS, STORAGE_DIRECTIVES
+    VAL_T as value_t, ARGS_T as arguments_t, NEXT_T as next_t, \
+    TYPE_T as type_t, DATA_T as datum_t, DEFINE_OPERATORS, \
+    STORAGE_DIRECTIVES, PUNCTUATORS, DIRECTIVES, MEMORY_DIRECTIVES
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils, Symbol
 from ..core.exception import InvalidSymbolName, InvalidSymbolScope
@@ -22,7 +22,7 @@ class TokenType(StrEnum):
     INVALID = auto()
     KEYWORD = auto()
     LITERAL = auto()
-    MEMORY_BLOCK = auto()
+    MEMORY_DIRECTIVE = auto()
     OPERATOR = auto()
     PUNCTUATOR = auto()
     SYMBOL = auto()
@@ -154,12 +154,12 @@ class TokenFactory:
             return
         try:
             first = elements[0]
-            if len(first) == 1 and first in "\"'([{}])":
+            if len(first) == 1 and first in PUNCTUATORS:
                 self._assign_values(elements, TokenType.PUNCTUATOR)
             elif first in DIRECTIVES:
                 self._assign_values(elements, TokenType.DIRECTIVE)
-            elif first in MEMORY_BLOCKS:
-                self._assign_values(elements, TokenType.MEMORY_BLOCK)
+            elif first in MEMORY_DIRECTIVES:
+                self._assign_values(elements, TokenType.MEMORY_DIRECTIVE)
             elif first in STORAGE_DIRECTIVES:
                 self._assign_values(elements, TokenType.STORAGE_DIRECTIVE)
             elif Expression.has_valid_prefix(first):

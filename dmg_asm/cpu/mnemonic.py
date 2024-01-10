@@ -52,10 +52,11 @@ class Mnemonic:
         detail = None
         while node is not None and length >= index:
             if "!" in node:
-                hex_str = Convert(node["!"]).to_hex_string()
+                hex_str = Convert(Expression(f"0{node['!']}")).to_hex_string()
                 detail = IS().instruction_detail_from_byte(hex_str.lower())
                 if len(operands) > 0:
                     detail.operand1 = operands[0]
+
                 if len(operands) > 1:
                     detail.operand2 = operands[1]
                 break

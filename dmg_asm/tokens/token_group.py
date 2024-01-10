@@ -5,7 +5,12 @@ from .token import Token, TokenType
 
 
 class TokenGroup:
-    """Group a set of tokens related tokens together as a single unit."""
+    """Group a set of tokens related tokens together as a single unit.
+
+    This class is typically returned from the 'Tokenizer' class as a result
+    of parsing a line of text. The TokenGroup represents an array of tokens
+    that are created by parsing a line of text (see Tokenizer).
+    """
 
     def __init__(self):
         """Initialize the object."""

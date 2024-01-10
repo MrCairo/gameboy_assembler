@@ -31,6 +31,9 @@ class Tokenizer:
 
     Tokens are automatically added to the group created from either a line of
     text or an array of individual elements.
+
+    Main funcion:
+    tokenize_string(line_of_text: str) -> TokenGroup | None
     """
 
     def __init__(self):

@@ -30,7 +30,15 @@ class DefineDataError(ParserException):
         super().__init__(message, line_text, line_number)
 
 
-class SectionDeclarationError(ParserException):
+class SectionException(Exception):
+    """The base class of all SECTION memory exceptions."""
+
+    def __init__(self, message, line_text="", line_number=-1):
+        """Initialize the exception."""
+        super().__init__(message, line_text, line_number)
+
+
+class SectionDeclarationError(SectionException):
     """An exception that is thrown if the SECTION definition is invalid."""
 
     def __init__(self, message, line_text="", line_number=-1):
@@ -38,7 +46,7 @@ class SectionDeclarationError(ParserException):
         super().__init__(message, line_text, line_number)
 
 
-class SectionTypeError(ParserException):
+class SectionTypeError(SectionException):
     """An exception thrown if the SECTION type is invalid."""
 
     def __init__(self, message, line_text="", line_number=-1):

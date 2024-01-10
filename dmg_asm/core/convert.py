@@ -8,9 +8,6 @@ class Convert:
 
     def __init__(self, expr: Expression):
         """Initialize the Convert object."""
-        if not expr.is_valid():
-            err = "Input Expression object is not in a valid state."
-            raise ValueError(err)
         self._expr = expr
         self._value_str = expr.prefixless_value
         self._value_base = expr.descriptor.args.base

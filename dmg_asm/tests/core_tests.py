@@ -233,7 +233,7 @@ class SymbolUnitTests(unittest.TestCase):
 
         invalid_name = ".local_global::"
         try:
-            _ = Symbol(invalid_name, Expression("$00FF"))
+            _ = Symbol(invalid_name, Expression("$FFD2"))
         except InvalidSymbolScope:
             pass
         except (TypeError, InvalidSymbolName):

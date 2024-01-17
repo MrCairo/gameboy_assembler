@@ -74,7 +74,14 @@ class OneOf(Validator):
 
 
 class BaseDescriptor(Validator):
-    """A class that represents a value with n chars of min/max values."""
+    """A class that represents a value with n chars of min/max values.
+
+    The descriptor will raise the appriate exception if validation fails.
+    Possible exceptions are:
+    TypeError, ValueError, DescriptorMinMaxLengthError
+    DescriptorMinMaxValueError, DescriptorRadixDigitValueError
+    DescriptorRadixError, DescriptorException (This is the generic catch-all)
+    """
 
     bases = {
         0: f"{string.ascii_letters}{string.digits}_",  # Label Type
@@ -107,7 +114,7 @@ class BaseDescriptor(Validator):
         """Return the allowable characters for the object's base."""
         return self.args.charset
 
-    def validate(self, value):
+    def validate(self, value: str) -> None:
         """Validate this object against a specific value."""
         if not isinstance(value, str):
             raise TypeError(f'Expected {value!r} to be a str.')
@@ -134,6 +141,11 @@ class BaseDescriptor(Validator):
             if dec_val not in range(minmax.min, minmax.max):
                 raise DescriptorMinMaxValueError(
                     f'{dec_val} outside range of {minmax.min}, {minmax.max}.')
+        else:
+            #
+            if self.args.base == 0 and value[0] not in string.ascii_letters:
+                msg = f"{value} has invalid first char."
+                raise DescriptorRadixDigitValueError(msg)
 
     # ---- BaseDescriptor class ends here ----
 

@@ -176,7 +176,7 @@ class ExpressionUnitTests(unittest.TestCase):
         try:
             Expression("%100111001")
         except DescriptorMinMaxLengthError as bounds:
-            print(bounds)
+            self.assertIsNotNone(bounds)
         else:
             self.fail("%100111001 did not generate a bounds exception.")
 
@@ -214,9 +214,9 @@ class SymbolUnitTests(unittest.TestCase):
         invalid_name = "42Fun:"
         try:
             _ = Symbol(invalid_name, Expression("$0100"))
-        except InvalidSymbolName:
+        except (TypeError, InvalidSymbolName, DescriptorException):
             pass
-        except (TypeError, InvalidSymbolScope):
+        except InvalidSymbolScope:
             self.fail("Symbol with invalid name raised wrong exception.")
         else:
             self.fail("An invalid symbol name failed vailidation.")

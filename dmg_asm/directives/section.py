@@ -34,6 +34,24 @@ class MemoryBlock(NamedTuple):
     range: AddressRange
 
 
+@dataclass
+class SectionMemoryBank(dataclass):
+    """Represent a named memory bank with associated AddressRange.
+
+    Optionally, an numeric ID can be added to further help identify the bank.
+    """
+
+    __slots__ = ('name', 'id', 'range')
+    name: str
+    id: int | None
+    range: AddressRange
+
+    def __init__(self, name: str, id: int = -1, range: AddressRange):
+        self.name = name
+        self.id = id
+        self.range = range
+
+
 # ##############################################################################
 
 
@@ -49,71 +67,75 @@ class SectionType:
         # ------------------------------------------------------------
         # These are the memory
         self._mem_banks = {
+            SectionMemoryBank(name="WRAM0",
+                              range=AddressRange(start=Expr("$C000"),
+                                                 end=Expr("$CFFF"))),
             # Working Ram
-            "WRAM0": MemoryBlock(id=0,
-                                 range=AddressRange(start=Expr("0xC000"),
-                                                    end=Expr("0xCFFF"))),
+            SectionMemoryBank(name="WRAM0",
+                              range=AddressRange(start=Expr("0xC000"),
+                                                 end=Expr("0xCFFF"))),
 
             # Video Ram
-            "VRAM":  MemoryBlock(id=1,
-                                 range=AddressRange(start=Expr("0x8000"),
-                                                    end=Expr("0x9FFF"))),
+            SectionMemoryBank(name="VRAM",
+                              range=AddressRange(start=Expr("0x8000"),
+                                                 end=Expr("0x9FFF"))),
 
             # Progam switching area for ROM banks
             # This will point to ROM banks 0x01-0x7F
-            "ROMX":  MemoryBlock(id=2,
-                                 range=AddressRange(start=Expr("0x4000"),
-                                                    end=Expr("0x7FFF"))),
+            SectionMemoryBank(name="ROMX",
+                              range=AddressRange(start=Expr("0x4000"),
+                                                 end=Expr("0x7FFF"))),
 
             # RPM Bank 0
-            "ROM0":  MemoryBlock(id=3,
-                                 range=AddressRange(start=Expr("0x0000"),
-                                                    end=Expr("0x3FFF"))),
+            SectionMemoryBank(name="ROM0",
+                              range=AddressRange(start=Expr("0x0000"),
+                                                 end=Expr("0x3FFF"))),
 
             # CPU Work RAM or Stack RAM
-            "HRAM":  MemoryBlock(id=4,
-                                 range=AddressRange(start=Expr("0xFF80"),
-                                                    end=Expr("0xFFFE"))),
+            SectionMemoryBank(name="HRAM",
+                              range=AddressRange(start=Expr("0xFF80"),
+                                                 end=Expr("0xFFFE"))),
 
             # Switchable working RAM for banks 1-7
-            "WRAMX": MemoryBlock(id=5,
-                                 range=AddressRange(start=Expr("0xD000"),
-                                                    end=Expr("0xDFFF"))),
+            SectionMemoryBank(name="WRAMX",
+                              range=AddressRange(start=Expr("0xD000"),
+                                                 end=Expr("0xDFFF"))),
 
             # External Expansion Working RAM
-            "SRAM":  MemoryBlock(id=6,
-                                 range=AddressRange(start=Expr("0xA000"),
-                                                    end=Expr("0xBFFF"))),
+            SectionMemoryBank(name="SRAM",
+                              range=AddressRange(start=Expr("0xA000"),
+                                                 end=Expr("0xBFFF"))),
 
             # OAM (40 display data OBJs) (40 x 32 bits)
             # Object Attribute Memory
-            "OAM":   MemoryBlock(id=7,
-                                 range=AddressRange(start=Expr("0xFE00"),
-                                                    end=Expr("0xFE9F"))),
+            SectionMemoryBank(name="OAM",
+                              range=AddressRange(start=Expr("0xFE00"),
+                                                 end=Expr("0xFE9F"))),
 
             # Bank selector
-            "BANK":  MemoryBlock(id=8,
-                                 range=AddressRange(start=Expr("0x0000"),
-                                                    end=Expr("0x0007")))
+            SectionMemoryBank(name="BANK",
+                              range=AddressRange(start=Expr("0x0000"),
+                                                 end=Expr("0x0007")))
         }
 
-    @property
+    @ property
     def mem_banks(self):
         """Return a dict of memory blocks that are valid in a SECTION."""
         return self._mem_banks
 
-    def is_valid_sectiontype(self, sectionType):
+    def is_valid_sectiontype(self, section_type: str) -> bool:
         """Return True if the sectionType is valid. False otherwise."""
-        sec = sectionType.upper().strip()
-        valid = (sec in self.sections.keys())
-        return valid
+        sec = section_type.upper().strip()
+        items = [x for x in self._mem_banks if x.name is sec]
+        return len(items) > 0
 
-    def sectiontype_info(self, sectiontype):
-        """Return the ID and memory range of sectionType."""
-        if sectiontype in self._mem_banks:
-            return self._mem_banks[sectiontype]
-        else:
-            return None
+    def sectiontype_info(self, section_type: str) -> SectionMemoryBank | None:
+        """Return the memory bank info associated with a SectionType name."""
+        sec = section_type.upper().strip()
+        items = [x for x in self._mem_banks if x.name == sec]
+        if len(items):
+            return items[0]  # Should only be one found.
+        return None
 
 
 # #############################################################################
@@ -127,12 +149,12 @@ class Section:
         self._tokens = tokens
         self._mem_bank = None
 
-    @classmethod
+    @ classmethod
     def section_from_string(cls, text: str) -> Section:
         group = Tokenizer().tokenize_string(text)
         return Section(group)
 
-    @property
+    @ property
     def mem_bank(self) -> SectionMemoryBank:
         return self._mem_bank
 
@@ -147,7 +169,7 @@ class _SectionParser:
         self._tokens = tokens
 
     def _is_valid(self) -> bool:
-        return Truue
+        return True
 
     def _get_all_options(self) -> bool:
         _len = len(self._tokens)

@@ -18,9 +18,9 @@ class InstructionDetail:
     cycles = []
     flags = []
     length = 0
-    mnemonic = ""
-    operand1 = None
-    operand2 = None
+    mnemonic: str = ""
+    operand1: str = None
+    operand2: str = None
 
 
 #
@@ -144,6 +144,7 @@ class InstructionSet():
             detail = make_dataclass(
                 "InstructionDetail", ((k, type(v)) for k, v
                                       in data.items()))(**data)
+            detail.addr = Expression(detail.addr)
         return detail
 
     @property
@@ -153,7 +154,7 @@ class InstructionSet():
 
     def is_mnemonic(self, mnemonic_string: str) -> bool:
         """Test if the string represent a mnemonic."""
-        return mnemonic_string.upper() in self.lr35902
+        return mnemonic_string.lower() in self.lr35902
 
     #                                             #
     # -----=====<  Private Functions  >=====----- #

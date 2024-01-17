@@ -1,6 +1,9 @@
 """Core classes."""
 from .convert import Convert
 from .expression import Expression, ExpressionType
+from .label import Label, Labels
+from .symbol import Symbol, SymbolAffix, Symbols, SymbolUtils, SymbolScope
+from .constants import Lexical, AddressType, NodeDefinition, MinMax
 from .exception import ExpressionSyntaxError, \
     EquateSymbolError, \
     EquateExpressionError, \
@@ -12,9 +15,6 @@ from .exception import ExpressionSyntaxError, \
     DescriptorRadixDigitValueError, \
     DescriptorRadixError
 
-from .symbol import Symbol, SymbolAffix, Symbols, SymbolUtils, SymbolScope
-from .constants import Lexical, AddressType, NodeDefinition, MinMax
-
 __all__ = [
     "Convert", "Expression", "ExpressionType",
     "ExpressionSyntaxError",
@@ -25,5 +25,6 @@ __all__ = [
     "DescriptorRadixDigitValueError",
     "DescriptorRadixError",
     "Symbol", "SymbolAffix", "Symbols", "SymbolUtils", "SymbolScope",
+    "Label", "Labels",
     "Lexical", "AddressType", "NodeDefinition", "MinMax"
 ]

@@ -66,6 +66,7 @@ Symbols can be one of three types:
              gr8          - Invalid - missing trailing ':' (or '::')
 """
 
+from __future__ import annotations
 import string
 from enum import StrEnum
 
@@ -149,7 +150,7 @@ class SymbolUtils:
     def has_valid_name_characters(cls, name: str) -> bool:
         """Return if the name has valid characters."""
         try:
-            cls.label = cls.clean_name(name)
+            cls().label = cls.clean_name(name)
         except DescriptorException:
             return False
         return all(c in cls.valid_symbol_chars() for c in name)
@@ -157,12 +158,8 @@ class SymbolUtils:
     @classmethod
     def has_valid_scope_designation(cls, name: str) -> bool:
         """Return True if the name has valid decorator affixes for scope."""
-        # Symbol name must start with an alpha and cannot have
-        # embedded "." or ":" characters.
-        clean = cls.clean_name(name)
-        if clean[0].isalpha() is False or \
-           clean.count(".") or \
-           clean.count(":"):
+        # A 'cleaned' symbol name needs to conform to the label descriptor.
+        if cls.has_valid_name_characters(name) is False:
             return False
 
         # Valid symbols are:
@@ -211,20 +208,22 @@ class Symbol():
     """A String name used to represent an address in memory.
 
     The name of the Symbol must follow the convention described in this
-    module. The `addressing` optional boolean specifies if this symbol
-    represents a location in memory (address) or just an alias for something
-    like a string or block of data. By default, the Symbol is defined as an
-    Symbol that records an address.
+    module. The 'base_address' represents the absolute address in memory
+    for this symbol. Optionally, this object can be added to the 'Symbols'
+    dictionary. Symbol names must be unique.
     """
 
-    __slots__ = ('_original_symbol', '_scope', '_clean_name', 'base_address')
+    __slots__ = ('_original_symbol', '_scope', '_clean_name', 'base_address',
+                 '_relative_symbol')
     _original_symbol: str
     _scope: SymbolScope
     _clean_name: str
+    _relative_symbol: Symbol | None
     base_address: Expression
 
-    def __init__(self, name: str, base_address: Expression):
-        """Initialize a new Symbol with addressing flag."""
+    def __init__(self, name: str, base_address: Expression,
+                 relative_symbol: Symbol = None):
+        """Initialize a new Symbol with a 16-bit address."""
         if not name or not SU.has_valid_name_characters(name):
             raise InvalidSymbolName(name)
         if not SU.has_valid_scope_designation(name):
@@ -232,6 +231,7 @@ class Symbol():
         self._original_symbol = name
         self._clean_name = SU.clean_name(name)
         self._scope = SU.get_valid_scope(name)
+        self._relative_symbol = relative_symbol
         self.base_address = base_address
 
     def __str__(self):
@@ -277,6 +277,9 @@ class Symbols(dict):
     """
 
     __slots__ = ('symbols', 'first_chars', 'valid_chars')
+    first_chars: str
+    valid_chars: str
+    symbols: dict
 
     def __new__(cls):
         """Implement a singleton by returning the existing or new instance."""
@@ -287,11 +290,6 @@ class Symbols(dict):
             cls.instance.valid_chars = string.ascii_letters + \
                 string.digits + ".:_"
         return cls.instance
-
-    def __init__(self):
-        """Initialize a Symbol object."""
-        super().__init__()
-        self.symbols = {}
 
     def __repr__(self):
         """Print the object."""
@@ -317,7 +315,13 @@ class Symbols(dict):
         """Set item by key."""
         if not isinstance(value, Symbol):
             raise TypeError(value)
-        self.symbols[value.clean_name().upper()] = value
+        if key:
+            key = (key.lstrip(".")).rstrip(":.")
+            key = key.upper()
+            self.symbols[key] = value
+        else:
+            raise KeyError("A key was not provided")
+        print(self.symbols)
 
     def find(self, key: str) -> Symbol:
         """Equal to the __get__() index function."""
@@ -326,7 +330,7 @@ class Symbols(dict):
     def add(self, symbol: Symbol):
         """Add a new Symbol object to the dictionary."""
         if symbol is not None:
-            self.symbols[symbol.clean_name().upper()] = symbol
+            self[symbol.name] = symbol
 
     def remove(self, symbol: Symbol):
         """Remove a symbol from the dictionary.
@@ -335,10 +339,10 @@ class Symbols(dict):
         remove.
         """
         if symbol is not None:
-            found = self[symbol.clean_name().upper()]
+            found = self[symbol.clean_name.upper()]
             if found:
                 new_d = dict(self.symbols)
-                del new_d[symbol.clean_name().upper()]
+                del new_d[symbol.clean_name.upper()]
                 self.symbols = new_d
 
     def local_symbols(self) -> dict:

@@ -103,7 +103,7 @@ class Tokenizer:
         return elements
 
     def _explode_delimiters(self, text: str) -> str:
-        """Return a string with brackets exploded for splitting.
+        """Return a string with brackets/+ exploded for splitting.
 
         There are three types of brackets recognized:
             Round brackets: ()
@@ -112,7 +112,7 @@ class Tokenizer:
         Also, the double quote and single quote values are also
         added to this as then also are used to enclose data.
         """
-        delimiters = "\"'([{}]),"
+        delimiters = "\"'([{}]),+"
         exploded = text
         if any(char in text for char in delimiters):
             for char in delimiters:

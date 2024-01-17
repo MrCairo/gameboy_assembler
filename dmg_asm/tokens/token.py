@@ -20,7 +20,7 @@ class TokenType(StrEnum):
     EXPRESSION = auto()
     IDENTIFIER = auto()
     INVALID = auto()
-    KEYWORD = auto()
+    INSTRUCTION = auto()
     LITERAL = auto()
     MEMORY_DIRECTIVE = auto()
     OPERATOR = auto()
@@ -167,7 +167,7 @@ class TokenFactory:
             elif SymbolUtils.is_valid_symbol(first):
                 self._assign_values(elements, TokenType.SYMBOL)
             elif IS().is_mnemonic(first):
-                self._assign_values(elements, TokenType.KEYWORD)
+                self._assign_values(elements, TokenType.INSTRUCTION)
             elif first in DEFINE_OPERATORS:
                 self._assign_values(elements, TokenType.OPERATOR)
             else:
@@ -188,7 +188,7 @@ class TokenFactory:
             self._assign_next(elements[1:])
 
         match tok_type:
-            case TokenType.KEYWORD:
+            case TokenType.INSTRUCTION:
                 self._assign_instruction(elements)
             case TokenType.SYMBOL:
                 self._assign_symbol(elements[0])

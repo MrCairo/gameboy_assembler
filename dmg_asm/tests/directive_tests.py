@@ -2,7 +2,6 @@
 
 # import os
 import unittest
-from icecream import ic
 from ..directives import Equate, Define
 from ..core import Convert
 from ..tokens import TokenGroup, Tokenizer
@@ -31,7 +30,7 @@ class DirectiveUnitTests(unittest.TestCase):
         """Test the SECTION Directive supplied as a string."""
         section = 'SECTION "CoolStuff", WRAM0, BANK[2]'
         group = Tokenizer().tokenize_string(section)
-        ic(str(group))
+        self.assertTrue(len(group) > 0)
 
 
 #  End of unit tests

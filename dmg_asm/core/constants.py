@@ -50,6 +50,7 @@ DIRECTIVES = [
     "NEXTU",
     "ORG",
     "Purge",
+    "SECTION",
     "SET",
     "UNION",
 ]
@@ -62,7 +63,6 @@ STORAGE_DIRECTIVES = [
 ]
 
 MEMORY_DIRECTIVES = [
-    "SECTION",
     "WRAM0",
     "VRAM",
     "ROMX",
@@ -75,13 +75,20 @@ MEMORY_DIRECTIVES = [
     "ALIGN"
 ]
 
+REGISTERS = [
+    # General Purpose Registers. A is the Accumulator
+    "A", "B", "C", "D", "E", "F", "H", "L",
+    # Register Pairs
+    "BC", "DE", "HL"
+]
+
 DEFINE_OPERATORS = [
     "=",
     "EQU",
     "EQUS"
 ]
 
-PUNCTUATORS = "\"'([{}])"
+PUNCTUATORS = "\"'([{}])+"
 #
 # Bracketing is also done by " and ' which is why they are part of
 # this array.

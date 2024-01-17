@@ -120,6 +120,7 @@ class DescriptorMinMaxLengthError(DescriptorException):
         super().__init__(message)
 
 
+InvalidLabelName = DescriptorException
 InvalidSymbolName = ExpressionSyntaxError
 InvalidSymbolScope = ExpressionSyntaxError
 EquateSymbolError = ExpressionSyntaxError

@@ -48,11 +48,13 @@ class Expression:
     |   $$  | A 16-bit hexidecimal value only. Must be 4 digits in length.  |
     +-------+---------------------------------------------------------------+
     |   0   | A decimal value. Must be at least two digits (001 for 1)      |
+    |       | Note: a decimal expression is always considered 16-bit.
     +-------+---------------------------------------------------------------+
     |   %   | An 8-bit only binary digit (i.e %10101011)                    |
     +-------+---------------------------------------------------------------+
-    | ", '  | Encloses a Symbolic string expression. Must start and end with|
-    |       | the same character. 'Hello' "World"                           |
+    |       | Encloses a Symbolic string expression. Must start and end with|
+    | ", '  | the same character. 'Hello' "World". String length cannot     |
+    |       | exceed 16 chars and are validated by LBL_DSC                  |
     +-------+---------------------------------------------------------------+
     |   &   | An 8-bit octal value.                                         |
     +-------+---------------------------------------------------------------+

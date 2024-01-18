@@ -52,6 +52,14 @@ class Mnemonic:
             return self.instruction_detail.mnemonic
         return None
 
+    def resolve_again(self):
+        """Force the Mnemonic to re-resolve it's initial tokens.
+
+        This will force, for example, re-evaluating the Symbols and Labels
+        which would be necessary if they have changed since this object was
+        created."""
+        self.instruction_detail = _Utils.instruction_detail(self.token_group)
+
 # --------========[ End of Mnemonic class ]========-------- #
 
 
@@ -296,12 +304,15 @@ class _Utils:
         This function assumes that `node` points to a '!' value."""
         hex_str = Convert(Expression(f"0{node['!']}")).to_hex_string()
         detail = IS().instruction_detail_from_byte(hex_str.lower())
+        # Convert the actual operand into what was parsed by the Mnemonic.
         if detail and len(operands) > 0:
-            if detail.operand1 in cls.data_placeholders:
-                detail.immediate1 = True
             detail.operand1 = operands[0]
         if detail and len(operands) > 1:
-            if detail.operand2 in cls.data_placeholders:
-                detail.immediate2 = True
             detail.operand2 = operands[1]
+        code = Convert(detail.addr).to_code()
+        if hasattr(detail, 'immediate1') and detail.immediate1:
+            code += Convert(Expression(detail.operand1)).to_code()
+        if hasattr(detail, 'immediate2') and detail.immediate2:
+            code += Convert(Expression(detail.operand2)).to_code()
+        detail.code = code
         return detail

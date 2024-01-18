@@ -320,7 +320,6 @@ class Symbols(dict):
             self.symbols[key] = value
         else:
             raise KeyError("A key was not provided")
-        print(self.symbols)
 
     def find(self, key: str) -> Symbol:
         """Equal to the __get__() index function."""

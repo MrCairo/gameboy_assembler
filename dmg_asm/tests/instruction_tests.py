@@ -137,6 +137,49 @@ class InstructionDecodingTests(unittest.TestCase):
         self.assertTrue(inst.instruction_detail.addr == Expression("$c3"))
         self.assertTrue(inst.instruction_detail.operand1 == "$0200")
 
+    def test_halt(self):
+        """Test the HALT instruction."""
+        line = "HALT"
+        tokens = Tokenizer().tokenize_string(line)
+        inst = Mnemonic(tokens)
+        self.assertIsNotNone(inst)
+        self.assertIsNotNone(inst.instruction_detail)
+        self.assertTrue(inst.instruction_detail.addr == Expression("$76"))
+
+    def test_redo_if_symbol_changes(self):
+        """Test the resolve_again feature of the Mnemonic instance."""
+        symbol = Symbol("prog_main:", Expression("$0200"))
+        Symbols().add(symbol)
+        line = "JP prog_main:"
+        tokens = Tokenizer().tokenize_string(line)
+        inst = Mnemonic(tokens)
+        self.assertIsNotNone(inst)
+        self.assertIsNotNone(inst.instruction_detail)
+        self.assertTrue(inst.instruction_detail.addr == Expression("$c3"))
+        self.assertTrue(inst.instruction_detail.operand1 == "$0200")
+        symbol.base_address = Expression("$ffd2")
+        inst.resolve_again()
+        self.assertTrue(inst.instruction_detail.addr == Expression("$c3"))
+        self.assertTrue(inst.instruction_detail.operand1 == "$FFD2")
+
+    def test_redo_if_label_changes(self):
+        """Test the resolve_again feature of the Mnemonic instance."""
+        Labels().push(Label("HIGH", Expression("$CB")))
+        Labels().push(Label("LOW", Expression("$41")))
+        line = "ldh (HIGH), a"
+        tokens = Tokenizer().tokenize_string(line)
+        inst = Mnemonic(tokens)
+        self.assertIsNotNone(inst)
+        self.assertIsNotNone(inst.instruction_detail)
+        self.assertTrue(inst.instruction_detail.addr == Expression("$e0"))
+        self.assertTrue(inst.instruction_detail.operand1 == "($CB)")
+        # Update Label's value
+        Labels().push(Label("HIGH", Expression("%00010001")), replace=True)
+        # re-do mnemonic so that the new Label is resolved again
+        inst.resolve_again()
+        self.assertTrue(inst.instruction_detail.addr == Expression("$e0"))
+        self.assertTrue(inst.instruction_detail.operand1 == "($11)")
+
     def tokenize_lines(self):
         """Test tokenization of a small set of program lines."""
         _reader = BufferReader(ASM_1)

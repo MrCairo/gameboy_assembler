@@ -6,12 +6,18 @@ from .expression import Expression
 class Convert:
     """Class to convert an exression from one base to another."""
 
+    # __slots__ = ('_expr', '_value_str', '_value_base', 'dec_value')
+    # _expr: Expression
+    # _value_str: str
+    # _value_base: int
+    # _dec_value: int
+
     def __init__(self, expr: Expression):
         """Initialize the Convert object."""
-        self._expr = expr
-        self._value_str = expr.prefixless_value
-        self._value_base = expr.descriptor.args.base
-        self._dec_value = int(self._value_str, self._value_base)
+        self._expr: Expression = expr
+        self._value_str: str = expr.prefixless_value
+        self._value_base: int = expr.descriptor.args.base
+        self._dec_value: int = int(self._value_str, self._value_base)
 
     def to_decimal_int(self) -> int:
         """Return the decimal equivalent of the expression."""
@@ -47,5 +53,19 @@ class Convert:
     def to_binary(self) -> Expression:
         """Convert expression to an Binary value."""
         return Expression(f"%{self._dec_value:08b}")
+
+    def to_code(self) -> bytes | None:
+        """Convert to bytes. 16-bit values are written as LSB MSB."""
+        val: int = self.to_decimal_int()
+        code = None
+        if self._value_base == 0:
+            text = self._expr.value
+            code = text.encoding()
+        elif self._expr.descriptor.args.limits.max-1 > 255:
+            code = val.to_bytes(2, byteorder='little')
+        elif self._expr.descriptor.args.limits.max-1 < 256:
+            code = val.to_bytes(1)
+        return code
+
 
 # Class Convert.py ends here.

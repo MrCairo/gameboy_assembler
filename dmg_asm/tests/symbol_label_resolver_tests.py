@@ -79,6 +79,10 @@ class SymbolAndLabelUnitTests(unittest.TestCase):
         self.assertTrue(lab2.value == Expression("$1234"))
         print(lab2)
 
+    #
+    # Need to test relative_label of a Symbol.
+    #
+
     def test_tokenize_lines(self):
         """Test tokenization of a small set of program lines."""
         _reader = BufferReader(ASM_1)

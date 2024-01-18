@@ -30,9 +30,13 @@ class InstructionDetail:
     mnemonic: str = ""
     operand1: str = None
     operand2: str = None
-    # These fields are set in the Mnemonics class when an instruction is parsed
-    immediate1: bool = False  # True if operand1 is immediate data
+    # Either one immediate is True if their corresponding operand is a
+    # data placeholder - meaning that it will required compile-time data.
+    immediate1: bool = False  # True if operand1 is immediate (placeholder)
     immediate2: bool = False  # True if operand2 is immediate data
+    # Used to hold binary representation of the entire instruction after
+    # parsing.
+    code: bytes = None
 
 
 #
@@ -133,6 +137,7 @@ class InstructionSet():
     """
 
     __slots__ = ('data', 'lr35902', 'lr35902_detail')
+    placeholders = ["a8", "a16", "d8", "d16", "r8"]
 
     def __new__(cls):
         """Implement a singleton by returning the existing or new instance."""
@@ -157,6 +162,10 @@ class InstructionSet():
                 "InstructionDetail", ((k, type(v)) for k, v
                                       in data.items()))(**data)
             detail.addr = Expression(detail.addr)
+            if hasattr(detail, 'operand1'):
+                detail.immediate1 = detail.operand1 in self.placeholders
+            if hasattr(detail, 'operand2'):
+                detail.immediate2 = detail.operand2 in self.placeholders
         return detail
 
     @property

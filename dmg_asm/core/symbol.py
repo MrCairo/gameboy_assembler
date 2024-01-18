@@ -70,13 +70,12 @@ from __future__ import annotations
 import string
 from enum import StrEnum
 
-from .constants import SYM, MAX_SYMBOL_LENGTH
-from .exception import UpdateSymbolAddressError, DescriptorException, \
-    ExpressionSyntaxError, InvalidSymbolName, InvalidSymbolScope
+from .exception import DescriptorException, InvalidSymbolName, \
+    InvalidSymbolScope
 from .expression import Expression
 from .convert import Convert
 from .descriptor import LBL_DSC
-from ..cpu.instruction_pointer import InstructionPointer as IP
+# from ..cpu.instruction_pointer import InstructionPointer as IP
 
 
 class SymbolScope(StrEnum):

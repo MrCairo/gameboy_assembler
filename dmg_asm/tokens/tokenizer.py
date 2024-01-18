@@ -1,6 +1,5 @@
 """Classes that convert text into Tokens."""
 
-from copy import copy
 from typing import Optional
 from .token_group import TokenGroup
 from .token import Token, TokenFactory
@@ -54,7 +53,7 @@ class Tokenizer:
     def tokenize_elements(self, elements: list) -> Optional[TokenGroup]:
         """Convert elements to a token and add it to the token group."""
         try:
-            token = TokenFactory(elements).token
+            token: Token = TokenFactory(elements).token
         except TypeError:
             return None
         self._group.add(token.shallow_copy())

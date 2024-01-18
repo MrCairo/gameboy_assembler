@@ -2,10 +2,8 @@
 Manages DEF tokens
 """
 from __future__ import annotations
-from icecream import ic
 from ..core import constants
-from ..core import Expression, DefineExpressionError, DefineSymbolError, \
-    DefineAssignmentError
+from ..core import Expression, DefineSymbolError, DefineAssignmentError
 from ..tokens import Tokenizer, TokenGroup, TokenType
 
 # TOK = const.TOK

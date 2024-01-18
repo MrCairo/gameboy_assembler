@@ -20,15 +20,9 @@ example:
 
 """
 
-import string
-
 from dataclasses import dataclass
 from .descriptor import LBL_DSC
 from .expression import Expression
-from .exception import ExpressionSyntaxError, InvalidLabelName, \
-    DescriptorException, \
-    DescriptorMinMaxLengthError, \
-    DescriptorMinMaxValueError
 
 
 @dataclass

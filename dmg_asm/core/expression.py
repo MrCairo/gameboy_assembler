@@ -15,10 +15,6 @@ from dataclasses import dataclass
 from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC
 from .descriptor import LBL_DSC, BaseDescriptor
 from .exception import ExpressionSyntaxError, \
-    DescriptorMinMaxLengthError, \
-    DescriptorMinMaxValueError, \
-    DescriptorRadixDigitValueError, \
-    DescriptorRadixError, \
     DescriptorException
 
 

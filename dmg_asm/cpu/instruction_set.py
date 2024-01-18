@@ -5,13 +5,22 @@ import json
 from dataclasses import dataclass, make_dataclass
 
 from .LR35902.lr35902_data import LR35902Data
-from ..core.convert import Convert
 from ..core.expression import Expression
 from ..core.exception import DescriptorException, ExpressionSyntaxError
 
 
 @dataclass
 class InstructionDetail:
+    """Represent detail data of an instruction.
+
+    All fields excluding the immediate flags are represented in the LR35902
+    CPU data fields.
+    immediate1 and 2 are used to flag whether operand1 or 2, repectively,
+    are immediate data like a relative byte, 16-bit data or address. These
+    values are set in the Mnemonics object when an instruction is parsed.
+    Users of the Mnemonics class can then determine how the object should be
+    represented 1, 2, or 3 bytes and when operand represents the data.
+    """
     # __slots__ = ('addr', 'cycles', 'flags', 'length', 'mnemonic',
     #              'operand1', 'operand2')
     addr: str
@@ -21,6 +30,9 @@ class InstructionDetail:
     mnemonic: str = ""
     operand1: str = None
     operand2: str = None
+    # These fields are set in the Mnemonics class when an instruction is parsed
+    immediate1: bool = False  # True if operand1 is immediate data
+    immediate2: bool = False  # True if operand2 is immediate data
 
 
 #

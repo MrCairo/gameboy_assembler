@@ -8,11 +8,9 @@ Implementation of a Section
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import NamedTuple
-from collections import namedtuple
-from ..core.constants import EQU, LBL, INST, STOR
 from ..core.expression import Expression as Expr
 from ..tokens import TokenGroup, Token, Tokenizer, TokenType
-from ..core.exception import SectionException, SectionDeclarationError
+from ..core.exception import SectionDeclarationError
 
 # ##############################################################################
 # SecAddress is a Tuple that holds a start and end
@@ -43,13 +41,14 @@ class SectionMemoryBank(dataclass):
 
     __slots__ = ('name', 'id', 'range')
     name: str
-    id: int | None
     range: AddressRange
+    id: int | None
 
-    def __init__(self, name: str, id: int = -1, range: AddressRange):
+    def __init__(self, name: str, addr_range: AddressRange,
+                 identifier: int = -1):
         self.name = name
-        self.id = id
-        self.range = range
+        self.range = addr_range
+        self.id = identifier
 
 
 # ##############################################################################
@@ -68,60 +67,60 @@ class SectionType:
         # These are the memory
         self._mem_banks = {
             SectionMemoryBank(name="WRAM0",
-                              range=AddressRange(start=Expr("$C000"),
-                                                 end=Expr("$CFFF"))),
+                              addr_range=AddressRange(start=Expr("$C000"),
+                                                      end=Expr("$CFFF"))),
             # Working Ram
             SectionMemoryBank(name="WRAM0",
-                              range=AddressRange(start=Expr("0xC000"),
-                                                 end=Expr("0xCFFF"))),
+                              addr_range=AddressRange(start=Expr("0xC000"),
+                                                      end=Expr("0xCFFF"))),
 
             # Video Ram
             SectionMemoryBank(name="VRAM",
-                              range=AddressRange(start=Expr("0x8000"),
-                                                 end=Expr("0x9FFF"))),
+                              addr_range=AddressRange(start=Expr("0x8000"),
+                                                      end=Expr("0x9FFF"))),
 
             # Progam switching area for ROM banks
             # This will point to ROM banks 0x01-0x7F
             SectionMemoryBank(name="ROMX",
-                              range=AddressRange(start=Expr("0x4000"),
-                                                 end=Expr("0x7FFF"))),
+                              addr_range=AddressRange(start=Expr("0x4000"),
+                                                      end=Expr("0x7FFF"))),
 
             # RPM Bank 0
             SectionMemoryBank(name="ROM0",
-                              range=AddressRange(start=Expr("0x0000"),
-                                                 end=Expr("0x3FFF"))),
+                              addr_range=AddressRange(start=Expr("0x0000"),
+                                                      end=Expr("0x3FFF"))),
 
             # CPU Work RAM or Stack RAM
             SectionMemoryBank(name="HRAM",
-                              range=AddressRange(start=Expr("0xFF80"),
-                                                 end=Expr("0xFFFE"))),
+                              addr_range=AddressRange(start=Expr("0xFF80"),
+                                                      end=Expr("0xFFFE"))),
 
             # Switchable working RAM for banks 1-7
             SectionMemoryBank(name="WRAMX",
-                              range=AddressRange(start=Expr("0xD000"),
-                                                 end=Expr("0xDFFF"))),
+                              addr_range=AddressRange(start=Expr("0xD000"),
+                                                      end=Expr("0xDFFF"))),
 
             # External Expansion Working RAM
             SectionMemoryBank(name="SRAM",
-                              range=AddressRange(start=Expr("0xA000"),
-                                                 end=Expr("0xBFFF"))),
+                              addr_range=AddressRange(start=Expr("0xA000"),
+                                                      end=Expr("0xBFFF"))),
 
             # OAM (40 display data OBJs) (40 x 32 bits)
             # Object Attribute Memory
             SectionMemoryBank(name="OAM",
-                              range=AddressRange(start=Expr("0xFE00"),
-                                                 end=Expr("0xFE9F"))),
+                              addr_range=AddressRange(start=Expr("0xFE00"),
+                                                      end=Expr("0xFE9F"))),
 
             # Bank selector
             SectionMemoryBank(name="BANK",
-                              range=AddressRange(start=Expr("0x0000"),
-                                                 end=Expr("0x0007")))
+                              addr_range=AddressRange(start=Expr("0x0000"),
+                                                      end=Expr("0x0007")))
         }
 
-    @ property
-    def mem_banks(self):
-        """Return a dict of memory blocks that are valid in a SECTION."""
-        return self._mem_banks
+    # @property
+    # def mem_banks(self):
+    #     """Return a dict of memory blocks that are valid in a SECTION."""
+    #     return self._mem_banks
 
     def is_valid_sectiontype(self, section_type: str) -> bool:
         """Return True if the sectionType is valid. False otherwise."""
@@ -161,12 +160,17 @@ class Section:
 
 class _SectionParser:
     """Parse the section tokens."""
-    __slots__ = ("_directive", "_label")
+    __slots__ = ("_directive", "_label", "_tokens")
+    _directive: Token
+    _label: Token
 
     def __init__(self, tokens: TokenGroup):
-        if tokens[0].type is not TokenType.STORAGE_DIRECTIVE:
+        token: Token = tokens[0]
+        if token.type is not TokenType.STORAGE_DIRECTIVE:
             raise SectionDeclarationError
         self._tokens = tokens
+        self._directive = None
+        self._label = None
 
     def _is_valid(self) -> bool:
         return True
@@ -183,14 +187,14 @@ class _SectionParser:
         if index + 3 < _len:
             punct = ['"', "'"]
             quote = None
-            tok = self._tokens[index + 1]
+            tok: Token = self._tokens[index + 1]
             quote = tok.value if tok.value in punct else None
             if quote is None:
                 return False
 
-            label = self._tokens[index + 2]
-            tok = self._tokens[index + 3]
-            equote = tok.value if tok.value in punct else None
+            label: Token = self._tokens[index + 2]
+            tok: Token = self._tokens[index + 3]
+            equote: str = tok.value if tok.value in punct else None
             if equote is None or equote != quote:
                 return False
             self._label = label
@@ -201,6 +205,7 @@ class _SectionParser:
 
         if self._tokens[index] in ['"', "'"]:
             index = index + 1 if index < _len else None
+        return True
 
     def _get_directive_name(self) -> str | None:
         """Returns SECTION or None."""

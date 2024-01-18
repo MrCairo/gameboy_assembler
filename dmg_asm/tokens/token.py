@@ -3,9 +3,9 @@
 from __future__ import annotations   # Forward references
 from enum import StrEnum, auto
 from ..core.constants import \
-    VAL_T as value_t, ARGS_T as arguments_t, NEXT_T as next_t, \
-    TYPE_T as type_t, DATA_T as datum_t, DEFINE_OPERATORS, \
-    STORAGE_DIRECTIVES, PUNCTUATORS, DIRECTIVES, MEMORY_DIRECTIVES
+    VAL_T as value_t, NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
+    DEFINE_OPERATORS, STORAGE_DIRECTIVES, PUNCTUATORS, DIRECTIVES, \
+    MEMORY_DIRECTIVES
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils, Symbol
 from ..core.exception import InvalidSymbolName, InvalidSymbolScope
@@ -138,7 +138,7 @@ class TokenFactory:
         self.assign(elements)
 
     @property
-    def token(self):
+    def token(self) -> Token:
         """Return the token."""
         return self._tok
 
@@ -196,16 +196,16 @@ class TokenFactory:
                 self._assign_expression(elements[0])
         return True
 
-    def _assign_instruction(self, elements: list):
+    def _assign_instruction(self, elements: list) -> None:
         mnemonic = elements[0]
         ins = IS().instruction_from_mnemonic(mnemonic.upper())
         self._tok.data = ins
 
-    def _assign_symbol(self, name: str):
+    def _assign_symbol(self, name: str) -> None:
         sym = Symbol(name, 0x00)
         self._tok.data = sym
 
-    def _assign_expression(self, expr: str):
+    def _assign_expression(self, expr: str) -> None:
         self._tok.data = Expression(expr)
 
     def _assign_next(self, elements) -> bool:

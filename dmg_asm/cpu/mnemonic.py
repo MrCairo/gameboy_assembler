@@ -1,14 +1,9 @@
 """Class(es) that construct a Z80 mnemonic from tokens."""
 
-from dataclasses import dataclass
-from icecream import ic
-from ..core import Convert
-from ..core.expression import Expression
-from ..core.exception import DescriptorException, ExpressionSyntaxError
-from ..core import Label, Labels, Symbol, Symbols
-from ..tokens import TokenGroup, Token, TokenType, Tokenizer
+from ..core.exception import ExpressionSyntaxError
+from ..core import Convert, Label, Labels, Symbol, Symbols, Expression
+from ..tokens import TokenGroup, TokenType
 from .instruction_set import InstructionSet as IS, InstructionDetail
-from .registers import Registers
 
 
 class Mnemonic:
@@ -185,7 +180,7 @@ class _Utils:
         operands = []
         index = 1
         detail = None
-        while node is not None and length >= index:
+        while node is not None and index <= length:
             if "!" in node:
                 detail = _Utils._complete_node(operands, node)
                 break
@@ -223,13 +218,14 @@ class _Utils:
     @classmethod
     def _assign_if_special(cls, special: dict, operand: str,
                            node: dict) -> dict:
+        """Special is basically something like SP+LABEL or ($FF00+C)."""
         if len(special) > 0 and operand in special:
             _label_value = ""
             to_find: str = special.pop(operand)
             # Special should be able to be converted to an Expression.
             if Expression.has_valid_prefix(to_find) is False:
                 # if not, this special value could be a label. Resolve it.
-                label = Labels().find(to_find)
+                label: Label = Labels().find(to_find)
                 if label:
                     to_find = Convert(label.value).to_hex_string()
                     operand = operand.replace(label.name.lower(), to_find)
@@ -264,7 +260,7 @@ class _Utils:
     @classmethod
     def _assign_if_label(cls, operand: str, node: dict) -> dict:
         plain = operand.strip("()")
-        label = Labels().find(plain)
+        label: Label = Labels().find(plain)
         if label:
             new_node = _Utils.data_placeholder_node(node, label.value)
             if new_node is not None:
@@ -277,7 +273,7 @@ class _Utils:
     @classmethod
     def _assign_if_symbol(cls, operand: str, node: dict) -> dict:
         plain = operand.strip("()")
-        symbol = Symbols().find(plain)
+        symbol: Symbol = Symbols().find(plain)
         if symbol:
             new_node = _Utils.data_placeholder_node(node,
                                                     symbol.base_address)
@@ -290,7 +286,7 @@ class _Utils:
 
     @classmethod
     def _resolve_if_label(cls, text: str) -> Expression | None:
-        label = Labels().find(text)
+        label: Label = Labels().find(text)
         return label.value if label else None
 
     @classmethod
@@ -301,7 +297,11 @@ class _Utils:
         hex_str = Convert(Expression(f"0{node['!']}")).to_hex_string()
         detail = IS().instruction_detail_from_byte(hex_str.lower())
         if detail and len(operands) > 0:
+            if detail.operand1 in cls.data_placeholders:
+                detail.immediate1 = True
             detail.operand1 = operands[0]
         if detail and len(operands) > 1:
+            if detail.operand2 in cls.data_placeholders:
+                detail.immediate2 = True
             detail.operand2 = operands[1]
         return detail

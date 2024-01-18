@@ -4,7 +4,7 @@ Class that represent the GBZ80 registers.
 """
 
 
-class Registers():
+class Registers:
     """Class that represents and validates the GBZ80 registers."""
     __slots__ = ('all_registers', 'working_registers')
 

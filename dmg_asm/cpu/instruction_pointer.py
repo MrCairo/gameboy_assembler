@@ -3,7 +3,6 @@ A set of helper functions used during processing of instructions.
 """
 from ..core.convert import Convert as EC
 from ..core.expression import Expression
-from ..core.exception import DescriptorException
 
 ###############################################################################
 # Manages the instruction pointer position. Nececesary to compute
@@ -16,12 +15,18 @@ class InstructionPointer:
     _pointer = None
     _section_base = None
 
-    def __init__(self):
-        """IP Initializer."""
-        self._pointer = 0x0000
-        self._section_base = 0x00
+    def __new__(cls):
+        """IP Initializer and singleton."""
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(InstructionPointer, cls).__new__(cls)
+            cls.instance._pointer = 0x0000
+            cls.instance._section_base = 0x00
+        return cls.instance
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        return "InstructionPointer()"
+
+    def __str__(self) -> str:
         """Return the string representation of the IP."""
         desc = "No value"
         if self._pointer is not None:
@@ -34,7 +39,7 @@ class InstructionPointer:
         return self._pointer
 
     @pointer.setter
-    def pointer(self, value):
+    def pointer(self, value) -> None:
         """Set the current location or IP."""
         if value in range(0, 65536):
             # print(f"Setting IP to {hex(value)}")

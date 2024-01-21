@@ -54,10 +54,40 @@ class SectionTypeError(SectionException):
         super().__init__(message, line_text, line_number)
 
 
-class ExpressionSyntaxError(Exception):
-    """Thrown when a numerical or string expression is invalid."""
+class ExpressionException(Exception):
+    """A generic exception. Other exceptions are derrived from this."""
 
     def __init__(self, message):
+        """Initiaze the exception with a relevant message."""
+        super().__init__(message)
+
+
+class ExpressionSyntaxError(ExpressionException):
+    """Thrown when a numerical or string expression is invalid."""
+
+    _def_msg = "The expression string was not in a valid format."
+
+    def __init__(self, message=_def_msg):
+        """Initiaze the exception with a relevant message."""
+        super().__init__(message)
+
+
+class ExpressionTypeError(ExpressionException):
+    """Thrown when a numerical or string expression is invalid."""
+
+    _def_msg = "The input value is not an `str` type."
+
+    def __init__(self, message=_def_msg):
+        """Initiaze the exception with a relevant message."""
+        super().__init__(message)
+
+
+class ExpressionDescriptorError(ExpressionException):
+    """Thrown when a numerical or string expression is invalid."""
+
+    _def_msg = "The expression failed to validate against it's format."
+
+    def __init__(self, message=_def_msg):
         """Initiaze the exception with a relevant message."""
         super().__init__(message)
 
@@ -226,21 +256,21 @@ class Error:
             message = f"ERROR: Invalid error code: [{self._code}]"
         return message
 
-    @property
+    @ property
     def code(self) -> ErrorCode:
         """ Returns the error code passed when creating this Error object."""
         return self._code
 
-    @property
+    @ property
     def supplimental(self) -> str:
         """ Returns the supplimental text passed when creating this Error
         object. """
         return self._supplimental
 
-    @property
+    @ property
     def source_file(self) -> str:
         return self._file
 
-    @property
+    @ property
     def source_line(self) -> int:
         return self._line

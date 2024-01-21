@@ -2,19 +2,18 @@
 
 # import os
 import unittest
-
+# pylint: disable=relative-beyond-top-level
 from ..core.convert import Convert
-from ..core.symbol import Symbol, SymbolScope, Symbols
+from ..core.symbol import Symbol, SymbolScope
 from ..core.expression import ExpressionType, Expression
-from ..core.descriptor import BaseDescriptor, BaseValue, HEX_DSC, HEX16_DSC, \
-    DEC_DSC, BIN_DSC, OCT_DSC, LBL_DSC
+from ..core.descriptor import BaseDescriptor, HEX_DSC, HEX16_DSC, DEC_DSC
 from ..core.constants import MinMax
 from ..core.exception import ExpressionSyntaxError, \
     InvalidSymbolName, InvalidSymbolScope, \
+    ExpressionException, \
+    ExpressionDescriptorError, \
     DescriptorMinMaxLengthError, \
-    DescriptorMinMaxValueError, \
     DescriptorRadixDigitValueError, \
-    DescriptorRadixError, \
     DescriptorException
 
 
@@ -137,12 +136,14 @@ class ExpressionUnitTests(unittest.TestCase):
             Expression("0xHZKL")
         except DescriptorRadixDigitValueError as syntax:
             self.assertTrue(len(syntax.args) >= 1)
+        except ExpressionException as err:
+            self.assertTrue(len(err.args) >= 1)
         else:
             self.fail("Hex 0xHZKL was not flagged as invalid")
 
         try:
             Expression("$FFD210")
-        except DescriptorMinMaxLengthError as bounds:
+        except ExpressionDescriptorError as bounds:
             self.assertTrue(len(bounds.args) >= 1)
         else:
             self.fail("$FFD210 was not flagged with a bounds error.")
@@ -177,6 +178,8 @@ class ExpressionUnitTests(unittest.TestCase):
             Expression("%100111001")
         except DescriptorMinMaxLengthError as bounds:
             self.assertIsNotNone(bounds)
+        except ExpressionException as err:
+            self.assertIsNotNone(err)
         else:
             self.fail("%100111001 did not generate a bounds exception.")
 

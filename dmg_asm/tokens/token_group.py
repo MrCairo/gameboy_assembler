@@ -39,6 +39,12 @@ class TokenGroup:
         """Return the number of keys in the dictionary."""
         return len(self._group_store)
 
+    def __iter__(self):
+        return self._group_store.__iter__()
+
+    def __reversed__(self):
+        return self._group_store.__reversed__()
+
     def find_first_value(self, value) -> int | None:
         """Return the index in the group that matches the passed value.
 

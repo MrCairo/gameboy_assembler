@@ -5,7 +5,8 @@ from enum import StrEnum, auto
 from ..core.constants import \
     VAL_T as value_t, NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
     DEFINE_OPERATORS, STORAGE_DIRECTIVES, PUNCTUATORS, DIRECTIVES, \
-    MEMORY_DIRECTIVES
+    MEMORY_DIRECTIVES, MEMORY_OPTIONS, QUOTE_PUNCTUATORS, \
+    BEGIN_PUNCTUATORS, END_PUNCTUATORS
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils, Symbol
 from ..core.exception import InvalidSymbolName, InvalidSymbolScope
@@ -23,8 +24,11 @@ class TokenType(StrEnum):
     INSTRUCTION = auto()
     LITERAL = auto()
     MEMORY_DIRECTIVE = auto()
+    MEMORY_OPTION = auto()
     OPERATOR = auto()
     PUNCTUATOR = auto()
+    BEGIN_PUNCTUATOR = auto()
+    END_PUNCTUATOR = auto()
     SYMBOL = auto()
 
 
@@ -160,6 +164,8 @@ class TokenFactory:
                 self._assign_values(elements, TokenType.DIRECTIVE)
             elif first in MEMORY_DIRECTIVES:
                 self._assign_values(elements, TokenType.MEMORY_DIRECTIVE)
+            elif first in MEMORY_OPTIONS:
+                self._assign_values(elements, TokenType.MEMORY_OPTION)
             elif first in STORAGE_DIRECTIVES:
                 self._assign_values(elements, TokenType.STORAGE_DIRECTIVE)
             elif Expression.has_valid_prefix(first):
@@ -194,6 +200,12 @@ class TokenFactory:
                 self._assign_symbol(elements[0])
             case TokenType.EXPRESSION:
                 self._assign_expression(elements[0])
+            case TokenType.PUNCTUATOR:
+                # For a more specific punctuator type:
+                if elements[0] in BEGIN_PUNCTUATORS:
+                    self._tok.type = TokenType.BEGIN_PUNCTUATOR
+                elif elements[0] in END_PUNCTUATORS:
+                    self._tok.type = TokenType.END_PUNCTUATOR
         return True
 
     def _assign_instruction(self, elements: list) -> None:

@@ -70,7 +70,10 @@ MEMORY_DIRECTIVES = [
     "HRAM",
     "WRAMX",
     "SRAM",
-    "OAM",
+    "OAM"
+]
+
+MEMORY_OPTIONS = [
     "BANK",
     "ALIGN"
 ]
@@ -89,6 +92,21 @@ DEFINE_OPERATORS = [
 ]
 
 PUNCTUATORS = "\"'([{}])+"
+QUOTE_PUNCTUATORS = "\"'"
+BEGIN_PUNCTUATORS = "([{"
+END_PUNCTUATORS = ")]}"
+
+DPair = namedtuple("DPair", ('begin', 'end'))
+DelimData = namedtuple("DelimData", ('start', 'end', 'd_pair', 'label'))
+
+DELIMITER_PAIRS = [
+    DPair("'", "'"),
+    DPair('"', '"'),
+    DPair("[", "]"),
+    DPair("(", ")"),
+    DPair("{", "}")
+]
+
 #
 # Bracketing is also done by " and ' which is why they are part of
 # this array.
@@ -98,9 +116,9 @@ PUNCTUATORS = "\"'([{}])+"
 class Lexical(IntEnum):
     """Lexical error types."""
 
-    warning = 1
-    syntax_error = 2
-    unknown_error = 3
+    WARNING = 1
+    SYNTAX_ERROR = 2
+    UNKNOWN_ERROR = 3
 
 
 NodeType = Enum('NodeType', ['DEF',    # Define

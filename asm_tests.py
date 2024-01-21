@@ -1,7 +1,6 @@
 """GameBoy assembler unit tests."""
 import unittest
 import sys
-from icecream import ic
 from dmg_asm.tests.core_tests import ExpressionUnitTests, ConvertUnitTests, \
     DescriptorUnitTests, SymbolUnitTests
 from dmg_asm.tests.token_tests import TokenUnitTests
@@ -11,44 +10,44 @@ from dmg_asm.tests.instruction_tests import InstructionDecodingTests
 
 
 # ---------------------------------------------------------------
-ic("========== Instruction Decoding Unit Tests ==========")
+print("========== Instruction Decoding Unit Tests ==========")
 loader = unittest.TestLoader()
 suite = loader.loadTestsFromTestCase(InstructionDecodingTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
 
 # ---------------------------------------------------------------
-ic("=============== Descriptor Tests ===============")
+print("=============== Descriptor Tests ===============")
 loader = unittest.TestLoader()
 suite = loader.loadTestsFromTestCase(DescriptorUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
 
 # ---------------------------------------------------------------
-ic("=============== Expression Tests ===============")
+print("=============== Expression Tests ===============")
 loader = unittest.TestLoader()
 suite = loader.loadTestsFromTestCase(ExpressionUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
 
 # ---------------------------------------------------------------
-ic("=============== Conversion Unit Tests ===============")
+print("=============== Conversion Unit Tests ===============")
 suite = loader.loadTestsFromTestCase(ConvertUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
 
 # ---------------------------------------------------------------
-ic("=============== Symbol Unit Tests ===============")
+print("=============== Symbol Unit Tests ===============")
 suite = loader.loadTestsFromTestCase(SymbolUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
 
 # ---------------------------------------------------------------
-ic("=============== Token Unit Tests ===============")
+print("=============== Token Unit Tests ===============")
 suite = loader.loadTestsFromTestCase(TokenUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
 
 # ---------------------------------------------------------------
-ic("=============== Directive Unit Tests ===============")
+print("=============== Directive Unit Tests ===============")
 suite = loader.loadTestsFromTestCase(DirectiveUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
 
 # ---------------------------------------------------------------
-ic("============ Symbol and Label Unit Tests ============")
+print("============ Symbol and Label Unit Tests ============")
 suite = loader.loadTestsFromTestCase(SymbolAndLabelUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)

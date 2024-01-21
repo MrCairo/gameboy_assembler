@@ -2,12 +2,17 @@
 
 # import os
 import unittest
+from collections import namedtuple
+
 from icecream import ic
 
+# pylint: disable=relative-beyond-top-level
 from ..tokens import TokenType, Tokenizer, TokenGroup
-from ..core.constants import SYM
+from ..core.constants import DELIMITER_PAIRS, QUOTE_PUNCTUATORS
+from ..core.constants import DPair, DelimData
 from ..core.reader import BufferReader
-from ..core.expression import Expression
+from ..core import Convert, Expression
+from ..core.exception import ExpressionException
 from ..cpu.mnemonic import Mnemonic
 
 ASM_1 = """
@@ -63,9 +68,9 @@ class TokenUnitTests(unittest.TestCase):
 
     def test_token_group_from_elements(self):
         """Test Tokenize an array of instructions and data."""
-        line = "CLOUDS_Y: DB $FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,$00," \
-            "$FF,$00,$FF,$00,$FF,$00"
-        print_line(line)
+        line = "CLOUDS_Y: DB $FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,$00, \
+        $FF,$00,$FF,$00,$FF,$00"
+        # print_line(line)
         group = Tokenizer().tokenize_string(line)
         self.assertTrue(group is not None)
         self.assertTrue(len(group) == 18)
@@ -74,21 +79,21 @@ class TokenUnitTests(unittest.TestCase):
     def test_token_equ(self):
         """Test Tokenize an array of instructions and data."""
         line = "DEF PORT EQU 0xffd2"
-        print_line(line)
+        # print_line(line)
         group = Tokenizer().tokenize_string(line)
         self.assertTrue(group is not None)
-        print_group(group)
+        # print_group(group)
 
     def test_tokenize_instruction(self):
         """Tokenize a line of CPU instruction."""
         inst = "jr nz, .update_game"
-        print_line(inst)
+        # print_line(inst)
         group = Tokenizer().tokenize_string(inst)
         self.assertTrue(group is not None)
         self.assertTrue(group[0].type == TokenType.INSTRUCTION)
 
         inst = "LD (HL), $ff"
-        print_line(inst)
+        # print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -100,7 +105,7 @@ class TokenUnitTests(unittest.TestCase):
     def test_instruction_with_expression(self):
         """Create instruction detail from code that includes an expression."""
         inst = "LD (HL), $ff"
-        print_line(inst)
+        # print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -112,7 +117,7 @@ class TokenUnitTests(unittest.TestCase):
     def test_one_word_instruction(self):
         """Create instruction detail from an instruction like 'NOP'"""
         inst = "HALT"
-        print_line(inst)
+        # print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -124,7 +129,7 @@ class TokenUnitTests(unittest.TestCase):
         """Return detail from an instruction that doesn't require an
         expression."""
         inst = "ADD A, (HL)"
-        print_line(inst)
+        # print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -136,7 +141,7 @@ class TokenUnitTests(unittest.TestCase):
         """Test instruction detail for an instruction that doesn't require
         an external expression."""
         inst = "ADD A, (HL)"
-        print_line(inst)
+        # print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -151,7 +156,7 @@ class TokenUnitTests(unittest.TestCase):
         """Test instruction detail for an instruction that requires
         an external expression."""
         inst = "LD (HL), $ff"
-        print_line(inst)
+        # print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -167,7 +172,7 @@ class TokenUnitTests(unittest.TestCase):
         """Return detail from an instruction that doesn't require an
         expression."""
         inst = "ADD SP, 0x10"
-        print_line(inst)
+        # print_line(inst)
         tokens = Tokenizer().tokenize_string(inst)
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
@@ -177,25 +182,23 @@ class TokenUnitTests(unittest.TestCase):
         self.assertTrue(Expression(detail.operand2) == Expression("016"))
         self.assertTrue(detail.addr == Expression("$e8"))
 
-    def test_tokenize_lines(self):
+    def test_tokenize_lines(self) -> None:
         """Test tokenization of a small set of program lines."""
         _reader = BufferReader(ASM_1)
         _line = ''
         while _reader.is_eof() is False:
             _line = _reader.read_line()
             if _line and len(_line) > 0:
-                print_line(_line)
+                # print_line(_line)
                 groups = Tokenizer().tokenize_string(_line)
-                print_group(groups)
+                # print_group(groups)
                 if len(groups) == 0:
                     continue
-
     #  End of unit tests
 
 
 def print_group(group):
     """Print the token group."""
-    return
     ic("--------------------------------------")
     ic("Token Group(s):")
     index = 0
@@ -208,8 +211,51 @@ def print_group(group):
 
 def print_line(line_str):
     """Print the line to parse."""
-    return
     ic("++++++++++++++++++++++++++++++++++++++")
     ic("Code to parse:")
     ic(line_str)
     ic("++++++++++++++++++++++++++++++++++++++")
+
+
+def get_enclosed_value(tokens: TokenGroup, start_idx: int = 0) -> DelimData:
+    """Return delimiter enclosure data."""
+    start: int = None
+    end: int = None
+    label: str = None
+    pair: DPair = None
+    if start_idx < 0 or start_idx > len(tokens):
+        return None
+    for idx, tok in enumerate(tokens):
+        if idx < start_idx:
+            continue
+        match tok.type:
+            case TokenType.BEGIN_PUNCTUATOR:
+                start = idx
+                continue
+            case TokenType.LITERAL:
+                label = tok.value
+                continue
+            case TokenType.EXPRESSION:
+                if start:
+                    label = tok.value
+                    continue
+                break
+            case TokenType.END_PUNCTUATOR:
+                end = idx
+                break
+            case TokenType.PUNCTUATOR:
+                if tok.value not in QUOTE_PUNCTUATORS:
+                    continue
+                if not start:
+                    start = idx
+                    continue
+                if not end and start:
+                    end = idx
+                    break
+    if start and end:
+        d1 = tokens[start].value  # Opening delimiter
+        d2 = tokens[end].value    # Closing delimiter
+        pair: DPair = [x for x in DELIMITER_PAIRS if x[0] == d1 and x[1] == d2]
+        # If the found delimiters are not a correct pair, forget the label
+        label = None if not pair else label
+    return DelimData(start, end, pair, label)

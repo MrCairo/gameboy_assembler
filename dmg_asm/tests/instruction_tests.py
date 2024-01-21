@@ -4,8 +4,8 @@
 import unittest
 from icecream import ic
 
-from ..tokens import TokenType, Tokenizer, TokenGroup
-from ..core.constants import SYM
+# pylint: disable=relative-beyond-top-level
+from ..tokens import Tokenizer
 from ..core.reader import BufferReader
 from ..core.label import Labels, Label
 from ..core.symbol import Symbol, Symbols

@@ -15,7 +15,8 @@ from dataclasses import dataclass
 from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC
 from .descriptor import LBL_DSC, BaseDescriptor
 from .exception import ExpressionSyntaxError, \
-    DescriptorException
+    DescriptorException, ExpressionDescriptorError, ExpressionException, \
+    ExpressionTypeError
 
 
 @dataclass
@@ -68,10 +69,14 @@ class Expression:
             raise ValueError("Initial value cannot be None")
         try:
             self._components = _Validator().validate(exp_str)
-        except (ValueError, TypeError, DescriptorException) as err:
-            raise err
+        except (ValueError, TypeError) as err:
+            raise ExpressionTypeError() from err
         except ExpressionSyntaxError as syntax_err:
             raise syntax_err
+        except DescriptorException as derr:
+            if len(derr.args) > 0:
+                raise ExpressionDescriptorError(derr.args[0]) from derr
+            raise ExpressionDescriptorError() from derr
         if self._components is None:
             msg = f'"{exp_str}" is not a valid Expression.'
             raise ExpressionSyntaxError(msg)

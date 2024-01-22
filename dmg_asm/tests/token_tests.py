@@ -2,18 +2,13 @@
 
 # import os
 import unittest
-from collections import namedtuple
 
 from icecream import ic
 
-# pylint: disable=relative-beyond-top-level
-from ..tokens import TokenType, Tokenizer, TokenGroup
-from ..core.constants import DELIMITER_PAIRS, QUOTE_PUNCTUATORS
-from ..core.constants import DPair, DelimData
+from ..tokens import TokenType, Tokenizer
 from ..core.reader import BufferReader
-from ..core import Convert, Expression
-from ..core.exception import ExpressionException
-from ..cpu.mnemonic import Mnemonic
+from ..core import Expression
+from ..directives import Mnemonic
 
 ASM_1 = """
 ;; Program
@@ -76,6 +71,12 @@ class TokenUnitTests(unittest.TestCase):
         self.assertTrue(len(group) == 18)
         self.assertTrue(group[0].type == TokenType.SYMBOL)
 
+    def test_tokenize_storage(self) -> None:
+        """Tokenize a DB storage directive."""
+        line = "DB $00, $01, $01, $02, $03, $05, $08, $0d, 021, %00100010"
+        group = Tokenizer().tokenize_string(line)
+        self.assertIsNotNone(group)
+
     def test_token_equ(self):
         """Test Tokenize an array of instructions and data."""
         line = "DEF PORT EQU 0xffd2"
@@ -134,7 +135,6 @@ class TokenUnitTests(unittest.TestCase):
         self.assertIsNotNone(tokens)
         mnemonic = Mnemonic(tokens)
         self.assertIsNotNone(mnemonic)
-        print(f"opcode = '{mnemonic.opcode}'")
         self.assertTrue(mnemonic.opcode.upper() == "ADD")
 
     def test_instruction_detail(self):
@@ -215,47 +215,3 @@ def print_line(line_str):
     ic("Code to parse:")
     ic(line_str)
     ic("++++++++++++++++++++++++++++++++++++++")
-
-
-def get_enclosed_value(tokens: TokenGroup, start_idx: int = 0) -> DelimData:
-    """Return delimiter enclosure data."""
-    start: int = None
-    end: int = None
-    label: str = None
-    pair: DPair = None
-    if start_idx < 0 or start_idx > len(tokens):
-        return None
-    for idx, tok in enumerate(tokens):
-        if idx < start_idx:
-            continue
-        match tok.type:
-            case TokenType.BEGIN_PUNCTUATOR:
-                start = idx
-                continue
-            case TokenType.LITERAL:
-                label = tok.value
-                continue
-            case TokenType.EXPRESSION:
-                if start:
-                    label = tok.value
-                    continue
-                break
-            case TokenType.END_PUNCTUATOR:
-                end = idx
-                break
-            case TokenType.PUNCTUATOR:
-                if tok.value not in QUOTE_PUNCTUATORS:
-                    continue
-                if not start:
-                    start = idx
-                    continue
-                if not end and start:
-                    end = idx
-                    break
-    if start and end:
-        d1 = tokens[start].value  # Opening delimiter
-        d2 = tokens[end].value    # Closing delimiter
-        pair: DPair = [x for x in DELIMITER_PAIRS if x[0] == d1 and x[1] == d2]
-        # If the found delimiters are not a correct pair, forget the label
-        label = None if not pair else label
-    return DelimData(start, end, pair, label)

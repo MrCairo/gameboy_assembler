@@ -2,7 +2,7 @@
 
 # import os
 import unittest
-# pylint: disable=relative-beyond-top-level
+
 from ..core.convert import Convert
 from ..core.symbol import Symbol, SymbolScope
 from ..core.expression import ExpressionType, Expression

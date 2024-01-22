@@ -4,12 +4,10 @@
 import unittest
 from icecream import ic
 
-from ..tokens import TokenType, Tokenizer, TokenGroup
-from ..core.constants import SYM
+from ..tokens import Tokenizer, TokenGroup
 from ..core.reader import BufferReader
 from ..core.label import Label, Labels
 from ..core.expression import Expression
-from ..cpu.mnemonic import Mnemonic
 
 ASM_1 = """
 USER_IO    EQU $FF00
@@ -33,7 +31,7 @@ class SymbolAndLabelUnitTests(unittest.TestCase):
     def test_tokenize_label(self):
         """Tokenize a line with a label."""
         line = "DEF USER_IO EQU $FF00"
-        tokens = Tokenizer().tokenize_string(line)
+        tokens: TokenGroup = Tokenizer().tokenize_string(line)
         # tokens[1] is the Label, tokens[3] is the value
         lab = Label(name=tokens[1].value,
                     value=Expression(tokens[3].value))
@@ -44,14 +42,14 @@ class SymbolAndLabelUnitTests(unittest.TestCase):
     def test_labels_store_push(self):
         """Test the Labels store with two Label objects."""
         line = "DEF USER_IO EQU $FF00"
-        tokens = Tokenizer().tokenize_string(line)
+        tokens: TokenGroup = Tokenizer().tokenize_string(line)
         # tokens[1] is the Label, tokens[3] is the value
         lab = Label(name=tokens[1].value,
                     value=Expression(tokens[3].value))
         self.assertTrue(self.labels.push(lab))
 
         line2 = "PARALLAX_DELAY EQU $02"
-        tokens2 = Tokenizer().tokenize_string(line2)
+        tokens2: TokenGroup = Tokenizer().tokenize_string(line2)
         # tokens2[0] is the Label, tokens[2] is the value
         lab2 = Label(name=tokens2[0].value,
                      value=Expression(tokens2[2].value))
@@ -77,7 +75,6 @@ class SymbolAndLabelUnitTests(unittest.TestCase):
         self.assertTrue(Labels().push(lab, replace=True))
         lab2 = Labels().find("USER_IO")
         self.assertTrue(lab2.value == Expression("$1234"))
-        print(lab2)
 
     #
     # Need to test relative_label of a Symbol.
@@ -91,11 +88,10 @@ class SymbolAndLabelUnitTests(unittest.TestCase):
         while _reader.is_eof() is False:
             _line = _reader.read_line()
             if _line and len(_line) > 0:
-                groups = Tokenizer().tokenize_string(_line)
+                groups: TokenGroup = Tokenizer().tokenize_string(_line)
                 if len(groups) == 0:
                     continue
-                else:
-                    _success = True
+                _success = True
         self.assertTrue(_success)
 
     #  End of unit tests

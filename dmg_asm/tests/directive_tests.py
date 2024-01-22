@@ -6,9 +6,8 @@ import unittest
 # pylint: disable=relative-beyond-top-level
 from ..core import Convert
 from ..core.expression import Expression
-from ..core.exception import ExpressionException
 from ..directives import Equate, Define
-from ..directives.section import Section, SectionType, SectionData
+from ..directives.section import Section
 from ..tokens import TokenGroup, Tokenizer
 
 

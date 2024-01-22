@@ -2,15 +2,13 @@
 
 # import os
 import unittest
-from icecream import ic
 
-# pylint: disable=relative-beyond-top-level
 from ..tokens import Tokenizer
 from ..core.reader import BufferReader
 from ..core.label import Labels, Label
 from ..core.symbol import Symbol, Symbols
 from ..core.expression import Expression
-from ..cpu.mnemonic import Mnemonic
+from ..directives.mnemonic import Mnemonic
 
 ASM_1 = """
 USER_IO    EQU $FF00

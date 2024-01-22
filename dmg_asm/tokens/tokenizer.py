@@ -47,10 +47,21 @@ class Tokenizer:
         """Convert text to a token and add it to the token group."""
         elements = self._elements_from_string(line_of_text)
         if elements:
-            self.tokenize_elements(elements)
+            self._tokenize_elements(elements)
         return self._group
 
-    def tokenize_elements(self, elements: list) -> Optional[TokenGroup]:
+    def list_to_dict(self, arr: list) -> dict:
+        """Convert a list to a dictionary with keys like argNN."""
+        return {f"arg{idx:02d}": x for idx, x in enumerate(arr)}
+
+    def clean_text(self, line_of_text: str) -> str:
+        """Remove comments, leading/trailing spaces, and explode brackets."""
+        cleaned = self._drop_comments(line_of_text)
+        if len(cleaned) > 0:
+            cleaned = self._explode_delimiters(cleaned)
+        return cleaned
+
+    def _tokenize_elements(self, elements: list) -> Optional[TokenGroup]:
         """Convert elements to a token and add it to the token group."""
         try:
             token: Token = TokenFactory(elements).token
@@ -71,17 +82,6 @@ class Tokenizer:
         #     self._group.add(next_token)
         #     next_token = next_token.remainder
         return self._group
-
-    def list_to_dict(self, arr: list) -> dict:
-        """Convert a list to a dictionary with keys like argNN."""
-        return {f"arg{idx:02d}": x for idx, x in enumerate(arr)}
-
-    def clean_text(self, line_of_text: str) -> str:
-        """Remove comments, leading/trailing spaces, and explode brackets."""
-        cleaned = self._drop_comments(line_of_text)
-        if len(cleaned) > 0:
-            cleaned = self._explode_delimiters(cleaned)
-        return cleaned
 
     def _drop_comments(self, line_of_text) -> str:
         if line_of_text is not None:

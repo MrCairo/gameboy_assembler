@@ -264,6 +264,8 @@ class _Validator:
         Arguments:
         expr_str -- The expression as a string (i.e. 0xABCD, %10110011)
         """
+        if not isinstance(expr_str, str):
+            raise TypeError("expr_str must be a string class.")
         if expr_str is None:
             raise ValueError("Missing expression string.")
 

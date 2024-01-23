@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from collections import namedtuple
+from typing import NamedTuple
 from enum import auto, Enum, IntEnum
 
 # Token element keys (keys of the token dictionary)
@@ -167,16 +168,15 @@ class NodeDefinition:
     length: int = 0
 
 
-@dataclass
-class MinMax:
+class MinMax(NamedTuple):
     """Represent a min and max value in a single object."""
 
     min: int
     max: int
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Return string representation of this object."""
-        return f"MinMax(min={self.min}, max={self.max})"
+        return f"<MinMax(min={self.min}, max={self.max})>"
 
 
 # NODE_FORMAT = {

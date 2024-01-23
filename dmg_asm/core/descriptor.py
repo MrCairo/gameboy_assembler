@@ -91,13 +91,15 @@ class BaseDescriptor(Validator):
         16: string.hexdigits}
 
     def __init__(self, chars: MinMax, limits: MinMax, base=10):
-        """Initialie the object with # of chars and min/max values.
+        """Initialize the object with # of chars and min/max values.
 
-        chars represent the min and max nummber of characters.
-        limits represents the base-10 min/max values of this object.
-        A base of 0 is reserved for strings which can consist of any
-        uppercase letter or numbers 0-9. No spaces or punctuation.
-        """
+        'chars' represent the min and max number of characters.
+        'limits' represents the base-10 min/max values of this object.
+
+        A base of 0 is reserved for strings/labels which can consist of any
+        uppercase letter or numbers 0-9 and an underscore ('_'). No spaces or
+        other punctuation is allowed and the string must begin with an upper
+        or lowercase letter."""
         if base not in self.bases:
             raise DescriptorRadixError(
                 f'Base can only 2, 8, 10 or 16 but was {base}')
@@ -110,9 +112,22 @@ class BaseDescriptor(Validator):
         """Return a string representation of this object."""
         return f"Descriptor: {self.args}"
 
+    @property
     def charset(self) -> str:
         """Return the allowable characters for the object's base."""
         return self.args.charset
+
+    @property
+    def limits(self) -> MinMax:
+        """Return the minimum and maximum allowable value.
+
+        A non-base-0 descriptor's 'limits' value indicates the _value_ range of
+        the object.
+        A base-0 descriptor's 'limits' value indicates the min/max length of
+        the object. This is reserved for strings only."""
+        if self.args.base == 0:
+            return self.args.chars
+        return self.args.limits
 
     def validate(self, value: str) -> None:
         """Validate this object against a specific value."""
@@ -216,6 +231,10 @@ class BaseValue:
     def charset(self):
         """Return the set of valid characters for this object."""
         return self._descr.charset()
+
+    def limits(self) -> MinMax:
+        """Return the limits of the descriptor."""
+        return self._descr.limits
 
 # |-----------------============<***>=============-----------------|
 

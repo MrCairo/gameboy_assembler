@@ -67,7 +67,7 @@ MEMORY_DIRECTIVES = [
     "WRAM0",
     "VRAM",
     "ROMX",
-    "ROM0"
+    "ROM0",
     "HRAM",
     "WRAMX",
     "SRAM",
@@ -178,6 +178,9 @@ class MinMax(NamedTuple):
         """Return string representation of this object."""
         return f"<MinMax(min={self.min}, max={self.max})>"
 
+
+MAX_16BIT_VALUE = 0xffff
+MAX_8BIT_VALUE = 0xff
 
 # NODE_FORMAT = {
 # ORG: { "Directive": ORG,

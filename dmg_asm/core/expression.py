@@ -62,6 +62,8 @@ class Expression:
     """
 
     __slots__ = ("_components", "_int_value")
+    _components: _Components
+    _int_value: int
 
     def __init__(self, exp_str: str):
         """Initialize an Expression object with a specific value."""

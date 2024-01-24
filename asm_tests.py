@@ -56,4 +56,4 @@ unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 # ---------------------------------------------------------------
 print("===== Instruction Pointer Tests ====================")
 suite = loader.loadTestsFromTestCase(IPUnitTests)
-unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
+unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)

@@ -4,7 +4,7 @@
 from abc import ABC, abstractmethod
 import string
 from dataclasses import dataclass
-from .constants import MinMax
+from .constants import MinMax, MAX_16BIT_VALUE, MAX_8BIT_VALUE
 from .exception import DescriptorMinMaxLengthError, \
     DescriptorMinMaxValueError, \
     DescriptorRadixDigitValueError, \
@@ -172,19 +172,19 @@ class BaseDescriptor(Validator):
 #       indicates a string that cannot exceed 15 (max-1).
 #
 DEC_DSC = BaseDescriptor(chars=MinMax(1, 6),
-                         limits=MinMax(0, 65536),
+                         limits=MinMax(0, MAX_16BIT_VALUE + 1),
                          base=10)
 HEX_DSC = BaseDescriptor(chars=MinMax(2, 3),
-                         limits=MinMax(0, 256),
+                         limits=MinMax(0, MAX_8BIT_VALUE + 1),
                          base=16)
 HEX16_DSC = BaseDescriptor(chars=MinMax(2, 5),
-                           limits=MinMax(0, 65536),
+                           limits=MinMax(0, MAX_16BIT_VALUE + 1),
                            base=16)
 BIN_DSC = BaseDescriptor(chars=MinMax(2, 9),
-                         limits=MinMax(0, 256),
+                         limits=MinMax(0, MAX_8BIT_VALUE + 1),
                          base=2)
 OCT_DSC = BaseDescriptor(chars=MinMax(1, 7),
-                         limits=MinMax(0, 65536),
+                         limits=MinMax(0, MAX_16BIT_VALUE + 1),
                          base=8)
 LBL_DSC = BaseDescriptor(chars=MinMax(1, 16),
                          limits=MinMax(0, 0),

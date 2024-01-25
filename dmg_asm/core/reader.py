@@ -137,21 +137,22 @@ class FileReader (Reader):
         self._filename = filename
         self._line = ""
         try:
-            with open(filename, encoding=locale.getencoding()) as file:
-                self._filestream = file
+            self._filestream = open(filename,
+                                    encoding=locale.getencoding())
         except OSError:
             self._eof = True
             print(f"Could not open the file: {filename}")
 
     def read_line(self) -> str:
         """Reads one line from the data source.
-        Line is a sequence of bytes ending with \n.
-        """
-        _preread = self._filename.readline()
+        Line is a sequence of bytes ending with \n."""
+        if self._eof:
+            return None
+        _preread = self._filestream.readline()
         if _preread is not None and len(_preread) > 1:
             while _preread[-1] == "\\":  # Line continuation
                 _preread = _preread[0:-1]
-                line = self._filename.readline()
+                line = self._filestream.readline()
                 if line:
                     _preread.append(line.strip())
         self._line = _preread
@@ -160,6 +161,13 @@ class FileReader (Reader):
 
         self._eof = True
         return None
+
+    def close(self):
+        """Close the file resource."""
+        self._eof = True
+        if self._filestream:
+            self._filestream.close()
+            self._filestream = None
 
     def get_position(self):
         return self._filestream.tell()

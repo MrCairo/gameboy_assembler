@@ -45,6 +45,10 @@ class Tokenizer:
 
     def tokenize_string(self, line_of_text: str) -> Optional[TokenGroup]:
         """Convert text to a token and add it to the token group."""
+        if line_of_text is None:
+            raise ValueError("Input text string cannot be None.")
+        if not isinstance(line_of_text, str):
+            raise TypeError("Input text must be of type 'str'.")
         elements = self._elements_from_string(line_of_text)
         if elements:
             self._tokenize_elements(elements)

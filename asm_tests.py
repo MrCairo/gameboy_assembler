@@ -8,6 +8,7 @@ from dmg_asm.tests.directive_tests import DirectiveUnitTests
 from dmg_asm.tests.symbol_label_resolver_tests import SymbolAndLabelUnitTests
 from dmg_asm.tests.instruction_tests import InstructionDecodingTests
 from dmg_asm.tests.ip_tests import IPUnitTests
+from dmg_asm.tests.reader_tests import CoreReaderTests
 
 
 # ---------------------------------------------------------------
@@ -56,4 +57,9 @@ unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 # ---------------------------------------------------------------
 print("===== Instruction Pointer Tests ====================")
 suite = loader.loadTestsFromTestCase(IPUnitTests)
+unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+
+# ---------------------------------------------------------------
+print("===== Core Reader Tests ===========================")
+suite = loader.loadTestsFromTestCase(CoreReaderTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)

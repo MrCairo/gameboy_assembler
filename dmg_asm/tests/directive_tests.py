@@ -102,7 +102,7 @@ class DirectiveUnitTests(unittest.TestCase):
         self.assertIsNotNone(sec2)
         self.assertTrue(sec2.label.upper() == "MAIN_ENTRY")
         try:
-            Sections().remove("CoolStuff")
+            Sections().pop("CoolStuff")
         except (TypeError, ValueError):
             self.fail("Unable to remove existing Section.")
         found3: int = Sections().find_first_index("main_entry")

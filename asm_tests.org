@@ -66,160 +66,65 @@ Press "C-c C-c" on the =begin_src= line below to execute the Python script. This
   # ---------------------------------------------------------------
   print("===== Instruction Pointer Tests ====================")
   suite = loader.loadTestsFromTestCase(IPUnitTests)
-  unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
+  unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 
 #+end_src
 
 #+RESULTS:
 #+begin_example
-========== Instruction Decoding Unit Tests ==========
-test_halt (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_halt)
-Test the HALT instruction. ... ok
-test_jp_absolute (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_jp_absolute)
-Test the JP a16 instruction. ... ok
-test_jr_cond_relative (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_jr_cond_relative)
-Test JR with different registers. ... ok
-test_js_absolute_with_symbol (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_js_absolute_with_symbol)
-Test the JP a16 with a Symbol. ... ok
-test_ld_hl_sp (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_ld_hl_sp)
-Test the parsing of the unique LD HL, SP+r8. ... ok
-test_ld_hl_sp_with_label (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_ld_hl_sp_with_label)
-Test the parsing of the unique LD HL, SP+r8. ... ok
-test_ld_reg_reg (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_ld_reg_reg)
-Tokenize and decode several LD r, r instructions. ... ok
-test_ld_with_label (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_ld_with_label)
-Tokenize and decode an LD with reference to a Label. ... ok
-test_ldh (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_ldh)
-Test the LDH variation of instruction. ... ok
-test_ldh_with_label (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_ldh_with_label) ... ok
-test_redo_if_label_changes (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_redo_if_label_changes)
-Test the resolve_again feature of the Mnemonic instance. ... ok
-test_redo_if_symbol_changes (dmg_asm.tests.instruction_tests.InstructionDecodingTests.test_redo_if_symbol_changes)
-Test the resolve_again feature of the Mnemonic instance. ... ok
-
+===== Instruction Decoding Unit Tests ==============
+............
 ----------------------------------------------------------------------
 Ran 12 tests in 0.007s
 
 OK
-=============== Descriptor Tests ===============
-test_decimal_descriptor (dmg_asm.tests.core_tests.DescriptorUnitTests.test_decimal_descriptor) ... ok
-
+===== Descriptor Tests =============================
+.
 ----------------------------------------------------------------------
 Ran 1 test in 0.000s
 
 OK
-=============== Expression Tests ===============
-test_binary_type (dmg_asm.tests.core_tests.ExpressionUnitTests.test_binary_type)
-Test binary expression. ... ok
-test_hex_type (dmg_asm.tests.core_tests.ExpressionUnitTests.test_hex_type)
-Test hex expression type. ... ok
-test_invalid_binary_expression (dmg_asm.tests.core_tests.ExpressionUnitTests.test_invalid_binary_expression)
-Test if an invalid binary expression fails properly. ... ok
-test_invalid_hex_expr (dmg_asm.tests.core_tests.ExpressionUnitTests.test_invalid_hex_expr)
-Test invalid hex expression. ... ok
-test_invalid_label_expr (dmg_asm.tests.core_tests.ExpressionUnitTests.test_invalid_label_expr)
-Test an invalid label properly fails. ... ok
-test_label_type (dmg_asm.tests.core_tests.ExpressionUnitTests.test_label_type)
-Test label expression. ... ok
-test_octal_type (dmg_asm.tests.core_tests.ExpressionUnitTests.test_octal_type)
-Test octal expression. ... ok
-test_valid_16bit_hex_expr (dmg_asm.tests.core_tests.ExpressionUnitTests.test_valid_16bit_hex_expr)
-Test 16-bit hex expression. ... ok
-test_valid_8bit_hex_expr (dmg_asm.tests.core_tests.ExpressionUnitTests.test_valid_8bit_hex_expr)
-Test 8-bit hex expression. ... ok
-
+===== Expression Tests =============================
+.........
 ----------------------------------------------------------------------
 Ran 9 tests in 0.000s
 
 OK
-=============== Conversion Unit Tests ===============
-test_16bit_hex_expr_conversion (dmg_asm.tests.core_tests.ConvertUnitTests.test_16bit_hex_expr_conversion)
-Test decimal conversion to a 16-bit hex value. ... ok
-test_8bit_hex_expr_conversion (dmg_asm.tests.core_tests.ConvertUnitTests.test_8bit_hex_expr_conversion)
-Test decimal conversion to an 8-bit hex value. ... ok
-test_binary_expr_conversion (dmg_asm.tests.core_tests.ConvertUnitTests.test_binary_expr_conversion)
-Test decimal conversion to an 8-bit binary value. ... ok
-test_octal_expr_conversion (dmg_asm.tests.core_tests.ConvertUnitTests.test_octal_expr_conversion)
-Test decimal conversion to an 8-bit octal value. ... ok
-
+===== Conversion Unit Tests ========================
+....
 ----------------------------------------------------------------------
 Ran 4 tests in 0.000s
 
 OK
-=============== Symbol Unit Tests ===============
-test_global_scope_is_valid (dmg_asm.tests.core_tests.SymbolUnitTests.test_global_scope_is_valid)
-Test valid global scope. ... ok
-test_invalid_symbol_names (dmg_asm.tests.core_tests.SymbolUnitTests.test_invalid_symbol_names)
-Pass if name is detected as invalid. ... ok
-test_local_scope_is_valid (dmg_asm.tests.core_tests.SymbolUnitTests.test_local_scope_is_valid)
-Test valid local scope. ... ok
-test_private_scope_is_valid (dmg_asm.tests.core_tests.SymbolUnitTests.test_private_scope_is_valid)
-Test valid private scope. ... ok
-test_valid_symbol_name (dmg_asm.tests.core_tests.SymbolUnitTests.test_valid_symbol_name)
-Test that a valid symbol name passes validation. ... ok
-
+===== Symbol Unit Tests ============================
+.....
 ----------------------------------------------------------------------
 Ran 5 tests in 0.000s
 
 OK
-=============== Token Unit Tests ===============
-test_expressionless_instruction (dmg_asm.tests.token_tests.TokenUnitTests.test_expressionless_instruction)
-Return detail from an instruction that doesn't require an ... opcode = 'add'
-ok
-test_instruction_detail (dmg_asm.tests.token_tests.TokenUnitTests.test_instruction_detail)
-Test instruction detail for an instruction that doesn't require ... ok
-test_instruction_detail_with_expression (dmg_asm.tests.token_tests.TokenUnitTests.test_instruction_detail_with_expression)
-Test instruction detail for an instruction that requires ... ok
-test_instruction_with_expression (dmg_asm.tests.token_tests.TokenUnitTests.test_instruction_with_expression)
-Create instruction detail from code that includes an expression. ... ok
-test_instruction_with_register (dmg_asm.tests.token_tests.TokenUnitTests.test_instruction_with_register)
-Return detail from an instruction that doesn't require an ... ok
-test_one_word_instruction (dmg_asm.tests.token_tests.TokenUnitTests.test_one_word_instruction)
-Create instruction detail from an instruction like 'NOP' ... ok
-test_token_equ (dmg_asm.tests.token_tests.TokenUnitTests.test_token_equ)
-Test Tokenize an array of instructions and data. ... ok
-test_token_group_from_elements (dmg_asm.tests.token_tests.TokenUnitTests.test_token_group_from_elements)
-Test Tokenize an array of instructions and data. ... ok
-test_token_group_from_string (dmg_asm.tests.token_tests.TokenUnitTests.test_token_group_from_string)
-Tokenize elements from a string. ... ok
-test_tokenize_instruction (dmg_asm.tests.token_tests.TokenUnitTests.test_tokenize_instruction)
-Tokenize a line of CPU instruction. ... ok
-test_tokenize_lines (dmg_asm.tests.token_tests.TokenUnitTests.test_tokenize_lines)
-Test tokenization of a small set of program lines. ... ok
-
+===== Token Unit Tests =============================
+............
 ----------------------------------------------------------------------
-Ran 11 tests in 0.003s
+Ran 12 tests in 0.003s
 
 OK
-=============== Directive Unit Tests ===============
-test_define_from_string (dmg_asm.tests.directive_tests.DirectiveUnitTests.test_define_from_string)
-Test Define class. ... ok
-test_equate_from_string (dmg_asm.tests.directive_tests.DirectiveUnitTests.test_equate_from_string)
-Test Equate class. ... ok
-test_section_find_label_and_mem_block (dmg_asm.tests.directive_tests.DirectiveUnitTests.test_section_find_label_and_mem_block)
-Find first label and enclosing delmiters. ... ok
-test_section_from_string (dmg_asm.tests.directive_tests.DirectiveUnitTests.test_section_from_string)
-Test the SECTION Directive supplied as a string. ... ok
-
+===== Directive Unit Tests =========================
+....
 ----------------------------------------------------------------------
 Ran 4 tests in 0.000s
 
 OK
-============ Symbol and Label Unit Tests ============
-test_labels_find_and_replace (dmg_asm.tests.symbol_label_resolver_tests.SymbolAndLabelUnitTests.test_labels_find_and_replace)
-Test the Labels store with two Label objects. ... Label(name='USER_IO', value=Expression($1234))
-ok
-test_labels_store_and_find (dmg_asm.tests.symbol_label_resolver_tests.SymbolAndLabelUnitTests.test_labels_store_and_find)
-Test the Labels store with two Label objects. ... ok
-test_labels_store_push (dmg_asm.tests.symbol_label_resolver_tests.SymbolAndLabelUnitTests.test_labels_store_push)
-Test the Labels store with two Label objects. ... ok
-test_tokenize_label (dmg_asm.tests.symbol_label_resolver_tests.SymbolAndLabelUnitTests.test_tokenize_label)
-Tokenize a line with a label. ... ok
-test_tokenize_lines (dmg_asm.tests.symbol_label_resolver_tests.SymbolAndLabelUnitTests.test_tokenize_lines)
-Test tokenization of a small set of program lines. ... ok
-
+===== Symbol and Label Unit Tests ==================
+.....
 ----------------------------------------------------------------------
 Ran 5 tests in 0.000s
+
+OK
+===== Instruction Pointer Tests ====================
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
 
 OK
 #+end_example
+

@@ -3,8 +3,8 @@ A set of helper functions used during processing of instructions.
 """
 from ..core.convert import Convert
 from ..core.expression import Expression
-from ..core.descriptor import BaseDescriptor
 from ..core.exception import ExpressionException
+from ..core.constants import MAX_8BIT_VALUE, MAX_16BIT_VALUE
 
 ###############################################################################
 #
@@ -47,7 +47,7 @@ class InstructionPointer:
 
         A ValueError will be raised in an 8-bit or base-0 expression
         is passed."""
-        if value.descriptor.limits.max != 65536:
+        if value.descriptor.limits.max < MAX_16BIT_VALUE:
             msg = "The IP pointer value must be set to a 16-bit value."
             raise ValueError(msg)
         self._pointer = Expression(f"0{value.integer_value:04d}")
@@ -86,7 +86,7 @@ class InstructionPointer:
         """
         if not isinstance(new_value, Expression):
             raise TypeError("base_address() must be passed an Expression.")
-        if new_value.descriptor.limits.max < 65535:
+        if new_value.descriptor.limits.max < MAX_16BIT_VALUE:
             raise ValueError("The new base_address must be a 16-bit value.")
         #
         # Convert the current value so that we create two new Expression
@@ -109,14 +109,14 @@ class InstructionPointer:
 
         relative is a single byte. 0 - 127 is positive branch
         128 - 255 is negative branch. The relative value must be
-        a positive number from 0 - 255."""
-        if isinstance(relative, Expression):
+        an 8-bit value."""
+        if not isinstance(relative, Expression):
             raise TypeError("base_address() must be passed an Expression.")
-        if relative.descriptor.limits.max > 256:
+        if relative.descriptor.limits.max > MAX_8BIT_VALUE + 1:
             raise ValueError("The new base_address must be an 8-bit value.")
         rel = Convert(relative).to_decimal_int()
         neg = rel >> 7
-        displacement = ((rel ^ 255) + 1) * -1 if neg else rel
+        displacement = ((rel ^ MAX_8BIT_VALUE) + 1) * -1 if neg else rel
         try:
             self.move_pointer_relative(displacement)
         except (TypeError, ValueError, ExpressionException):

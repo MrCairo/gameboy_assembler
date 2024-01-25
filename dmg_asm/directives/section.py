@@ -70,9 +70,6 @@ class SectionType:
             # ------------------------------------------------------------
             # These are the memory banks
             cls.instance._mem_blocks = [
-                SectionMemBlock(name="WRAM0",
-                                addr_range=AddrRange(start=Expr("$C000"),
-                                                     end=Expr("$CFFF"))),
                 # Working Ram
                 SectionMemBlock(name="WRAM0",
                                 addr_range=AddrRange(start=Expr("0xC000"),
@@ -190,6 +187,22 @@ class Section:
             msg = "Missing one or more parameters."
             raise SectionDeclarationError(msg)
         self._data = _parse(tokens)
+
+    def __repr__(self) -> str:
+        desc = f"Section({self._tokens.__repr__()})"
+        return desc
+
+    def __str__(self) -> str:
+        desc = "SECTION "
+        desc += f"\"{self.label}\" {self.memory_block.name}"
+        if self.memory_block_offset:
+            desc += f"[{self.memory_block_offset.clean_str}"
+        if self.memory_bank:
+            desc += f" BANK[{self.memory_bank}]"
+        if self.alignment:
+            desc += "f ALIGN[{self.alignment}]"
+        desc += "\n"
+        return desc
 
     @classmethod
     def section_from_string(cls, text: str) -> Section:

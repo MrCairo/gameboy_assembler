@@ -1,0 +1,27 @@
+;
+; Comments to ignore
+;
+SECTION "CoolStuff",WRAM0
+
+INCLUDE "constants.inc"   ; Just some constants
+
+CLOUDS_X: DB $FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF,$00,$FF, \
+             $00,$FF,$00
+BUILDINGS_X: DS 1
+FLOOR_X: DS 1
+PARALLAX_DELAY_TIMER: DS $01
+FADE_IN_ACTIVE:: DS %00000001
+FADE_STEP: DS 0x01
+ALLOW_PARALLAX:: DS 001
+READ_INPUT:: DS &01
+START_PLAY:: DS 001
+
+    ld HL, USER_IO
+    ld A, $20
+    ld [HL], A
+    ld A, [HL]
+    ld HL, IO_P14
+    ld B, [HL]
+    ld [HL], A
+    ld HL, IO_P14_OLD
+    ld [HL], B

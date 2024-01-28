@@ -15,8 +15,7 @@ from dataclasses import dataclass
 from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC
 from .descriptor import LBL_DSC, BaseDescriptor
 from .exception import ExpressionSyntaxError, \
-    DescriptorException, ExpressionDescriptorError, ExpressionException, \
-    ExpressionTypeError
+    DescriptorException, ExpressionDescriptorError, ExpressionTypeError
 
 
 @dataclass
@@ -37,6 +36,11 @@ class ExpressionType:
 # additional validation. If the array were defined with '0' first, there
 # would need to be another check to see if there is an 'x' following the 0
 # or if it's just 0 (decimal vs. hex definition).
+#
+# Note::
+# Many of the exceptions that are encountered are converted over to subclasses
+# of ExpressionException. This is only done to consolidate exceptions so they
+# take less code to be able to catch everything.
 
 
 class Expression:
@@ -69,6 +73,8 @@ class Expression:
         """Initialize an Expression object with a specific value."""
         if exp_str is None:
             raise ValueError("Initial value cannot be None")
+        if not isinstance(exp_str, str):
+            raise TypeError("The input value is not a str type.")
         try:
             self._components = _Validator().validate(exp_str)
         except (ValueError, TypeError) as err:

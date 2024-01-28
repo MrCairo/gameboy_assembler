@@ -36,6 +36,13 @@ class InstructionPointer:
             desc = f"Address: {self._pointer:04x}".upper()
         return desc
 
+    def curr_pos(self) -> Expression:
+        """Return the current position of the InstructionPointer.
+
+        This is function equivalent to the 'pointer' getter property except
+        this function will return a copy of the actual pointer."""
+        return Expression(Convert(self._pointer).to_hex16_string())
+
     @property
     def pointer(self) -> Expression:
         """Returns the current location or IP."""

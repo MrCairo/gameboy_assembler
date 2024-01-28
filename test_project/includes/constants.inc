@@ -1,0 +1,31 @@
+LCD_CTRL                EQU    $FF40
+LCD_STAT                EQU    $FF41
+LCD_SCROLL_Y            EQU    $FF42
+LCD_SCROLL_X            EQU    $FF43
+LCD_LINE_Y              EQU    $FF44
+LCD_LINE_Y_CP           EQU    $FF45
+OAM_DMA_TRANS           EQU    $FF46
+LCD_BG_PAL              EQU    $FF47
+OBJ0_PAL                EQU    $FF48
+OBJ1_PAL                EQU    $FF49
+WIN_Y                   EQU    $FF4A
+WIN_X                   EQU    $FF4B
+LCD_WIDTH               EQU    0160
+LCD_HEIGHT              EQU    0144
+VRAM_TILES_SPRITE       EQU    $8000
+VRAM_TILES_MIX          EQU    $8800
+VRAM_TILES_BACKGROUND   EQU    $9000
+VRAM_MAP_CHR            EQU    $9800
+VRAM_MAP_BG             EQU    $9C00
+VRAM_MAP_BLOCK0_SIZE    EQU    $0800 
+USER_IO                 EQU    $FF00
+NO_INPUT_P14            EQU    $EF      ; LEFT, RIGHT, UP, DOWN
+NO_INPUT_P15            EQU    $DF      ; A, B, SELECT, START
+BUTTON_RIGHT            EQU    $00
+BUTTON_LEFT             EQU    $01
+BUTTON_UP               EQU    $02
+BUTTON_DOWN             EQU    $03
+BUTTON_A                EQU    $00
+BUTTON_B                EQU    $01
+BUTTON_SELECT           EQU    $02
+BUTTON_START            EQU    $03

@@ -1,6 +1,6 @@
 """Classes that convert text into Tokens."""
 
-# from __future__ import annotations
+from __future__ import annotations
 from .token import Token, TokenType
 
 
@@ -45,6 +45,18 @@ class TokenGroup:
     def __reversed__(self):
         return self._group_store.__reversed__()
 
+    @classmethod
+    def group_from_token_chain(cls, start_token: Token):
+        """Create a new TokenGroup with existing Tokens from another group."""
+        new_group = TokenGroup()
+        if start_token is not None and isinstance(start_token, Token):
+            new_group.add(start_token.shallow_copy())
+            _next_tok = start_token.next
+            while _next_tok is not None:
+                new_group.add(_next_tok.shallow_copy())
+                _next_tok = _next_tok.next
+        return new_group
+
     def find_first_value(self, value) -> int | None:
         """Return the index in the group that matches the passed value.
 
@@ -73,6 +85,12 @@ class TokenGroup:
         if token is None:
             raise ValueError("Passed token must have a value.")
         self._group_store.append(token)
+
+    def remove(self, index: int) -> Token | None:
+        """Remove the Token in the group at the specified index."""
+        if index not in range(0, len(self._group_store)):
+            raise IndexError("Index out of bounds.")
+        return self._group_store.pop(index)
 
     def tokens(self) -> list:
         """Return a list of Tokens in the group."""

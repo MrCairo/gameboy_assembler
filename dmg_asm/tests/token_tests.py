@@ -191,7 +191,7 @@ class TokenUnitTests(unittest.TestCase):
             if _line and len(_line) > 0:
                 # print_line(_line)
                 groups = Tokenizer().tokenize_string(_line)
-                # print_group(groups)
+                print_group(groups)
                 if len(groups) == 0:
                     continue
     #  End of unit tests

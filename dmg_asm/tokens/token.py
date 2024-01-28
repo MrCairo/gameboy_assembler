@@ -120,6 +120,7 @@ class Token:
         new_tok.value = self.value
         new_tok.type = self.type
         new_tok.data = self.data
+        new_tok.next = self.next
         return new_tok
 
 # --------========[ End of Token class ]========-------- #
@@ -168,14 +169,14 @@ class TokenFactory:
                 self._assign_values(elements, TokenType.MEMORY_OPTION)
             elif first in STORAGE_DIRECTIVES:
                 self._assign_values(elements, TokenType.STORAGE_DIRECTIVE)
+            elif first in DEFINE_OPERATORS:
+                self._assign_values(elements, TokenType.OPERATOR)
             elif Expression.has_valid_prefix(first):
                 self._assign_values(elements, TokenType.EXPRESSION)
             elif SymbolUtils.is_valid_symbol(first):
                 self._assign_values(elements, TokenType.SYMBOL)
             elif IS().is_mnemonic(first):
                 self._assign_values(elements, TokenType.INSTRUCTION)
-            elif first in DEFINE_OPERATORS:
-                self._assign_values(elements, TokenType.OPERATOR)
             else:
                 self._assign_values(elements, TokenType.LITERAL)
         except (InvalidSymbolName, InvalidSymbolScope) as err:

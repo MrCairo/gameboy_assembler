@@ -36,7 +36,7 @@ class DirectiveUnitTests(unittest.TestCase):
         """Test Define class."""
         equ = Define.from_string("DEF my_var EQU $1000")
         self.assertTrue(equ is not None)
-        self.assertTrue(equ.label.upper() == "MY_VAR")
+        self.assertTrue(equ.name.upper() == "MY_VAR")
         self.assertEqual(Convert(equ.expression).to_decimal_int(),
                          4096, "Expression not euqal to 4096.")
 

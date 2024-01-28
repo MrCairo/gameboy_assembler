@@ -1,7 +1,7 @@
 #
 #
 # from typing import NewType
-from enum import IntEnum, auto
+from enum import Enum, auto
 
 
 class ParserException(Exception):
@@ -150,23 +150,78 @@ class DescriptorMinMaxLengthError(DescriptorException):
         super().__init__(message)
 
 
+class DefineException(ParserException):
+    """Generic DEF error."""
+
+    _def_msg = "Unknown generic DEF error."
+
+    def __init__(self, message=_def_msg, line_text="", line_number=-1):
+        """Initialize Exception."""
+        super().__init__(message, line_text, line_number)
+
+
+class DefineExpressionError(DefineException):
+    """A DEF Expression error."""
+
+    _def_msg = "The provided expression was not valid."
+
+    def __init__(self, message=_def_msg, line_text="", line_number=-1):
+        """Initialize Exception."""
+        super().__init__(message, line_text, line_number)
+
+
+class DefineSymbolError(DefineException):
+    """A DEF Symbol error."""
+
+    _def_msg = "The Symbol in the DEF statement is not valid."
+
+    def __init__(self, message=_def_msg, line_text="", line_number=-1):
+        """Initialize Exception."""
+        super().__init__(message, line_text, line_number)
+
+
+class DefineAssignmentError(DefineException):
+    """A DEF Assignment error."""
+
+    _def_msg = "The assignment of the symbol to the expression is invalid."
+
+    def __init__(self, message=_def_msg, line_text="", line_number=-1):
+        """Initialize Exception."""
+        super().__init__(message, line_text, line_number)
+
+
+class StorageException(ParserException):
+    """Generic Storage error."""
+
+    _def_msg = "Unknown generic Storage error."
+
+    def __init__(self, message=_def_msg, line_text="", line_number=-1):
+        """Initialize Exception."""
+        super().__init__(message, line_text, line_number)
+
+
+class StorageValueError(StorageException):
+    """Storage value is out of range of its defined limits."""
+
+    _def_msg = "The storage value is out of range of a pre-defined min/max."
+
+    def __init__(self, message=_def_msg, line_text="", line_number=-1):
+        """Initialize the exception."""
+        super().__init__(message, line_text, line_number)
+
+
 InvalidLabelName = DescriptorException
 InvalidSymbolName = ExpressionSyntaxError
 InvalidSymbolScope = ExpressionSyntaxError
 EquateSymbolError = ExpressionSyntaxError
 EquateExpressionError = ExpressionSyntaxError
-DefineExpressionError = ExpressionSyntaxError
-DefineSymbolError = ExpressionSyntaxError
-DefineAssignmentError = ExpressionSyntaxError
-DefineExpressionError = ExpressionSyntaxError
 
 
 # ##############################################################################
 
 
-class ErrorCode(IntEnum):
+class ErrorCode(Enum):
     """Instruction error codes."""
-
     INVALID_MNEMONIC = auto()
     INCOMPLETE_INSTRUCTION = auto()
     INVALID_OPERAND = auto()

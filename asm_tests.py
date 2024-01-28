@@ -1,5 +1,6 @@
 """GameBoy assembler unit tests."""
 import unittest
+import os
 import sys
 from dmg_asm.tests.core_tests import ExpressionUnitTests, ConvertUnitTests, \
     DescriptorUnitTests, SymbolUnitTests
@@ -9,7 +10,10 @@ from dmg_asm.tests.symbol_label_resolver_tests import SymbolAndLabelUnitTests
 from dmg_asm.tests.instruction_tests import InstructionDecodingTests
 from dmg_asm.tests.ip_tests import IPUnitTests
 from dmg_asm.tests.reader_tests import CoreReaderTests
+from dmg_asm.tests.assembler_tests import AssemblerUnitTests
 
+
+os.environ["PROJECT_DIR"] = os.getcwd()
 
 # ---------------------------------------------------------------
 print("===== Instruction Decoding Unit Tests ==============")
@@ -62,4 +66,9 @@ unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 # ---------------------------------------------------------------
 print("===== Core Reader Tests ===========================")
 suite = loader.loadTestsFromTestCase(CoreReaderTests)
+unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+
+# ---------------------------------------------------------------
+print("===== Assembler Tests =============================")
+suite = loader.loadTestsFromTestCase(AssemblerUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)

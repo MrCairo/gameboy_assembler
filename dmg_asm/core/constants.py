@@ -1,9 +1,10 @@
 """Commonly used constants."""
 
+import os
 from dataclasses import dataclass
 from collections import namedtuple
 from typing import NamedTuple
-from enum import auto, Enum, IntEnum
+from enum import auto, Enum
 
 # Token element keys (keys of the token dictionary)
 ARGS_T = "arguments"
@@ -47,6 +48,7 @@ DIRECTIVES = [
     "EXPORT",
     "GLOBAL",
     "INCBIN",
+    "INCLUDE",
     "MACRO",
     "NEXTU",
     "ORG",
@@ -108,64 +110,18 @@ DELIMITER_PAIRS = [
     DPair("{", "}")
 ]
 
+
+class StorageType(Enum):
+    """Represent the storage class storage size type."""
+    BLOCK = auto()
+    BYTE = auto()
+    WORD = auto()
+    LONG = auto()
+
 #
 # Bracketing is also done by " and ' which is why they are part of
 # this array.
 # BRACKETS = "\"'([{}])"
-
-
-class Lexical(IntEnum):
-    """Lexical error types."""
-
-    WARNING = 1
-    SYNTAX_ERROR = 2
-    UNKNOWN_ERROR = 3
-
-
-NodeType = Enum('NodeType', ['DEF',    # Define
-                             'EQU',    # Equate
-                             'INST',   # Instruction
-                             'LBL',    # Label
-                             'ORG',    # Origin
-                             'PARM',   # Parameter
-                             'SEC',    # Section
-                             'STOR',   # Storage
-                             'SYM',    # Symbol
-                             'NODE'])  # Node
-
-
-NODE_TYPES = {
-    NodeType.NODE: NODE_T,  # Internal type, not a compiler diective
-    NodeType.PARM: PARM_T,  # Internal type, not a compiler diective
-    NodeType.EQU: EQU,
-    NodeType.LBL: LBL,
-    NodeType.SYM: SYM,
-    NodeType.INST: INST,
-    NodeType.STOR: STOR,
-    NodeType.SEC: SEC,
-    NodeType.ORG: ORG,
-    NodeType.DEF: DEF,
-}
-
-AddressRange = namedtuple("AddressRange", ["start", "end"])
-
-
-class AddressType(Enum):
-    """Enumerate list of memory address types."""
-
-    AbsolueAddress = auto()
-    RelativeAddress = auto()
-
-
-@dataclass
-class NodeDefinition:
-    """Hold the definition values of a Node for the compiler."""
-
-    directive: str = "UNASSIGNED"
-    identifier: str = None
-    address_type: AddressType = AddressType.AbsolueAddress
-    address_range: AddressRange = AddressRange(start=0, end=0)
-    length: int = 0
 
 
 class MinMax(NamedTuple):
@@ -181,6 +137,24 @@ class MinMax(NamedTuple):
 
 MAX_16BIT_VALUE = 0xffff
 MAX_8BIT_VALUE = 0xff
+
+
+@dataclass
+class Environment:
+    """A set of values that the compiler/assembler uses to operate."""
+    project_dir: str = None  # Absolute path to the project
+    source_dir: str = None   # Source dir relative to project_dir
+    include_dir: str = None  # Include source relative to project_dir
+
+    def __init__(self, project_dir: str = os.getcwd(),
+                 source_dir: str = None,
+                 include_dir: str = None):
+        if project_dir is None or len(project_dir) == 0:
+            self.project_dir = os.getcwd()
+        else:
+            self.project_dir = project_dir
+        self.source_dir = source_dir if source_dir else ""
+        self.include_dir = include_dir if include_dir else ""
 
 # NODE_FORMAT = {
 # ORG: { "Directive": ORG,

@@ -75,6 +75,8 @@ from .exception import DescriptorException, InvalidSymbolName, \
 from .expression import Expression
 from .convert import Convert
 from .descriptor import LBL_DSC
+from ..cpu.instruction_pointer import InstructionPointer
+
 # from ..cpu.instruction_pointer import InstructionPointer as IP
 
 
@@ -222,7 +224,10 @@ class Symbol():
 
     def __init__(self, name: str, base_address: Expression,
                  relative_symbol: Symbol = None):
-        """Initialize a new Symbol with a 16-bit address."""
+        """Initialize a new Symbol with a 16-bit address.
+
+        'relative_symbol' can be used to represent a Symbol from which this
+        new Symbol is relative to."""
         if not name or not SU.has_valid_name_characters(name):
             raise InvalidSymbolName(name)
         if not SU.has_valid_scope_designation(name):
@@ -231,6 +236,8 @@ class Symbol():
         self._clean_name = SU.clean_name(name)
         self._scope = SU.get_valid_scope(name)
         self._relative_symbol = relative_symbol
+        if base_address is None:
+            base_address = InstructionPointer().curr_pos()
         self.base_address = base_address
 
     def __str__(self):
@@ -267,7 +274,7 @@ class Symbol():
     # --------========[ End of class ]========-------- #
 
 
-class Symbols(dict):
+class Symbols:
     """A specialized dictionary that maintains all symbols.
 
     Symbols()[a_key] = a_symbol
@@ -321,6 +328,12 @@ class Symbols(dict):
         else:
             raise KeyError("A key was not provided")
 
+    def __delitem__(self, key: str):
+        if key:
+            key = (key.lstrip(".")).rstrip(":.")
+            key = key.upper()
+            self.symbols.pop(key)
+
     def find(self, key: str) -> Symbol:
         """Equal to the __get__() index function."""
         return self[key]
@@ -330,6 +343,10 @@ class Symbols(dict):
         if symbol is not None:
             self[symbol.name] = symbol
 
+    def push(self, symbol: Symbol):
+        """Add a new Symbol object to the dictionary."""
+        self.add(symbol)
+
     def remove(self, symbol: Symbol):
         """Remove a symbol from the dictionary.
 
@@ -337,11 +354,12 @@ class Symbols(dict):
         remove.
         """
         if symbol is not None:
-            found = self[symbol.clean_name.upper()]
+            found: Symbol = self[symbol.clean_name.upper()]
             if found:
-                new_d = dict(self.symbols)
-                del new_d[symbol.clean_name.upper()]
-                self.symbols = new_d
+                del self[found.name.upper]
+                # new_d = dict(self.symbols)
+                # del new_d[symbol.clean_name.upper()]
+                # self.symbols = new_d
 
     def local_symbols(self) -> dict:
         """Return symbols that are local in scope."""

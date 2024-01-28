@@ -8,9 +8,9 @@ Implementation of a Section
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import NamedTuple
-from ..core.expression import Expression as Expr, ExpressionException
+from ..core.expression import Expression as Expr
 from ..tokens import TokenGroup, Tokenizer, TokenType
-from ..core.exception import SectionDeclarationError
+from ..core.exception import SectionDeclarationError, ExpressionException
 from ..core.constants import QUOTE_PUNCTUATORS, DELIMITER_PAIRS, \
     DPair, DelimData
 
@@ -22,8 +22,7 @@ class AddrRange(NamedTuple):
     """Tuple that represents an address range for a memory bank.
 
     start is an Expression representing the beginning of the address range.
-    end is an Expression representing the end of the address range.
-    """
+    end is an Expression representing the end of the address range."""
     start: Expr
     end: Expr
 
@@ -168,7 +167,7 @@ class SectionData:
     align_key: str = None
     align_val: str = None
     error: bool = False
-    idx: int = 0
+    last_idx: int = 0
 
 # #############################################################################
 
@@ -250,13 +249,18 @@ class Section:
             return int(self._data.align_val)
         return None
 
+    @property
+    def parser_info(self) -> SectionData:
+        """Return the SectionData accumulated in parsing the tokens."""
+        return self._data
+
 
 # ============================================================
 
 
 def _parse(tokens: TokenGroup) -> SectionData:
     data = SectionData()
-    data.idx = 0
+    data.last_idx = 0
     dir_idx: int = 0
 
     curr_directive: str = None
@@ -308,6 +312,7 @@ def _parse(tokens: TokenGroup) -> SectionData:
                     break
         if data.error:
             break
+    data.last_idx = dir_idx - 1 if dir_idx > 0 else 0
     return data
 
 

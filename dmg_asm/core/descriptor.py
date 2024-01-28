@@ -11,6 +11,9 @@ from .exception import DescriptorMinMaxLengthError, \
     DescriptorRadixError
 
 
+NUMERIC_BASES = [2, 8, 10, 16]
+
+
 @dataclass
 class DescriptorArgs():
     """The format that describes a value."""
@@ -84,11 +87,13 @@ class BaseDescriptor(Validator):
     """
 
     bases = {
-        0: f"{string.ascii_letters}{string.digits}_",  # Label Type
+        0: f"{string.digits}{string.ascii_letters}_",  # Label type
         2: "01",
         8: string.octdigits,
         10: string.digits,
-        16: string.hexdigits}
+        16: string.hexdigits
+        # 36: f"{string.ascii_letters}{string.digits} _+-/.'\""  # String Type
+    }
 
     def __init__(self, chars: MinMax, limits: MinMax, base=10):
         """Initialize the object with # of chars and min/max values.
@@ -98,8 +103,14 @@ class BaseDescriptor(Validator):
 
         A base of 0 is reserved for strings/labels which can consist of any
         uppercase letter or numbers 0-9 and an underscore ('_'). No spaces or
-        other punctuation is allowed and the string must begin with an upper
-        or lowercase letter."""
+        other punctuation is allowed and the string must begin with an upper or
+        lowercase letter.
+
+        A base of 36 is reserver for generic strings which can consist of all
+        digits and letters plus some punctuation. Such strings can be used for
+        things like files/directories, descriptions, etc. These values are not
+        allowed to be used as Labels or Symbols.
+        """
         if base not in self.bases:
             raise DescriptorRadixError(
                 f'Base can only 2, 8, 10 or 16 but was {base}')
@@ -122,9 +133,9 @@ class BaseDescriptor(Validator):
         """Return the minimum and maximum allowable value.
 
         A non-base-0 descriptor's 'limits' value indicates the _value_ range of
-        the object.
-        A base-0 descriptor's 'limits' value indicates the min/max length of
-        the object. This is reserved for strings only."""
+        the object.  A base-0 or base-36 descriptor's 'limits' value indicates
+        the min/max length of the object. This is reserved for strings/labels
+        only."""
         if self.args.base == 0:
             return self.args.chars
         return self.args.limits
@@ -150,7 +161,7 @@ class BaseDescriptor(Validator):
             raise DescriptorMinMaxLengthError(msg)
 
         # -- limits validation value transformed to base-10 --
-        if self.args.base > 0:
+        if self.args.base in NUMERIC_BASES:
             dec_val = int(value, self.args.base)
             minmax = self.args.limits
             if dec_val not in range(minmax.min, minmax.max):
@@ -230,7 +241,7 @@ class BaseValue:
 
     def charset(self):
         """Return the set of valid characters for this object."""
-        return self._descr.charset()
+        return self._descr.charset
 
     def limits(self) -> MinMax:
         """Return the limits of the descriptor."""

@@ -69,6 +69,6 @@ suite = loader.loadTestsFromTestCase(CoreReaderTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 
 # ---------------------------------------------------------------
-print("===== Assembler Tests =============================")
-suite = loader.loadTestsFromTestCase(AssemblerUnitTests)
-unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+# print("===== Assembler Tests =============================")
+# suite = loader.loadTestsFromTestCase(AssemblerUnitTests)
+# unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)

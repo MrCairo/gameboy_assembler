@@ -38,7 +38,7 @@ class Convert:
 
     def to_hex(self) -> Expression:
         """Convert expression to an 8-bit hexidecimal value."""
-        return Expression(f"${self._dec_value:02X}")
+        return Expression(f"${self._dec_value & 0xff:02X}")
 
     def to_hex_string(self) -> str:
         """Convert the expression to an 8-bit hex string with a '$' prefix."""
@@ -52,7 +52,7 @@ class Convert:
 
     def to_binary(self) -> Expression:
         """Convert expression to an Binary value."""
-        return Expression(f"%{self._dec_value:08b}")
+        return Expression(f"%{self._dec_value & 0xff:08b}")
 
     def to_code(self) -> bytes | None:
         """Convert to bytes. 16-bit values are written as LSB MSB."""

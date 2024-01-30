@@ -9,6 +9,7 @@ from ..core.expression import Expression
 from ..directives import Equate, Define
 from ..directives.section import Section
 from ..directives.sections import Sections
+from ..directives.storage import Storage
 from ..tokens import TokenGroup, Tokenizer
 
 
@@ -39,6 +40,44 @@ class DirectiveUnitTests(unittest.TestCase):
         self.assertTrue(equ.name.upper() == "MY_VAR")
         self.assertEqual(Convert(equ.expression).to_decimal_int(),
                          4096, "Expression not euqal to 4096.")
+
+    # ===== Storage Tests ==================================
+    def test_storage_single_fill(self):
+        """Test the DS Directive supplied as a string."""
+        section = 'DS $10'
+        group = Tokenizer().tokenize_string(section)
+        self.assertTrue(len(group) > 0)
+        sec = Storage(group)
+        data = sec.bytes()
+        self.assertIsNotNone(data)
+
+    def test_single_storage(self):
+        """Test the DS Directive supplied as a string."""
+        section = 'DS'
+        group = Tokenizer().tokenize_string(section)
+        self.assertTrue(len(group) > 0)
+        sec = Storage(group)
+        data = sec.bytes()
+        self.assertIsNotNone(data)
+        self.assertTrue(len(data) == 1)
+
+    def test_storage_multi_fill_repeat(self):
+        """Test the DS Directive supplied as a string."""
+        section = 'DS $10 $01, $02, $03'
+        group = Tokenizer().tokenize_string(section)
+        self.assertTrue(len(group) > 0)
+        sec = Storage(group)
+        data = sec.bytes()
+        self.assertIsNotNone(data)
+
+    def test_storage_multi_fill_exceeds(self):
+        """Test the DS Directive supplied as a string."""
+        section = 'DS $05 $01, $02, $03, $04, $05, $06, $07'
+        group = Tokenizer().tokenize_string(section)
+        self.assertTrue(len(group) > 0)
+        sec = Storage(group)
+        data = sec.bytes()
+        self.assertIsNotNone(data)
 
     # ===== Section and Sections Tests =====================
     def test_section_from_string(self):

@@ -110,6 +110,8 @@ DELIMITER_PAIRS = [
     DPair("{", "}")
 ]
 
+NUMERIC_BASES = [2, 8, 10, 16]
+
 
 class StorageType(Enum):
     """Represent the storage class storage size type."""

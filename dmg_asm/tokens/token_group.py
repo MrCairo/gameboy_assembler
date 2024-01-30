@@ -31,8 +31,10 @@ class TokenGroup:
             desc += f"\n{idx:02d}. {tok.__str__()}"
         return desc
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index):
         """Retrieve an individual token by key."""
+        if isinstance(index, slice):
+            return self._group_store.__getitem__(index)
         return self.element_at(index)
 
     def __len__(self):
@@ -45,17 +47,14 @@ class TokenGroup:
     def __reversed__(self):
         return self._group_store.__reversed__()
 
-    @classmethod
-    def group_from_token_chain(cls, start_token: Token):
-        """Create a new TokenGroup with existing Tokens from another group."""
-        new_group = TokenGroup()
-        if start_token is not None and isinstance(start_token, Token):
-            new_group.add(start_token.shallow_copy())
-            _next_tok = start_token.next
-            while _next_tok is not None:
-                new_group.add(_next_tok.shallow_copy())
-                _next_tok = _next_tok.next
-        return new_group
+    def index_of(self, token: Token) -> int | None:
+        """Return the index in the group of the specified token.
+
+        Token equality is defined as an equal token value and token type."""
+        for index, item in enumerate(self._group_store):
+            if item == token:
+                return index
+        return None
 
     def find_first_value(self, value) -> int | None:
         """Return the index in the group that matches the passed value.

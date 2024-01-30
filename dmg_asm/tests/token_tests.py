@@ -52,7 +52,7 @@ class TokenUnitTests(unittest.TestCase):
 
     def test_token_group_from_string(self):
         """Tokenize elements from a string."""
-        group = Tokenizer().tokenize_string('SECTION "CoolStuff", WRAM0')
+        group = Tokenizer().tokenize_string('SECTION "CoolassStuff", WRAM0')
         self.assertTrue(group is not None)
         self.assertTrue(len(group) == 5)
         self.assertTrue(group[0].value == "SECTION")

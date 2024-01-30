@@ -108,6 +108,9 @@ class Token:
             desc += f"\n{self.next.__str__()}"
         return desc
 
+    def __eq__(self, other: Token) -> bool:
+        return self.value == other.value and self.type == other.type
+
     # Helper functions
     def shallow_copy(self) -> Token:
         """Return a copy of this token sans next.
@@ -120,7 +123,6 @@ class Token:
         new_tok.value = self.value
         new_tok.type = self.type
         new_tok.data = self.data
-        new_tok.next = self.next
         return new_tok
 
 # --------========[ End of Token class ]========-------- #

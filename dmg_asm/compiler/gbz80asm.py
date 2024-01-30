@@ -29,7 +29,8 @@ class Assembler:
 
     def assemble(self, token_group: TokenGroup) -> bool:
         """Assemble a GB Z80 source file into binary."""
-        if token_group is None or len(token_group) == 0:
+        group_len = len(token_group)
+        if token_group is None or group_len == 0:
             return False
         first = token_group[0]
         grp = None
@@ -43,7 +44,7 @@ class Assembler:
             case TokenType.SYMBOL:
                 grp = self.process_any_symbol(token_group)
             case _:
-                grp = TokenGroup.group_from_token_chain(first)
+                grp = token_group[1:] if group_len > 1 else TokenGroup()
         if len(grp):
             return self.assemble(grp)
         return True
@@ -54,15 +55,12 @@ class Assembler:
                                       token_group: TokenGroup) -> TokenGroup:
         """Process any token group starting with a DIRECTIVE."""
         first = token_group[0].value.upper()
-        last_tok = token_group[0]
         match first:
             case "DEF":
-                last_tok = self._process_define(token_group)
+                self._process_define(token_group)
             case "SECTION":
-                last_tok = self._process_section(token_group)
-
-        grp = TokenGroup.group_from_token_chain(last_tok.next)
-        return grp
+                self._process_section(token_group)
+        return token_group[1:] if len(token_group) > 1 else TokenGroup()
         # Check for EQU or EQUS
         # second = token_group[1].value.upper()
         # match second:
@@ -73,14 +71,24 @@ class Assembler:
         # return False
 
     def process_any_storage(self, token_group: TokenGroup) -> TokenGroup:
-        return TokenGroup.group_from_token_chain(token_group[0].next)
+        """Process an storage type directive."""
+        if len(token_group) > 1:
+            return token_group[1:]
+        return TokenGroup()
 
     def process_any_instruction(self, token_group: TokenGroup) -> bool:
-        return TokenGroup.group_from_token_chain(token_group[0].next)
+        """Process any gbz80 instruction."""
+        if len(token_group) > 1:
+            return token_group[1:]
+        return TokenGroup()
 
     def process_any_symbol(self, token_group: TokenGroup) -> TokenGroup | None:
+        """Process any Symbol."""
         tok = self._process_symbol(token_group)
-        return TokenGroup.group_from_token_chain(tok.next)
+        idx = token_group.index_of(tok)
+        if idx and idx + 1 < len(token_group):
+            return token_group[idx + 1:]
+        return TokenGroup()
 
     # -----[ Individual processors ]----------------------------------
 

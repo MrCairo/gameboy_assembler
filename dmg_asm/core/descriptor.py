@@ -4,14 +4,11 @@
 from abc import ABC, abstractmethod
 import string
 from dataclasses import dataclass
-from .constants import MinMax, MAX_16BIT_VALUE, MAX_8BIT_VALUE
+from .constants import MinMax, MAX_16BIT_VALUE, MAX_8BIT_VALUE, NUMERIC_BASES
 from .exception import DescriptorMinMaxLengthError, \
     DescriptorMinMaxValueError, \
     DescriptorRadixDigitValueError, \
     DescriptorRadixError
-
-
-NUMERIC_BASES = [2, 8, 10, 16]
 
 
 @dataclass
@@ -86,8 +83,12 @@ class BaseDescriptor(Validator):
     DescriptorRadixError, DescriptorException (This is the generic catch-all)
     """
 
+    str_base = f"{string.digits}{string.ascii_letters}"
+    punct = f"{string.punctuation}".replace("'", "").replace('"', '')
+
     bases = {
-        0: f"{string.digits}{string.ascii_letters}_",  # Label type
+        -1: f"{str_base}{punct} ",
+        0: f"{str_base}_",  # Label type
         2: "01",
         8: string.octdigits,
         10: string.digits,
@@ -113,7 +114,7 @@ class BaseDescriptor(Validator):
         """
         if base not in self.bases:
             raise DescriptorRadixError(
-                f'Base can only 2, 8, 10 or 16 but was {base}')
+                f'Numeric base can only 2, 8, 10 or 16 but was {base}')
         self.args = DescriptorArgs(chars=chars,
                                    limits=limits,
                                    base=base,
@@ -133,10 +134,10 @@ class BaseDescriptor(Validator):
         """Return the minimum and maximum allowable value.
 
         A non-base-0 descriptor's 'limits' value indicates the _value_ range of
-        the object.  A base-0 or base-36 descriptor's 'limits' value indicates
+        the object.  A base-0 or base -1 descriptor's 'limits' value indicates
         the min/max length of the object. This is reserved for strings/labels
         only."""
-        if self.args.base == 0:
+        if self.args.base <= 0:
             return self.args.chars
         return self.args.limits
 
@@ -169,7 +170,7 @@ class BaseDescriptor(Validator):
                     f'{dec_val} outside range of {minmax.min}, {minmax.max}.')
         else:
             #
-            if self.args.base == 0 and value[0] not in string.ascii_letters:
+            if self.args.base <= 0 and value[0] not in string.ascii_letters:
                 msg = f"{value} has invalid first char."
                 raise DescriptorRadixDigitValueError(msg)
 
@@ -200,6 +201,9 @@ OCT_DSC = BaseDescriptor(chars=MinMax(1, 7),
 LBL_DSC = BaseDescriptor(chars=MinMax(1, 16),
                          limits=MinMax(0, 0),
                          base=0)
+STR_DSC = BaseDescriptor(chars=MinMax(1, 256),
+                         limits=MinMax(0, 0),
+                         base=-1)
 
 # |-----------------============<***>=============-----------------|
 

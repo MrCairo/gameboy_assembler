@@ -12,10 +12,11 @@ An expression is like:
 from __future__ import annotations
 from dataclasses import dataclass
 
-from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC
+from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC, STR_DSC
 from .descriptor import LBL_DSC, BaseDescriptor
 from .exception import ExpressionSyntaxError, \
     DescriptorException, ExpressionDescriptorError, ExpressionTypeError
+from ..core.constants import NUMERIC_BASES
 
 
 @dataclass
@@ -146,7 +147,7 @@ class Expression:
         if self._int_value == -1:  # -1 == uninitialized
             _value_str = self.prefixless_value
             _value_base = self.descriptor.args.base
-            if _value_base != 0:
+            if _value_base in NUMERIC_BASES:
                 self._int_value = int(_value_str, _value_base)
         return self._int_value
 
@@ -331,7 +332,7 @@ class _Validator:
                 descriptor = DEC_DSC
                 expr_type = ExpressionType.DECIMAL
             case '"' | "'":
-                descriptor = LBL_DSC
+                descriptor = STR_DSC
                 expr_type = ExpressionType.CHARACTER
             case "%":
                 descriptor = BIN_DSC

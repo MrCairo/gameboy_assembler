@@ -103,6 +103,47 @@ class Tokenizer:
         elements = [x.strip(",") for x in clean.split(" ") if x != ""]
         # Drop any empty elements
         elements = list(filter(None, elements))
+
+        new_elements = []
+        dquote_count = 0
+        squote_count = 0
+        str_val = ""
+
+        # If there is an embedded string, keep the Quotes around it.
+        for ele in elements:
+            if ele == '"' and dquote_count == 1:
+                dquote_count = 0
+                if len(str_val) > 0:
+                    new_elements.append(f"{str_val}\"")
+                    str_val = ""
+                    continue
+                new_elements.append(ele)
+                continue
+            if ele == "'" and squote_count == 1:
+                squote_count = 0
+                if len(str_val) > 0:
+                    new_elements.append(f"{str_val}'")
+                    str_val = ""
+                    continue
+                new_elements.append(ele)
+                continue
+
+            if ele == '"' and dquote_count == 0:
+                dquote_count = 1
+                str_val = '"'
+                continue
+            if ele == "'" and squote_count == 0:
+                squote_count = 1
+                str_val = "'"
+                continue
+
+            if dquote_count or squote_count:
+                if len(str_val) > 1:  # Ignore starting quote
+                    str_val += " "
+                str_val += ele
+                continue
+
+            new_elements.append(ele)
         return elements
 
     def _explode_delimiters(self, text: str) -> str:

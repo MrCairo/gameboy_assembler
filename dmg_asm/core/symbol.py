@@ -127,7 +127,7 @@ class SymbolUtils:
     @classmethod
     def valid_name_chars(cls):
         """Return a string of only valid characters of a name."""
-        return LBL_DSC.charset()
+        return LBL_DSC.charset
 
     @classmethod
     def valid_symbol_first_char(cls):

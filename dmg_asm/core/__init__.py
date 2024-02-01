@@ -1,6 +1,7 @@
 """Core classes."""
 from .convert import Convert
-from .descriptor import DescriptorArgs, BaseDescriptor, BaseValue
+from .descriptor import DescriptorArgs, BaseDescriptor, BaseValue, \
+    BASE_BIN, BASE_BYTE, BASE_DEC, BASE_LAB, BASE_STR, BASE_WORD
 from .expression import Expression, ExpressionType
 from .label import Label, Labels
 from .symbol import Symbol, SymbolAffix, Symbols, SymbolUtils, SymbolScope
@@ -36,5 +37,6 @@ __all__ = [
     "MinMax", "DIRECTIVES", "STORAGE_DIRECTIVES",
     "MEMORY_DIRECTIVES", "MEMORY_OPTIONS", "REGISTERS", "DEFINE_OPERATORS",
     "PUNCTUATORS", "QUOTE_PUNCTUATORS", "BEGIN_PUNCTUATORS", "END_PUNCTUATORS",
-    "DPair", "DelimData"
+    "DPair", "DelimData",
+    "BASE_BIN", "BASE_BYTE", "BASE_DEC", "BASE_LAB", "BASE_STR", "BASE_WORD"
 ]

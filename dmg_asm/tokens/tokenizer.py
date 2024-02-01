@@ -144,7 +144,7 @@ class Tokenizer:
                 continue
 
             new_elements.append(ele)
-        return elements
+        return new_elements
 
     def _explode_delimiters(self, text: str) -> str:
         """Return a string with brackets/+ exploded for splitting.

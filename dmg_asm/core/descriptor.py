@@ -72,6 +72,13 @@ class OneOf(Validator):
 
 # |-----------------============<***>=============-----------------|
 
+BASE_STR = -1
+BASE_LAB = 0
+BASE_BIN = 2
+BASE_BYTE = 8
+BASE_DEC = 10
+BASE_WORD = 16
+
 
 class BaseDescriptor(Validator):
     """A class that represents a value with n chars of min/max values.
@@ -87,16 +94,15 @@ class BaseDescriptor(Validator):
     punct = f"{string.punctuation}".replace("'", "").replace('"', '')
 
     bases = {
-        -1: f"{str_base}{punct} ",
-        0: f"{str_base}_",  # Label type
-        2: "01",
-        8: string.octdigits,
-        10: string.digits,
-        16: string.hexdigits
-        # 36: f"{string.ascii_letters}{string.digits} _+-/.'\""  # String Type
+        BASE_STR: f"{str_base}{punct} ",
+        BASE_LAB: f"{str_base}_",  # Label type
+        BASE_BIN: "01",
+        BASE_BYTE: string.octdigits,
+        BASE_DEC: string.digits,
+        BASE_WORD: string.hexdigits
     }
 
-    def __init__(self, chars: MinMax, limits: MinMax, base=10):
+    def __init__(self, chars: MinMax, limits: MinMax, base=BASE_DEC):
         """Initialize the object with # of chars and min/max values.
 
         'chars' represent the min and max number of characters.
@@ -137,7 +143,7 @@ class BaseDescriptor(Validator):
         the object.  A base-0 or base -1 descriptor's 'limits' value indicates
         the min/max length of the object. This is reserved for strings/labels
         only."""
-        if self.args.base <= 0:
+        if self.args.base == BASE_STR or self.args.base == BASE_LAB:
             return self.args.chars
         return self.args.limits
 
@@ -170,7 +176,8 @@ class BaseDescriptor(Validator):
                     f'{dec_val} outside range of {minmax.min}, {minmax.max}.')
         else:
             #
-            if self.args.base <= 0 and value[0] not in string.ascii_letters:
+            is_str = self.args.base in [BASE_LAB, BASE_STR]
+            if is_str and value[0] not in string.ascii_letters:
                 msg = f"{value} has invalid first char."
                 raise DescriptorRadixDigitValueError(msg)
 
@@ -185,25 +192,25 @@ class BaseDescriptor(Validator):
 #
 DEC_DSC = BaseDescriptor(chars=MinMax(1, 6),
                          limits=MinMax(0, MAX_16BIT_VALUE + 1),
-                         base=10)
+                         base=BASE_DEC)
 HEX_DSC = BaseDescriptor(chars=MinMax(2, 3),
                          limits=MinMax(0, MAX_8BIT_VALUE + 1),
-                         base=16)
+                         base=BASE_WORD)
 HEX16_DSC = BaseDescriptor(chars=MinMax(2, 5),
                            limits=MinMax(0, MAX_16BIT_VALUE + 1),
-                           base=16)
+                           base=BASE_WORD)
 BIN_DSC = BaseDescriptor(chars=MinMax(2, 9),
                          limits=MinMax(0, MAX_8BIT_VALUE + 1),
-                         base=2)
+                         base=BASE_BIN)
 OCT_DSC = BaseDescriptor(chars=MinMax(1, 7),
                          limits=MinMax(0, MAX_16BIT_VALUE + 1),
-                         base=8)
+                         base=BASE_BYTE)
 LBL_DSC = BaseDescriptor(chars=MinMax(1, 16),
                          limits=MinMax(0, 0),
-                         base=0)
+                         base=BASE_LAB)
 STR_DSC = BaseDescriptor(chars=MinMax(1, 256),
                          limits=MinMax(0, 0),
-                         base=-1)
+                         base=BASE_STR)
 
 # |-----------------============<***>=============-----------------|
 

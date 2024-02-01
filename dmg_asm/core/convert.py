@@ -28,12 +28,18 @@ class Convert:
         pad = "02d" if self._dec_value < 100 else "04d"
         return Expression(f"0{self._dec_value:{pad}}")
 
-    def to_hex16(self) -> Expression:
+    def to_hex16(self, little_endian=False) -> Expression:
         """Convert expression to a 16-bit hexidecimal value."""
-        return Expression(f"${self._dec_value:04X}")
+        if little_endian:
+            return Expression(self.to_hex16_string(little_endian=True))
+        return Expression(self.to_hex16_string())
 
-    def to_hex16_string(self) -> str:
+    def to_hex16_string(self, little_endian=False) -> str:
         """Convert the expression to a 16-bit hex string with a '$' prefix."""
+        if little_endian:
+            highb = self._dec_value >> 8
+            lowb = (self._dec_value & 0x00FF) << 8
+            return f"{(highb + lowb):04X}"
         return f"${self._dec_value:04X}"
 
     def to_hex(self) -> Expression:

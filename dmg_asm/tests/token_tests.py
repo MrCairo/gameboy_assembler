@@ -7,7 +7,7 @@ from icecream import ic
 
 from ..tokens import TokenType, Tokenizer
 from ..core.reader import BufferReader
-from ..core import Expression
+from ..core import Expression, BASE_STR
 from ..directives import Mnemonic
 
 ASM_1 = """
@@ -54,12 +54,14 @@ class TokenUnitTests(unittest.TestCase):
         """Tokenize elements from a string."""
         group = Tokenizer().tokenize_string('SECTION "CoolassStuff", WRAM0')
         self.assertTrue(group is not None)
-        self.assertTrue(len(group) == 5)
+        self.assertTrue(len(group) == 3)
         self.assertTrue(group[0].value == "SECTION")
         self.assertTrue(group[0].type == TokenType.DIRECTIVE)
-        self.assertTrue(group[2].type == TokenType.LITERAL)
-        self.assertTrue(group[4].value == "WRAM0")
-        self.assertTrue(group[4].type == TokenType.MEMORY_DIRECTIVE)
+        self.assertTrue(group[1].type == TokenType.EXPRESSION)
+        expr: Expression = group[1].data
+        self.assertTrue(expr.descriptor.args.base == BASE_STR)  # -1 == String
+        self.assertTrue(group[2].value == "WRAM0")
+        self.assertTrue(group[2].type == TokenType.MEMORY_DIRECTIVE)
 
     def test_token_group_from_elements(self):
         """Test Tokenize an array of instructions and data."""

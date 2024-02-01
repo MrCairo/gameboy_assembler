@@ -13,6 +13,7 @@ from ..tokens import TokenGroup, Tokenizer, TokenType
 from ..core.exception import SectionDeclarationError, ExpressionException
 from ..core.constants import QUOTE_PUNCTUATORS, DELIMITER_PAIRS, \
     DPair, DelimData
+from ..core.descriptor import BASE_STR
 
 # ##############################################################################
 # SecAddress is a Tuple that holds a start and end
@@ -181,8 +182,8 @@ class Section:
         self._tokens: TokenGroup = tokens
         if tokens is None:
             raise TypeError("Tokens passed to a Section cannot be None.")
-        if len(tokens) < 5:
-            # [SECTION, \", LABEL, \", BLOCK]
+        if len(tokens) < 3:
+            # [SECTION, \"LABEL\", BLOCK]
             msg = "Missing one or more parameters."
             raise SectionDeclarationError(msg)
         self._data = _parse(tokens)
@@ -273,6 +274,10 @@ def _parse(tokens: TokenGroup) -> SectionData:
                     data.section_key = "SECTION"
                     curr_directive = tok.value
                     dir_idx = idx + 1
+            case TokenType.EXPRESSION:
+                str_expr: Expr = tok.data
+                if str_expr.descriptor.args.base == BASE_STR:
+                    data.label = str_expr.prefixless_value
             case TokenType.BEGIN_PUNCTUATOR | TokenType.PUNCTUATOR:
                 enclosure = _get_enclosed_value(tokens,
                                                 dir_idx)
@@ -296,7 +301,7 @@ def _parse(tokens: TokenGroup) -> SectionData:
                     curr_directive = "MEMORY_DIRECTIVE"
                 else:
                     data.error = True
-                    break
+                    # break
             case TokenType.MEMORY_OPTION:
                 if data.block_name:  # No option before memory block
                     if tok.value == "BANK":

@@ -29,7 +29,6 @@ class _ParserData:
 
 class Storage:
     """Represent an amount of storage that is reserved or just defined."""
-    _roamer = 0
     _tokens: TokenGroup
     _data: _ParserData
 
@@ -40,7 +39,7 @@ class Storage:
         self._data = _StorageParser(token_group).parse()
 
     def __str__(self):
-        return "Section Yea!"
+        return f"Store( {self._tokens.__str__()} )"
 
     def __repr__(self):
         return f"Storage({self._tokens.__repr__()})"
@@ -72,8 +71,7 @@ class _StorageParser:
     types = {
         "DS": StorageType.BLOCK,
         "DB": StorageType.BYTE,
-        "DW": StorageType.WORD,
-        "DL": StorageType.LONG
+        "DW": StorageType.WORD
     }
 
     _hex16: HEX16_DSC = HEX16_DSC
@@ -88,7 +86,7 @@ class _StorageParser:
             raise ValueError("'token_group' must have at least one Token.")
         if token_group[0].value not in STORAGE_DIRECTIVES:
             raise StorageValueError("Storage type must be "
-                                    "DS, DB, DW, or DL")
+                                    "DS, DB, or DW")
         self._tokens = token_group
         self._results = _ParserData()
         self._tok_len = len(token_group)
@@ -103,11 +101,9 @@ class _StorageParser:
             case StorageType.BLOCK:
                 self._results = self._to_space()
             case StorageType.BYTE:
-                self._results = self._to_space()
+                self._results = self._to_bytes()
             case StorageType.WORD:
-                self._results = self._to_space()
-            case StorageType.LONG:
-                self._results = self._to_space()
+                self._results = self._to_words()
         return self._results
 
     def __str__(self):
@@ -121,14 +117,13 @@ class _StorageParser:
     # -----=====< End of public methods >=====----- #
 
     def _to_space(self) -> _ParserData:
-        """
-        This method is to accept no more than 2 or more parameters. The first
-        is the number of bytes to allocate with a maximum of 4096 (4 Kib). The
-        remaining parameters (if any exist) are the single-byte values used to
-        fill the storage. All expressions are AND'ed to be 8-bit only.
-        space. The values are repeated until the space is filled.  If none are
-        provided, the space is filled with $00."""
-        size: Expression = Expression("$01")
+        """DS [size] [byte1, byte2, ... byteN]
+        The first is the number of bytes to allocate with a maximum of 4096 (4
+        Kib). The remaining parameters (if any exist) are the single-byte
+        values used to fill the storage. All expressions are AND'ed to be
+        8-bit only.  space. The values are repeated until the space is filled.
+        If none are provided, the space is filled with $00."""
+        size: Expression = Expression("$01")  # Default of 1 byte
         parsed = _ParserData()
         parsed.data = None
         parsed.s_type = StorageType.BLOCK
@@ -158,9 +153,46 @@ class _StorageParser:
         for idx in range(0, size.integer_value):
             val = values[idx % val_len]
             hexstr += val
-        parsed.data: bytes = bytes.fromhex(hexstr)
+        try:
+            parsed.data = bytes.fromhex(hexstr)
+        except ValueError:  # Shouldn't happen (_shouldn't_)
+            parsed.data = None
         return parsed
 
     def _to_bytes(self) -> _ParserData:
+        """DB $01 "Hello" """
         parsed = _ParserData()
+        if self._tok_len <= 1:
+            return None
+        hexstr = ""
+        for _, val in enumerate(self._tokens[1:]):
+            if val.type == TokenType.EXPRESSION:
+                expr: Expression = val.data
+                if expr.descriptor.args.base > 0:
+                    hexstr += Convert(expr).to_hex().prefixless_value
+                else:  # Base-0 is a String
+                    for char in enumerate(expr.prefixless_value):
+                        hexstr += f"{ord(char[1]):02X}"
+        try:
+            parsed.data = bytes.fromhex(hexstr)
+        except ValueError:  # Shouldn't happen (_shouldn't_)
+            parsed.data = None
+        return parsed
+
+    def _to_words(self) -> _ParserData:
+        """DW $FFD2, $1234"""
+        parsed = _ParserData()
+        hexstr = ""
+        if self._tok_len < 2:
+            return None
+        for _, val in enumerate(self._tokens[1:]):
+            expr: Expression = val.data
+            if expr.descriptor.args.base > 0:
+                little = Convert(expr).to_hex16_string(little_endian=True)
+                cleaned = little.strip("$")
+                hexstr += cleaned + " "
+        try:
+            parsed.data = bytes.fromhex(hexstr)
+        except ValueError:  # Shouldn't happen (_shouldn't_)
+            parsed.data = None
         return parsed

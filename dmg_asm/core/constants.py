@@ -61,8 +61,7 @@ DIRECTIVES = [
 STORAGE_DIRECTIVES = [
     "DS",
     "DB",
-    "DW",
-    "DL"
+    "DW"
 ]
 
 MEMORY_DIRECTIVES = [

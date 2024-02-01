@@ -42,44 +42,98 @@ class DirectiveUnitTests(unittest.TestCase):
                          4096, "Expression not euqal to 4096.")
 
     # ===== Storage Tests ==================================
-    def test_storage_single_fill(self):
+    def test_storage_ds_single_fill(self):
         """Test the DS Directive supplied as a string."""
-        section = 'DS $10'
-        group = Tokenizer().tokenize_string(section)
+        source = 'DS $10'
+        group = Tokenizer().tokenize_string(source)
         self.assertTrue(len(group) > 0)
-        sec = Storage(group)
-        data = sec.bytes()
+        stor = Storage(group)
+        data = stor.bytes()
         self.assertIsNotNone(data)
 
-    def test_single_storage(self):
+    def test_only_ds_storage(self):
         """Test the DS Directive supplied as a string."""
-        section = 'DS'
-        group = Tokenizer().tokenize_string(section)
+        source = 'DS'
+        group = Tokenizer().tokenize_string(source)
         self.assertTrue(len(group) > 0)
-        sec = Storage(group)
-        data = sec.bytes()
+        stor = Storage(group)
+        data = stor.bytes()
         self.assertIsNotNone(data)
         self.assertTrue(len(data) == 1)
 
-    def test_storage_multi_fill_repeat(self):
+    def test_storage_multi_fill_ds_repeat(self):
         """Test the DS Directive supplied as a string."""
-        section = 'DS $10 $01, $02, $03'
-        group = Tokenizer().tokenize_string(section)
+        source = 'DS $10 $01, $02, $03'
+        group = Tokenizer().tokenize_string(source)
         self.assertTrue(len(group) > 0)
-        sec = Storage(group)
-        data = sec.bytes()
+        stor = Storage(group)
+        data = stor.bytes()
         self.assertIsNotNone(data)
 
-    def test_storage_multi_fill_exceeds(self):
+    def test_storage_multi_fill_ds_exceeds(self):
         """Test the DS Directive supplied as a string."""
-        section = 'DS $05 $01, $02, $03, $04, $05, $06, $07'
-        group = Tokenizer().tokenize_string(section)
+        source = 'DS $05 $01, $02, $03, $04, $05, $06, $07'
+        group = Tokenizer().tokenize_string(source)
         self.assertTrue(len(group) > 0)
-        sec = Storage(group)
-        data = sec.bytes()
+        stor = Storage(group)
+        data = stor.bytes()
         self.assertIsNotNone(data)
+
+    def test_storage_db_single(self):
+        """Test the DB storage directive with just a single byte."""
+        source = 'DB $FF'
+        group = Tokenizer().tokenize_string(source)
+        self.assertTrue(len(group) > 0)
+        stor = Storage(group)
+        self.assertIsNotNone(stor)
+        data = stor.bytes()
+        self.assertIsNotNone(data)
+
+    def test_storage_db_multi(self):
+        """Test the DB storage directive with just a single byte."""
+        source = 'DB $FF $10, $D2, $1234'  # $1234 should truncate to $34
+        group = Tokenizer().tokenize_string(source)
+        self.assertTrue(len(group) > 0)
+        stor = Storage(group)
+        self.assertIsNotNone(stor)
+        data = stor.bytes()
+        self.assertIsNotNone(data)
+        self.assertTrue(len(data) == 4)
+
+    def test_storage_db_multi_string(self):
+        """Test the DB storage directive with just a single byte."""
+        source = 'DB $FF "Hello"'
+        group = Tokenizer().tokenize_string(source)
+        self.assertTrue(len(group) > 0)
+        stor = Storage(group)
+        self.assertIsNotNone(stor)
+        data = stor.bytes()
+        self.assertIsNotNone(data)
+        self.assertTrue(len(data) == 6)
+
+    def test_storage_dw_single(self):
+        """Test the DB storage directive with just a single byte."""
+        source = 'DW $FFD2'
+        group = Tokenizer().tokenize_string(source)
+        self.assertTrue(len(group) > 0)
+        stor = Storage(group)
+        self.assertIsNotNone(stor)
+        data = stor.bytes()
+        self.assertIsNotNone(data)
+
+    def test_storage_dw_multiple(self):
+        """Test the DB storage directive with just a single byte."""
+        source = 'DW $FFD2 $1234 $42'
+        group = Tokenizer().tokenize_string(source)
+        self.assertTrue(len(group) > 0)
+        stor = Storage(group)
+        self.assertIsNotNone(stor)
+        data = stor.bytes()
+        self.assertIsNotNone(data)
+        self.assertTrue(len(data) == 6)
 
     # ===== Section and Sections Tests =====================
+
     def test_section_from_string(self):
         """Test the SECTION Directive supplied as a string."""
         section = 'SECTION "CoolStuff", WRAM0, BANK[2]'

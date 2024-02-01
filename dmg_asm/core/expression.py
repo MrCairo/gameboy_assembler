@@ -8,12 +8,12 @@ An expression is like:
     &1777
     "MY_LABEL"
 """
-# from enum import StrEnum
+
 from __future__ import annotations
 from dataclasses import dataclass
 
 from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC, STR_DSC
-from .descriptor import LBL_DSC, BaseDescriptor
+from .descriptor import BaseDescriptor
 from .exception import ExpressionSyntaxError, \
     DescriptorException, ExpressionDescriptorError, ExpressionTypeError
 from ..core.constants import NUMERIC_BASES

@@ -5,13 +5,12 @@
 
 from ..core.constants import Environment
 from ..core.label import Label, Labels
-from ..core.expression import Expression
 from ..core.symbol import Symbol, Symbols
 from ..core.exception import DefineAssignmentError, DefineException, \
     DefineSymbolError, SectionException, InvalidSymbolName, InvalidSymbolScope
 
 from ..tokens import Token, TokenGroup, TokenType
-from ..directives import Equate, Define, Mnemonic, Section, Sections
+from ..directives import Define, Section, Sections
 from ..cpu.instruction_pointer import InstructionPointer
 
 INCL_PREFIX = "INCLUDE "

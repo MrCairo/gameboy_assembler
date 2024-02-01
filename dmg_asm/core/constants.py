@@ -156,11 +156,3 @@ class Environment:
             self.project_dir = project_dir
         self.source_dir = source_dir if source_dir else ""
         self.include_dir = include_dir if include_dir else ""
-
-# NODE_FORMAT = {
-# ORG: { "Directive": ORG,
-# "Identifier": None,  # String
-# "AddressType": AddressType.AbsolueAddress,
-# "Address": AddressSpread}
-# EQU: {}
-# }

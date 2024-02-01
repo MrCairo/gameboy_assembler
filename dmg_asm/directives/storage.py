@@ -5,10 +5,9 @@ from dataclasses import dataclass
 
 from ..core.constants import StorageType, STORAGE_DIRECTIVES
 from ..core.descriptor import HEX16_DSC, HEX_DSC
-from ..core.exception import StorageException, StorageValueError, \
-    DescriptorException, DescriptorMinMaxLengthError, DescriptorMinMaxValueError
+from ..core.exception import StorageValueError
 from ..core import Expression, Convert
-from ..tokens import TokenGroup, TokenType, Token
+from ..tokens import TokenGroup, TokenType
 
 # #############################################################################
 

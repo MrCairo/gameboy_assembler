@@ -72,6 +72,10 @@ class OneOf(Validator):
 
 # |-----------------============<***>=============-----------------|
 
+# numeric base constants for Expression class. A little missused since base of
+# -1 and 0 are included to represent string expressions.
+# TODO: Need to clean up use of 'base' for labels and string expressions.
+#
 BASE_STR = -1
 BASE_LAB = 0
 BASE_BIN = 2
@@ -218,8 +222,12 @@ STR_DSC = BaseDescriptor(chars=MinMax(1, 256),
 class BaseValue:
     """Base class for a BaseDescriptor value."""
 
+    __slots__ = ('_descr', '_base', '_chars', '_limits')
+
     _descr: BaseDescriptor
     _base: int
+    _chars: MinMax
+    _limits: MinMax
     _ftypes = {2: 'b', 8: 'o', 10: 'd', 16: 'X'}
 
     def __init__(self, desc: BaseDescriptor):

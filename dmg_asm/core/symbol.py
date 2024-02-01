@@ -77,8 +77,6 @@ from .convert import Convert
 from .descriptor import LBL_DSC
 from ..cpu.instruction_pointer import InstructionPointer
 
-# from ..cpu.instruction_pointer import InstructionPointer as IP
-
 
 class SymbolScope(StrEnum):
     """Symbol Scope Constants."""
@@ -357,9 +355,6 @@ class Symbols:
             found: Symbol = self[symbol.clean_name.upper()]
             if found:
                 del self[found.name.upper]
-                # new_d = dict(self.symbols)
-                # del new_d[symbol.clean_name.upper()]
-                # self.symbols = new_d
 
     def local_symbols(self) -> dict:
         """Return symbols that are local in scope."""
@@ -380,32 +375,3 @@ class Symbols:
         self.symbols.clear()
 
     # --------========[ End of class ]========-------- #
-
-
-# #############################################################################
-
-# Quick unit tests of these classes.
-
-# if __name__ == "__main__":
-#     try:
-#         print(Symbol("Hello", 100))
-#         print(Symbol(".begin:", 0))
-#     except TypeError as te:
-#         print(f"{te}: The symbol was not a valid type/symbol.")
-#     except ValueError as ve:
-#         print(f"{ve} was invalid as a symbol")
-
-#     def test_symbol():
-#         symbol = Symbol('.GOTO_SYMBOL:', 0x1000)
-#         if symbol is None:
-#             print("Unable to create a symbol")
-#         else:
-#             Symbols().add(symbol)
-
-#         if Symbols()['GOTO_SYMBOL']:
-#             print("Symbol was found.")
-#         else:
-#             print("Unable to find the symbol.")
-#             print(Symbols())
-
-#    test_symbol()

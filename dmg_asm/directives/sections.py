@@ -1,7 +1,6 @@
 """Classes that convert text into Sections."""
 
 # from __future__ import annotations
-from typing import Optional
 from .section import Section
 
 

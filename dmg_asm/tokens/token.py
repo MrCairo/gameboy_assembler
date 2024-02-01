@@ -5,8 +5,7 @@ from enum import StrEnum, auto
 from ..core.constants import \
     VAL_T as value_t, NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
     DEFINE_OPERATORS, STORAGE_DIRECTIVES, PUNCTUATORS, DIRECTIVES, \
-    MEMORY_DIRECTIVES, MEMORY_OPTIONS, QUOTE_PUNCTUATORS, \
-    BEGIN_PUNCTUATORS, END_PUNCTUATORS
+    MEMORY_DIRECTIVES, MEMORY_OPTIONS, BEGIN_PUNCTUATORS, END_PUNCTUATORS
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils, Symbol
 from ..core.exception import InvalidSymbolName, InvalidSymbolScope

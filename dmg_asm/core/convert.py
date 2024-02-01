@@ -6,11 +6,11 @@ from .expression import Expression
 class Convert:
     """Class to convert an exression from one base to another."""
 
-    # __slots__ = ('_expr', '_value_str', '_value_base', 'dec_value')
-    # _expr: Expression
-    # _value_str: str
-    # _value_base: int
-    # _dec_value: int
+    __slots__ = ('_expr', '_value_str', '_value_base', 'dec_value')
+    _expr: Expression
+    _value_str: str
+    _value_base: int
+    _dec_value: int
 
     def __init__(self, expr: Expression):
         """Initialize the Convert object."""

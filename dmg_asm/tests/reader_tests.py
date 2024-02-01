@@ -3,8 +3,7 @@
 import os
 import unittest
 
-from ..core.reader import Reader, FileReader, BufferReader
-from ..tokens import TokenGroup, Tokenizer
+from ..core.reader import FileReader
 
 
 class CoreReaderTests(unittest.TestCase):

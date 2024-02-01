@@ -3,7 +3,7 @@ Manages DEF tokens
 """
 from __future__ import annotations
 from ..core import constants
-from ..core import Expression, DefineSymbolError, DefineAssignmentError, Label
+from ..core import DefineSymbolError, DefineAssignmentError, Label
 from ..tokens import Tokenizer, TokenGroup, TokenType
 
 # TOK = const.TOK

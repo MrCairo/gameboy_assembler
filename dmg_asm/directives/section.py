@@ -278,6 +278,7 @@ def _parse(tokens: TokenGroup) -> SectionData:
                 str_expr: Expr = tok.data
                 if str_expr.descriptor.args.base == BASE_STR:
                     data.label = str_expr.prefixless_value
+                    dir_idx = idx + 1
             case TokenType.BEGIN_PUNCTUATOR | TokenType.PUNCTUATOR:
                 enclosure = _get_enclosed_value(tokens,
                                                 dir_idx)

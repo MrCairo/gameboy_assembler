@@ -6,7 +6,7 @@ from .expression import Expression
 class Convert:
     """Class to convert an exression from one base to another."""
 
-    __slots__ = ('_expr', '_value_str', '_value_base', 'dec_value')
+    __slots__ = ('_expr', '_value_str', '_value_base', '_dec_value')
     _expr: Expression
     _value_str: str
     _value_base: int

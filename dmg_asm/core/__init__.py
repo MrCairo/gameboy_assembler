@@ -16,8 +16,7 @@ from .exception import ExpressionSyntaxError, \
     DescriptorMinMaxValueError, DescriptorRadixDigitValueError, \
     DescriptorRadixError, ParserException, DefineDataError, DefineException, \
     SectionException, SectionDeclarationError, SectionTypeError, \
-    UpdateSymbolAddressError, Error, ErrorCode, \
-    StorageException, StorageValueError
+    UpdateSymbolAddressError, StorageException, StorageValueError
 
 __all__ = [
     "Convert", "Expression", "ExpressionType",

@@ -49,7 +49,10 @@ class Compiler:
         """Process the contents of the file through the assembler."""
         if filename is None or len(filename) == 0:
             return
-        fq_name = f"{self._env.project_dir}/{filename}"
+        if filename.startswith(self._env.project_dir):
+            fq_name = filename
+        else:
+            fq_name = f"{self._env.project_dir}/{filename}"
         line: str = ""
         with open(fq_name, "rt", encoding="utf-8") as filestream:
             while line is not None:

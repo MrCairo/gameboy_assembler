@@ -6,24 +6,6 @@ from collections import namedtuple
 from typing import NamedTuple
 from enum import auto, Enum
 
-# Token element keys (keys of the token dictionary)
-ARGS_T = "arguments"
-BAD_T = "unknown"
-DATA_T = "data"
-DIR_T = "directive"
-INST_T = "instruction"
-MULT_T = "multiple"
-NEXT_T = "next"
-NODE_T = "node"  # Rpresents an internal tokenized node.
-PARM_T = "parameters"
-REMN_T = "remainder"
-STOR_T = "storage"
-SYM_T = "symbol"
-TELM_T = "telemetry"  # Location specific information
-TOK_T = "tokens"
-TYPE_T = "type"
-VAL_T = "value"
-
 # Token type values
 DEF = "DEFINE"
 EQU = "EQU"
@@ -117,7 +99,6 @@ class StorageType(Enum):
     BLOCK = auto()
     BYTE = auto()
     WORD = auto()
-    LONG = auto()
 
 #
 # Bracketing is also done by " and ' which is why they are part of

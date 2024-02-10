@@ -3,7 +3,7 @@
 # import os
 import unittest
 
-from ..tokens import Tokenizer
+from ..tokens.tokenizer import Tokenizer
 from ..core.reader import BufferReader
 from ..core.label import Labels, Label
 from ..core.symbol import Symbol, Symbols
@@ -69,6 +69,7 @@ class InstructionDecodingTests(unittest.TestCase):
         self.assertTrue(inst.instruction_detail.addr == Expression("$F0"))
 
     def test_ldh_with_label(self):
+        """Test eval of a label."""
         Labels().push(Label("HIGH", Expression("$CB")))
         Labels().push(Label("LOW", Expression("$41")))
         # with label

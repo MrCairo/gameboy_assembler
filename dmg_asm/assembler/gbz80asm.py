@@ -1,3 +1,4 @@
+# -*- mode: python; fill-column: 79;     -*-
 """Assemble a GameBoy Z80 program into binary."""
 
 # from io import open, TextIOWrapper
@@ -27,7 +28,21 @@ class Assembler:
         self._env = env
 
     def assemble(self, token_group: TokenGroup) -> bool:
-        """Assemble a GB Z80 source file into binary."""
+        """Assemble a GB Z80 source file into binary.
+
+        Anything that resolves into something that would either result into
+        code or alter the IP is then stored into the Application() singleton.
+        Anything else, like a label or a symbol is stored in their respective
+        storages.
+
+        The first element of the token group is processed. During processing,
+        all elements that are needed are consumed and the NEXT token is then
+        returned. This allows for things like a Symbol and a directive or
+        instruction to be written on a single line.
+
+        This function is then called recusrively until all token elements have
+        been processed.
+        """
         group_len = len(token_group)
         if token_group is None or group_len == 0:
             return False
@@ -35,13 +50,13 @@ class Assembler:
         grp = None
         match first.type:
             case TokenType.DIRECTIVE:
-                grp = self.process_any_primary_directive(token_group)
+                grp = self.resolve_any_primary_directive(token_group)
             case TokenType.STORAGE_DIRECTIVE:
-                grp = self.process_any_storage(token_group)
+                grp = self.resolve_any_storage(token_group)
             case TokenType.INSTRUCTION:
-                grp = self.process_any_instruction(token_group)
+                grp = self.resolve_any_instruction(token_group)
             case TokenType.SYMBOL:
-                grp = self.process_any_symbol(token_group)
+                grp = self.resolve_any_symbol(token_group)
             case _:
                 grp = token_group[1:] if group_len > 1 else TokenGroup()
         if len(grp):
@@ -50,7 +65,7 @@ class Assembler:
 
     # -----[ Top-level processors ]-----------------------------------
 
-    def process_any_primary_directive(self,
+    def resolve_any_primary_directive(self,
                                       token_group: TokenGroup) -> TokenGroup:
         """Process any token group starting with a DIRECTIVE."""
         first = token_group[0].value.upper()
@@ -60,28 +75,20 @@ class Assembler:
             case "SECTION":
                 self._process_section(token_group)
         return token_group[1:] if len(token_group) > 1 else TokenGroup()
-        # Check for EQU or EQUS
-        # second = token_group[1].value.upper()
-        # match second:
-        #     case "EQU":
-        #         return self._process_equate(token_group)
-        #     case "EQUS":
-        #         return self._process_equate(token_group)
-        # return False
 
-    def process_any_storage(self, token_group: TokenGroup) -> TokenGroup:
+    def resolve_any_storage(self, token_group: TokenGroup) -> TokenGroup:
         """Process an storage type directive."""
         if len(token_group) > 1:
             return token_group[1:]
         return TokenGroup()
 
-    def process_any_instruction(self, token_group: TokenGroup) -> bool:
+    def resolve_any_instruction(self, token_group: TokenGroup) -> bool:
         """Process any gbz80 instruction."""
         if len(token_group) > 1:
             return token_group[1:]
         return TokenGroup()
 
-    def process_any_symbol(self, token_group: TokenGroup) -> TokenGroup | None:
+    def resolve_any_symbol(self, token_group: TokenGroup) -> TokenGroup | None:
         """Process any Symbol."""
         tok = self._process_symbol(token_group)
         idx = token_group.index_of(tok)
@@ -91,6 +98,9 @@ class Assembler:
 
     # -----[ Individual processors ]----------------------------------
 
+    #
+    # DEF label EQU value
+    #
     def _process_define(self, token_group: TokenGroup) -> Token:
         try:
             define: Label = Define(token_group)
@@ -101,6 +111,9 @@ class Assembler:
         Labels().push(define)  # A DEF is a subclass of a Label
         return token_group[3]
 
+    #
+    # SECTION "name", BLOCK[offset], BANK[num], ALIGN[align]
+    #
     def _process_section(self, token_group: TokenGroup) -> Token | None:
         """Process a SECTION from a TokenGroup. Return the last Token
         processed or None if there was an error."""
@@ -112,11 +125,6 @@ class Assembler:
         Sections().push(sec)
         idx = sec.parser_info.last_idx
         return token_group[idx]
-
-    def _process_equate(self, token_group: TokenGroup) -> Token | None:
-        """Process an EQU from a TokenGroup. Return the last Token
-        processed or None if there was an error."""
-        return token_group[0]
 
     def _process_label(self, token_group: TokenGroup) -> Token | None:
         """Process a Label from a TokenGroup. Return the last Token

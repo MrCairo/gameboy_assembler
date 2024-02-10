@@ -9,14 +9,14 @@ from .gbz80asm import Assembler
 INCL_PREFIX = "INCLUDE "
 
 
-class Compiler:
+class AsmUtils:
     """Compiles GBZ80 Source into a form that the Assember can use."""
 
     _env: Environment
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):
-            cls.instance = super(Compiler, cls).__new__(cls)
+            cls.instance = super(AsmUtils, cls).__new__(cls)
             cls.instance._env = Environment()
         return cls.instance
 
@@ -32,8 +32,9 @@ class Compiler:
             raise ValueError(msg)
         self._env = new_value
 
-    def compile(self, filename: str) -> bool:
+    def build_binary(self, filename: str, environment: Environment) -> bool:
         """Assemble a GB Z80 source file into binary."""
+        self.environment = environment
         self._process_file(filename)
         return True
 

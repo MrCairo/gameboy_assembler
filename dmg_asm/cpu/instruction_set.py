@@ -9,6 +9,7 @@ from ..core.expression import Expression
 from ..core.exception import DescriptorException, ExpressionSyntaxError
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class InstructionDetail:
     """Represent detail data of an instruction.
@@ -21,28 +22,37 @@ class InstructionDetail:
     Users of the Mnemonics class can then determine how the object should be
     represented 1, 2, or 3 bytes and when operand represents the data.
     """
-    # __slots__ = ('addr', 'cycles', 'flags', 'length', 'mnemonic',
-    #              'operand1', 'operand2')
+    __slots__ = ('addr', 'cycles', 'flags', 'length', 'mnemonic', 'code'
+                 'operand1', 'operand2', 'immediate1', 'immediate2')
     addr: str
-    cycles = []
-    flags = []
-    length = 0
-    mnemonic: str = ""
-    operand1: str = None
-    operand2: str = None
+    cycles: list
+    flags: list
+    length: int
+    mnemonic: str
+    operand1: str
+    operand2: str
     # Either one immediate is True if their corresponding operand is a
     # data placeholder - meaning that it will required compile-time data.
-    immediate1: bool = False  # True if operand1 is immediate (placeholder)
-    immediate2: bool = False  # True if operand2 is immediate data
+    immediate1: bool  # True if operand1 is immediate (placeholder)
+    immediate2: bool  # True if operand2 is immediate data
     # Used to hold binary representation of the entire instruction after
     # parsing.
-    code: bytes = None
+    code: bytes
+
+    def __init__(self):
+        self.cycles = []
+        self.flags = []
+        self.length = 0
+        self.mnemonic = ""
+        self.operand1 = self.operand2 = None
+        self.immediate1 = self.immediate2 = False
 
 
 #
 # Special internal functions to generate a Python dictionary from JSON
 #
-def _gen_LR35902_inst() -> dict:
+def _gen_lr35902_inst() -> dict:
+    """Generate raw JSON into a Python dictionary."""
     # -------------------------------------------------------
     def _load_cpu_data() -> dict:
         try:
@@ -143,7 +153,7 @@ class InstructionSet():
         """Implement a singleton by returning the existing or new instance."""
         if not hasattr(cls, 'instance'):
             cls.instance = super(InstructionSet, cls).__new__(cls)
-            cls.instance.data = _gen_LR35902_inst()
+            cls.instance.data = _gen_lr35902_inst()
             cls.instance.lr35902 = cls.instance.data["instructions"]
             cls.instance.lr35902_detail = cls.instance.data["raw_data"]
         return cls.instance

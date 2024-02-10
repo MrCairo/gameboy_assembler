@@ -1,0 +1,35 @@
+
+
+;00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+;*                        
+;00004000  4d 69 74 63 68 21 07 c0  7e fe 00 00 00 00 00 00  |Mitch!..~.......|
+;00004010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+;*
+;00008000
+
+; LD HL, a16 == 21 07 c0
+; LD A, [HL] == 7e
+; CP $00 == $fe 00
+
+
+SECTION "game_vars", WRAM0
+CLOUDS_X: DS 1
+BUILDINGS_X: DS 1
+FLOOR_X: DS 1
+PARALLAX_DELAY_TIMER: DS 1
+FADE_IN_ACTIVE:: DS 1
+FADE_STEP: DS 1
+ALLOW_PARALLAX:: DS 1
+READ_INPUT:: DS 1
+START_PLAY:: DS 1
+
+SECTION "game", ROMX
+MITCH:: DB "Mitch"
+
+update_game::
+    ld HL, READ_INPUT
+    ld A, [HL]
+    cp $00
+
+
+

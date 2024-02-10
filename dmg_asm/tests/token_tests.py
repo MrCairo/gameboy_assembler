@@ -79,10 +79,17 @@ class TokenUnitTests(unittest.TestCase):
         group = Tokenizer().tokenize_string(line)
         self.assertIsNotNone(group)
 
-    def test_token_equ(self):
+    def test_token_define(self):
         """Test Tokenize an array of instructions and data."""
         line = "DEF PORT EQU 0xffd2"
         # print_line(line)
+        group = Tokenizer().tokenize_string(line)
+        self.assertTrue(group is not None)
+        # print_group(group)
+
+    def test_token_equate(self):
+        """Test Tokenize the use of EQU (not DEF)."""
+        line = "MY_Label EQU $1000"
         group = Tokenizer().tokenize_string(line)
         self.assertTrue(group is not None)
         # print_group(group)

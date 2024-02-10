@@ -10,7 +10,7 @@ from dmg_asm.tests.symbol_label_resolver_tests import SymbolAndLabelUnitTests
 from dmg_asm.tests.instruction_tests import InstructionDecodingTests
 from dmg_asm.tests.ip_tests import IPUnitTests
 from dmg_asm.tests.reader_tests import CoreReaderTests
-from dmg_asm.tests.assembler_tests import AssemblerUnitTests
+from dmg_asm.tests.application_tests import ApplicationUnitTests
 
 
 os.environ["PROJECT_DIR"] = os.getcwd()
@@ -69,6 +69,6 @@ suite = loader.loadTestsFromTestCase(CoreReaderTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 
 # ---------------------------------------------------------------
-print("===== Assembler Tests =============================")
-suite = loader.loadTestsFromTestCase(AssemblerUnitTests)
+print("===== Applation Tests =============================")
+suite = loader.loadTestsFromTestCase(ApplicationUnitTests)
 unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)

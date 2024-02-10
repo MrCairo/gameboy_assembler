@@ -147,7 +147,7 @@ class BaseDescriptor(Validator):
         the object.  A base-0 or base -1 descriptor's 'limits' value indicates
         the min/max length of the object. This is reserved for strings/labels
         only."""
-        if self.args.base == BASE_STR or self.args.base == BASE_LAB:
+        if self.args.base in [BASE_STR, BASE_LAB]:
             return self.args.chars
         return self.args.limits
 

@@ -1,6 +1,5 @@
-#
-# DS, DB, DW, DL declarations
-#
+"""Handle Storage Directives - DS, DB, and DW"""
+
 from dataclasses import dataclass
 
 from ..core.constants import StorageType, STORAGE_DIRECTIVES
@@ -127,8 +126,6 @@ class _StorageParser:
         parsed.data = None
         parsed.s_type = StorageType.BLOCK
 
-        # Get 1st Exression which is the Size. It should already exist in the
-        # Token (created during token processing)
         if self._tok_len > 1:
             size = self._tokens[1].data
             if size is None or not isinstance(size, Expression):
@@ -161,6 +158,7 @@ class _StorageParser:
     def _to_bytes(self) -> _ParserData:
         """DB $01 "Hello" """
         parsed = _ParserData()
+        parsed.s_type = StorageType.BYTE
         if self._tok_len <= 1:
             return None
         hexstr = ""
@@ -181,6 +179,7 @@ class _StorageParser:
     def _to_words(self) -> _ParserData:
         """DW $FFD2, $1234"""
         parsed = _ParserData()
+        parsed.s_type = StorageType.WORD
         hexstr = ""
         if self._tok_len < 2:
             return None
@@ -192,6 +191,6 @@ class _StorageParser:
                 hexstr += cleaned + " "
         try:
             parsed.data = bytes.fromhex(hexstr)
-        except ValueError:  # Shouldn't happen (_shouldn't_)
+        except ValueError:  # Shouldn't happen bc Expression is always valid.
             parsed.data = None
         return parsed

@@ -3,7 +3,6 @@
 from __future__ import annotations   # Forward references
 from enum import StrEnum, auto
 from ..core.constants import \
-    VAL_T as value_t, NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
     DEFINE_OPERATORS, STORAGE_DIRECTIVES, PUNCTUATORS, DIRECTIVES, \
     MEMORY_DIRECTIVES, MEMORY_OPTIONS, BEGIN_PUNCTUATORS, END_PUNCTUATORS
 from ..cpu.instruction_set import InstructionSet as IS
@@ -18,7 +17,6 @@ class TokenType(StrEnum):
     DIRECTIVE = auto()
     STORAGE_DIRECTIVE = auto()
     EXPRESSION = auto()
-    IDENTIFIER = auto()
     INVALID = auto()
     INSTRUCTION = auto()
     LITERAL = auto()
@@ -31,45 +29,55 @@ class TokenType(StrEnum):
     SYMBOL = auto()
 
 
-LEXEMES = [
-    datum_t,
-    next_t,
-    type_t,
-    value_t
-]
-
-# A Token represents a set of lexemes that comprise a single line of source
-# code.
+# A Token represents a simlple piece of data associated with a part of a line
+# of source code. Several tokens would then be used to represent this set of
+# values. A simple example:
 #
-# Example:
+#      ld A, [HL]
+#
+# would result in 5 tokens being generated: "LD", "A", "[", "HL", "]".  The
+# starting value generally is used to dertermine what the final object will
+# become - in that simple example, the first value would be identified as an
+# INSTRUCTION since 'LD' matches the start of an instruction. It then becomes
+# the responsibility of the Assember to push these 5 tokens (known as a token
+# group) into a Mnemonic object that will know how to use the remaining tokens
+# to fully define that instruction. This could even include label or symbol
+# resolution.
+#
+# Here is a more detailed example:
 #
 #   The text: "SECTION 'game_vars', WRAM0[$0100]" would generate tokens like:
 #
-#   {'type': 'ORIGIN',
-#    'value': 'SECTION',
-#    'arguments': ['SYMBOL',
-#                  "'game_vars'",
-#                  'WRAM0[$0100]']
+# 1)
+#   Type: DIRECTIVE
+#   Value: SECTION
+#   Next: -> (Reference to token #2)
 #
-#   {'value': '.label:',
-#    'type': 'SYMBOL'
-#    'arguments': ['.label:'] }
-
-#   {'value': '.label:',
-#    'type': 'SYMBOL'
-#    'arguments': ['.label:'] }
+# 2)
+#   Type: EXPRESSION
+#   Value: 'game_vars' (Just a string, not a label or symbol though)
+#   Data: Expression('"game_vars"')
+#   Next: -> (Reference to token #3)
 #
-#     - The 'value' is the actual command, in this case a SECTION of type
-#       'ORIGIN'. The next part of the dictionary is an array of parameters
-#       which are the arguments to support the value of the token.  Arguments
-#       are always present since element 0 of the argument repeats the
-#       original value of the token. Parameter 0 is always the value of the
-#       toek type followed by the remaining elements. The remaining parameters
-#       are there to support the directive.
+# 3)
+#   Type: MEMORY_DIRECTIVE
+#   Value: WRAM0
+#   Next: -> (Reference to token #4)
+#
+# 4)
+#   Type: EXPRESSION
+#   Value: $0100
+#   Data: Expression('$0100')
+#   Next: -> None
+#
+# ALL of the logic to define the token from a piece of sorce code happens in
+# the TokenFactory class. The Token class is basically the data object that
+# stores the values.
+# -----------------------------------------------------------------------------
 
 
 class Token:
-    """Object that encapsulates pieces of parsed data (lexemes).
+    """Object that encapsulates pieces of parsed data.
 
     This object is an accessor class to the underlying data structure that
     represents a line of source code text. The Token class itself doesn't

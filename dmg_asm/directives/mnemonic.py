@@ -65,6 +65,7 @@ class Mnemonic:
         created."""
         self.instruction_detail = _Utils.instruction_detail(self.token_group)
 
+
 # --------========[ End of Mnemonic class ]========-------- #
 
 
@@ -154,8 +155,9 @@ class _Utils:
         whereas a token group keeps these values distinct.
 
         For the purposes of the mnemonic, it's important to turn a list like:
-        ['(', 'HL', ')']
-        into a single element "(HL)".
+        ['(', 'HL', ')'] into a single element "(HL)".
+
+        Delimiters of '[]' or '()' are treated the same.
         """
         elements = []
         special = {}
@@ -163,9 +165,9 @@ class _Utils:
         plus = False  # If encountered, smush addends together
         in_paren = False
         for token in token_group:
-            if token.value == "(":
+            if token.value in ["[", "("]:
                 in_paren = True
-            elif token.value == ")":
+            elif token.value in ["]", ")"]:
                 in_paren = False
             elif token.value == "+":
                 plus = True
@@ -307,7 +309,8 @@ class _Utils:
         """Complete the node parsing.
 
         This function assumes that `node` points to a '!' value."""
-        hex_str = Convert(Expression(f"0{node['!']}")).to_hex_string()
+        node_str = f"0{node['!']:03d}"
+        hex_str = Convert(Expression(node_str)).to_hex_string()
         detail = IS().instruction_detail_from_byte(hex_str.lower())
         # Convert the actual operand into what was parsed by the Mnemonic.
         if detail and len(operands) > 0:

@@ -144,11 +144,10 @@ class Expression:
     @property
     def integer_value(self) -> int:
         """Return the positive decimal integer value of this Expression."""
-        if self._int_value == -1:  # -1 == uninitialized
-            _value_str = self.prefixless_value
-            _value_base = self.descriptor.args.base
-            if _value_base in NUMERIC_BASES:
-                self._int_value = int(_value_str, _value_base)
+        _value_str = self.prefixless_value
+        _value_base = self.descriptor.args.base
+        if _value_base in NUMERIC_BASES:
+            self._int_value = int(_value_str, _value_base)
         return self._int_value
 
     @classmethod

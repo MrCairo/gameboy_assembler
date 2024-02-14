@@ -1,8 +1,8 @@
 import unittest
 import os
 
-from ..compiler import Environment
-from ..compiler.compiler import Compiler
+from ..core.constants import Environment
+from ..assembly import Assembler
 
 
 class AssemblerUnitTests(unittest.TestCase):
@@ -13,5 +13,5 @@ class AssemblerUnitTests(unittest.TestCase):
         env = Environment(project_dir=proj,
                           include_dir="includes",
                           source_dir="")
-        Compiler().environment = env
-        Compiler().compile("test_source.z80")
+        Assembler().environment = env
+        Assembler().build("test_source.z80")

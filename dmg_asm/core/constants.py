@@ -97,6 +97,7 @@ PUNCTUATORS = "\"'([{}])+"
 QUOTE_PUNCTUATORS = "\"'"
 BEGIN_PUNCTUATORS = "([{"
 END_PUNCTUATORS = ")]}"
+ZERO_STR = "000"
 
 DPair = namedtuple("DPair", ('begin', 'end'))
 DelimData = namedtuple("DelimData", ('start', 'end', 'd_pair', 'label'))

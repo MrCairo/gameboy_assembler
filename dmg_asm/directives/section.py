@@ -12,7 +12,7 @@ from ..core.expression import Expression as Expr
 from ..tokens import TokenGroup, Tokenizer, TokenType
 from ..core.exception import SectionDeclarationError, ExpressionException
 from ..core.constants import QUOTE_PUNCTUATORS, DELIMITER_PAIRS, \
-    DPair, DelimData
+    DPair, DelimData, ZERO_STR
 from ..core.descriptor import BASE_STR
 
 # ##############################################################################
@@ -214,6 +214,16 @@ class Section:
     def label(self) -> str | None:
         """Return the Section's Label string."""
         return self._data.label if self._data else None
+
+    def starting_address(self) -> Expr:
+        """Return the computed address of the Section."""
+        if self.memory_block is None or self.memory_block.range is None:
+            return None
+        offset = Expr(ZERO_STR)
+        start = self.memory_block.range.start
+        if self.memory_block_offset is not None:
+            offset = self.memory_block_offset
+        return Expr(f"0{start.integer_value + offset.integer_value}")
 
     @property
     def memory_block(self) -> SectionMemBlock | None:

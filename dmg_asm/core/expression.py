@@ -188,6 +188,11 @@ class Expression:
         """Return the cleaned expression and includes prefix/suffix values."""
         return self._components.pwords.join()
 
+    @classmethod
+    def zero(cls) -> Expression:
+        """Helper func to return a Zero value Expression."""
+        return Expression("000")
+
     # |++++++++++++++++++++++++++++++++++++++++++++++++++++++++|
 
 

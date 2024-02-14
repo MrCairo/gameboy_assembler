@@ -28,32 +28,30 @@ from .expression import Expression
 @dataclass
 class Label:
     """Represent a single Label name and value."""
-    name: LBL_DSC = LBL_DSC
-    value: Expression
+    _name: LBL_DSC = LBL_DSC  # Assign for descriptor validation assignment
+    _value: Expression
 
     def __init__(self, name: str, value: Expression):
         if not isinstance(name, str) or not isinstance(value, Expression):
             raise TypeError("Label name and/or value are not correct types.")
-        self.name = name
-        self.value = value
+        self._name = name
+        self._value = value
 
-    # @property
-    # def name(self) -> str:
-    #     """Return the label's name."""
-    #     return self._name
+    @property
+    def name(self) -> str:
+        """Return the label's name."""
+        return self._name
 
-    # @property
-    # def value(self) -> Expression:
-    #     """Return the label's Expression value."""
-    #     return self._value
+    @property
+    def value(self) -> Expression:
+        """Return the label's Expression value."""
+        return self._value
 
 
 class Labels:
     """A specialized dictionary that maintains all symbols.
-
     Labels is a singleton so it can be allocated (i.e. Labels()) safely
     without the worry of creating a new Labels instance.
-
     """
     _labels: list
 
@@ -87,7 +85,6 @@ class Labels:
 
     def find(self, name_to_find: str) -> Label | None:
         """Find a label with the specified name.
-
         'name_to_find' is the name used when creating the Label.
         """
         if len(name_to_find):
@@ -119,7 +116,8 @@ class Labels:
         existing = self.find(new_label.name)
         if existing is not None:
             if replace is True:
-                existing.value = new_label.value
+                self._labels.remove(existing)
+                self._labels.append(new_label)
             return replace
         self._labels.append(new_label)
         return True

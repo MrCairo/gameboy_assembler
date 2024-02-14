@@ -2,8 +2,8 @@
 Manages DEF tokens
 """
 from __future__ import annotations
-from ..core import constants
-from ..core import Expression, DefineSymbolError, DefineAssignmentError, Label
+from ..core import constants, Expression
+from ..core import DefineSymbolError, DefineAssignmentError, Label
 from ..tokens import Tokenizer, TokenGroup, TokenType
 
 # TOK = const.TOK
@@ -14,7 +14,7 @@ from ..tokens import Tokenizer, TokenGroup, TokenType
 # #############################################################################
 
 
-class Define(Label):
+class Define:
     """Represent a DEF statement used to associate a label to an expression.
 
     DEF labelname EQU/=/EQUS expression.
@@ -25,9 +25,11 @@ class Define(Label):
     The 'name' value must begin with a letter and only contain letters,
     numbers or an underscore '_'."""
 
-    __slots__ = ('_assignment', '_token_group')
+    __slots__ = ('_assignment', '_token_group', '_name', '_expression')
     _assignment: str | None
     _token_group: TokenGroup | None
+    _name: str
+    _expression: Expression
 
     def __init__(self, tokens: TokenGroup):
         """Create a 'Define' object instance given an initial dictionary.
@@ -40,22 +42,30 @@ class Define(Label):
             raise DefineSymbolError(f"Missing {constants.DEF} definition")
         if self._token_group[2].value not in ["EQU", "EQUS", "="]:
             raise DefineAssignmentError("Invalid DEF assignment operator.")
-        self.name = self._token_group[1].value
-        self.expression = self._token_group[3].data
+        self._name: str = self._token_group[1].value
+        self._expression: Expression = self._token_group[3].data
         self._assignment = self._token_group[2].value
 
     def __str__(self):
         """Return a string representatio n of this DEFine object."""
-        if self.label:
-            desc = f"DEF {self.label} "
-            desc += f"{self._assignment} {hex(self.expression)}\n"
-            return desc
-        return None
+        desc = f"DEF {self._name} "
+        desc += f"{self._assignment} {hex(self._expression)}\n"
+        return desc
 
     def __repr__(self):
         """Return a string respresendation of how the object was created."""
         desc = f"Define({self._token_group})"
         return desc
+
+    @property
+    def name(self) -> str:
+        """Return the name of the DEF."""
+        return self._name
+
+    @property
+    def expression(self) -> Expression:
+        """Return the value of the DEF as an Expression."""
+        return self._expression
 
     @classmethod
     def from_string(cls, line: str) -> Define:

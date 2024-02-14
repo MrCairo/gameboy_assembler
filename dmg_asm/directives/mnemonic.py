@@ -1,6 +1,7 @@
 """Class(es) that construct a Z80 mnemonic from tokens."""
 
 # pylint: disable=relative-beyond-top-level
+from __future__ import annotations
 from ..core.exception import ExpressionSyntaxError
 from ..core import Convert, Label, Labels, Symbol, Symbols, Expression
 from ..tokens import TokenGroup, TokenType
@@ -66,7 +67,6 @@ class Mnemonic:
         self.instruction_detail = _Utils.instruction_detail(self.token_group)
 
 # --------========[ End of Mnemonic class ]========-------- #
-
 
 class _Utils:
     """Utilities for the Mnemonic class implemented as a singleton."""

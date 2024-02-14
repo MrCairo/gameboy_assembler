@@ -47,6 +47,16 @@ class TokenGroup:
     def __reversed__(self):
         return self._group_store.__reversed__()
 
+    @classmethod
+    def from_token_list(cls, tokens: list) -> TokenGroup | None:
+        """Return a new TokenGroup from a list of TokenFactory elements."""
+        if tokens is None or len(tokens) == 0:
+            return None
+        new_grp = TokenGroup()
+        for element in tokens:
+            new_grp.add(element)
+        return new_grp
+
     def index_of(self, token: Token) -> int | None:
         """Return the index in the group of the specified token.
 

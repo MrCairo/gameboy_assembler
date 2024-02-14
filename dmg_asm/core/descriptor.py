@@ -205,7 +205,7 @@ BIN_DSC = BaseDescriptor(chars=MinMax(2, 9),
 OCT_DSC = BaseDescriptor(chars=MinMax(1, 7),
                          limits=MinMax(0, MAX_16BIT_VALUE + 1),
                          base=BASE_BYTE)
-LBL_DSC = BaseDescriptor(chars=MinMax(1, 16),
+LBL_DSC = BaseDescriptor(chars=MinMax(1, 33),
                          limits=MinMax(0, 0),
                          base=BASE_LAB)
 STR_DSC = BaseDescriptor(chars=MinMax(1, 256),

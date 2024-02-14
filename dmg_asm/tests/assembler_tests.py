@@ -6,6 +6,7 @@ from ..assembly import Assembler
 
 
 class AssemblerUnitTests(unittest.TestCase):
+    """Test assmbling of a source file."""
 
     def test_assemble_file_with_includes(self):
         """Compile a file."""

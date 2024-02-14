@@ -122,7 +122,7 @@ class AsmUtils:
             print(err)
             return False
         Labels().push(define)  # A DEF is a subclass of a Label
-        return token_group[3]
+        return token_group[4] if len(token_group) > 4 else None
 
     #
     # SECTION "name", BLOCK[offset], BANK[num], ALIGN[align]

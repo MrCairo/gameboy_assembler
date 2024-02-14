@@ -23,6 +23,7 @@ DEF FADE_FACE_OFFSET EQU $30
 update_game::
     ld HL, READ_INPUT
     ld A, [HL]
+.continue_update_1:
     cp $00
     jr nz, .continue_update_1
     call read_joypad

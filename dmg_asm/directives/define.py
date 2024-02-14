@@ -14,7 +14,7 @@ from ..tokens import Tokenizer, TokenGroup, TokenType
 # #############################################################################
 
 
-class Define:
+class Define(Label):
     """Represent a DEF statement used to associate a label to an expression.
 
     DEF labelname EQU/=/EQUS expression.
@@ -25,31 +25,26 @@ class Define:
     The 'name' value must begin with a letter and only contain letters,
     numbers or an underscore '_'."""
 
-    __slots__ = ('_assignment', '_token_group', '_name', '_expression')
+    __slots__ = ('_assignment', '_token_group')
     _assignment: str | None
     _token_group: TokenGroup | None
-    _name: str
-    _expression: Expression
 
     def __init__(self, tokens: TokenGroup):
         """Create a 'Define' object instance given an initial dictionary.
 
         Define(token_group: TokenGroup)"""
-        if len(tokens) < 4:
-            raise DefineSymbolError(f"Incomplete {constants.DEF} definition.")
-        self._token_group = self.def_tokens(tokens)
-        if self._token_group is None:
-            raise DefineSymbolError(f"Missing {constants.DEF} definition")
-        if self._token_group[2].value not in ["EQU", "EQUS", "="]:
-            raise DefineAssignmentError("Invalid DEF assignment operator.")
-        self._name: str = self._token_group[1].value
-        self._expression: Expression = self._token_group[3].data
-        self._assignment = self._token_group[2].value
+        group: TokenGroup = Define._validate(tokens)
+        name: str = group[1].value
+        value: Expression = group[3].data
+        assignment = group[2].value
+        super().__init__(name, value)
+        self._token_group = group
+        self._assignment = assignment
 
     def __str__(self):
         """Return a string representatio n of this DEFine object."""
-        desc = f"DEF {self._name} "
-        desc += f"{self._assignment} {hex(self._expression)}\n"
+        desc = f"DEF {self.name} "
+        desc += f"{self._assignment} {hex(self.value)}\n"
         return desc
 
     def __repr__(self):
@@ -57,15 +52,16 @@ class Define:
         desc = f"Define({self._token_group})"
         return desc
 
-    @property
-    def name(self) -> str:
-        """Return the name of the DEF."""
-        return self._name
-
-    @property
-    def expression(self) -> Expression:
-        """Return the value of the DEF as an Expression."""
-        return self._expression
+    @classmethod
+    def _validate(cls, tokens: TokenGroup) -> TokenGroup:
+        if len(tokens) < 4:
+            raise DefineSymbolError(f"Incomplete {constants.DEF} definition.")
+        group: TokenGroup = cls.def_tokens(tokens)
+        if group is None:
+            raise DefineSymbolError(f"Missing {constants.DEF} definition")
+        if group[2].value not in ["EQU", "EQUS", "="]:
+            raise DefineAssignmentError("Invalid DEF assignment operator.")
+        return group
 
     @classmethod
     def from_string(cls, line: str) -> Define:

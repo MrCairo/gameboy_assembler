@@ -68,6 +68,7 @@ class Mnemonic:
 
 # --------========[ End of Mnemonic class ]========-------- #
 
+
 class _Utils:
     """Utilities for the Mnemonic class implemented as a singleton."""
 
@@ -163,18 +164,21 @@ class _Utils:
         plus = False  # If encountered, smush addends together
         in_paren = False
         for token in token_group:
-            if token.value == "(":
+            tok_val = token.value
+            if tok_val in ["(", "["]:
+                tok_val = "("  # force begin-paren to be (
                 in_paren = True
-            elif token.value == ")":
+            elif tok_val in [")", "]"]:
+                tok_val = ")"  # force end-paren to be )
                 in_paren = False
-            elif token.value == "+":
+            elif tok_val == "+":
                 plus = True
                 value = elements.pop()  # Append next value to previous element
             elif plus is True:
                 plus = False
                 value = elements.pop()
-                special[value+token.value.lower()] = token.value
-            value += token.value.lower()
+                special[value+tok_val.lower()] = tok_val
+            value += tok_val.lower()
             if in_paren is False:
                 elements.append(value)
                 value = ""

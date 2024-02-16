@@ -2,6 +2,7 @@
 Basic stream readers.
 """
 import locale
+from io import TextIOWrapper
 from typing import Optional
 
 
@@ -131,9 +132,11 @@ class FileReader (Reader):
     """
     Class to encapsulate the reading of the source as a filesystem file.
     """
+    _filestream: TextIOWrapper
 
     def __init__(self, filename):
         super().__init__()
+        self._filestream = None
         self._filename = filename
         self._line = ""
         try:
@@ -160,6 +163,8 @@ class FileReader (Reader):
             return self._line
 
         self._eof = True
+        self._filestream.close()
+        self._filestream = None
         return None
 
     def close(self):

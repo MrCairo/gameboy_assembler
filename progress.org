@@ -1,0 +1,19 @@
+#+title: Diary of Progress
+#+author: Mitch Fisher
+#+date: <2024-02-14 Wed>
+#+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+#+auto_tangle: t
+
+
+* 02-14-2024
+Working on the assembly of code.
+Mostly working. Much is parsing correctly. Some thing don't work yet:
+
+** Forward reference aren't supported
+Symbols and Labels need to be defined first in order to be resolved. They can be resolved late but it could cause a problem in determining instruction size.
+
+*** Should there be a pre-processor step?
+
+** [] or () on Instructions
+The existing JSON extract of the mnemonics use () for things like ~ld a, (hl)~. RGBD uses ~[ ]~ characters instead. Should they both be supported or just one?
+

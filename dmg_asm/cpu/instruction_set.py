@@ -42,7 +42,7 @@ class InstructionDetail:
 #
 # Special internal functions to generate a Python dictionary from JSON
 #
-def _gen_LR35902_inst() -> dict:
+def _gen_lr35902_inst() -> dict:
     # -------------------------------------------------------
     def _load_cpu_data() -> dict:
         try:
@@ -143,7 +143,7 @@ class InstructionSet():
         """Implement a singleton by returning the existing or new instance."""
         if not hasattr(cls, 'instance'):
             cls.instance = super(InstructionSet, cls).__new__(cls)
-            cls.instance.data = _gen_LR35902_inst()
+            cls.instance.data = _gen_lr35902_inst()
             cls.instance.lr35902 = cls.instance.data["instructions"]
             cls.instance.lr35902_detail = cls.instance.data["raw_data"]
         return cls.instance

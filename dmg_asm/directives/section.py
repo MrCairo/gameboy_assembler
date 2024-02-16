@@ -34,23 +34,17 @@ class MemoryBlock(NamedTuple):
     range: AddrRange
 
 
-@dataclass
-class SectionMemBlock:
+class SectionMemBlock(NamedTuple):
     """Represent a named memory bank with associated AddressRange.
 
     Optionally, an numeric ID can be added to further help identify the bank.
     """
-
-    __slots__ = ('name', 'id', 'range')
     name: str
-    range: AddrRange
-    id: int | None
+    addr_range: AddrRange
 
-    def __init__(self, name: str, addr_range: AddrRange,
-                 identifier: int = -1):
-        self.name = name
-        self.range = addr_range
-        self.id = identifier
+    # def __init__(self, name: str, addr_range: AddrRange):
+    #     self.name = name
+    #     self.range = addr_range
 
 
 # ##############################################################################
@@ -156,8 +150,9 @@ class SectionType:
         return items[0] if len(items) else None
 
 
-@dataclass
+@ dataclass
 class SectionData:
+    """Data that represents the various data values of a section."""
     # pylint: disable=too-many-instance-attributes
     section_key: bool = False
     label: str = None
@@ -168,7 +163,7 @@ class SectionData:
     align_key: str = None
     align_val: str = None
     error: bool = False
-    last_idx: int = 0
+    last_idx: int = 0  # The index of the last token parsed in the TokenGroup
 
 # #############################################################################
 
@@ -204,28 +199,28 @@ class Section:
         desc += "\n"
         return desc
 
-    @classmethod
+    @ classmethod
     def section_from_string(cls, text: str) -> Section:
         """Creates a new Section given it's command in a text string."""
         group = Tokenizer().tokenize_string(text)
         return Section(group)
 
-    @property
+    @ property
     def label(self) -> str | None:
         """Return the Section's Label string."""
         return self._data.label if self._data else None
 
     def starting_address(self) -> Expr:
         """Return the computed address of the Section."""
-        if self.memory_block is None or self.memory_block.range is None:
+        if self.memory_block is None or self.memory_block.addr_range is None:
             return None
         offset = Expr(ZERO_STR)
-        start = self.memory_block.range.start
+        start = self.memory_block.addr_range.start
         if self.memory_block_offset is not None:
             offset = self.memory_block_offset
         return Expr(f"0{start.integer_value + offset.integer_value}")
 
-    @property
+    @ property
     def memory_block(self) -> SectionMemBlock | None:
         """Return the memory block of the Section."""
         block = None
@@ -233,7 +228,7 @@ class Section:
             block = SectionType().sectiontype_info(self._data.block_name)
         return block
 
-    @property
+    @ property
     def memory_block_offset(self) -> Expr | None:
         """Return the memory block offset as an expression or None if the
         expression was invalid or missing.
@@ -246,21 +241,21 @@ class Section:
                 return None
         return expr
 
-    @property
+    @ property
     def memory_bank(self) -> int | None:
         """Return the memory BANK value as an int if one was specified."""
         if self._data and self._data.bank_num:
             return int(self._data.bank_num)
         return None
 
-    @property
+    @ property
     def alignment(self) -> int | None:
         """Return the ALIGN value as an int if one was specified."""
         if self._data and self._data.align_val:
             return int(self._data.align_val)
         return None
 
-    @property
+    @ property
     def parser_info(self) -> SectionData:
         """Return the SectionData accumulated in parsing the tokens."""
         return self._data

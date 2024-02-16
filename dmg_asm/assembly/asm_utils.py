@@ -91,13 +91,13 @@ class AsmUtils:
             return token_group[1:]
         return TokenGroup()
 
-    def resolve_any_instruction(self, token_group: TokenGroup) -> bool:
+    def resolve_any_instruction(self, token_group: TokenGroup) -> TokenGroup:
         """Process any gbz80 instruction."""
         if len(token_group) > 1:
             try:
                 mnemonic = Mnemonic(token_group)
-            except ExpressionException:
-                return token_group[1:]
+            except ExpressionException as err:
+                raise ExpressionException from err
             Application().append_code(mnemonic.instruction_detail.code)
         return TokenGroup()
 

@@ -27,7 +27,7 @@ update_game::
     cp $00
     jr nz, .continue_update_1
     call read_joypad
-.continue_update_1:
+.continue_update_2:
     call pipes_update
     call player_update
     call player_set_position

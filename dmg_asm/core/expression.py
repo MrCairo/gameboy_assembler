@@ -6,7 +6,12 @@ An expression is like:
     $AABC
     %010101
     &1777
-    "MY_LABEL"
+    "MY_STRING"
+
+The Expression class is used for most values that represent either some
+number or simple string, like a label or symbol. Because of this, it is
+important that this class be as performant as possible.
+
 """
 # from enum import StrEnum
 from __future__ import annotations
@@ -59,8 +64,8 @@ class Expression:
     |   %   | An 8-bit only binary digit (i.e %10101011)                    |
     +-------+---------------------------------------------------------------+
     |       | Encloses a Symbolic string expression. Must start and end with|
-    | ", '  | the same character. 'Hello' "World". String length cannot     |
-    |       | exceed 16 chars and are validated by LBL_DSC                  |
+    | ", '  | the same character. 'Hello' "World". The valud is validated by|
+    |       | The STR_DSC descriptor.
     +-------+---------------------------------------------------------------+
     |   &   | An 8-bit octal value.                                         |
     +-------+---------------------------------------------------------------+
@@ -117,31 +122,37 @@ class Expression:
         return False
 
     def __ne__(self, other) -> bool:
+        """Return True if self is not equal to other."""
         if isinstance(other, Expression):
             return self.integer_value != other.integer_value
         return False
 
     def __lt__(self, other) -> bool:
+        """Return true if self is less than other."""
         if isinstance(other, Expression):
             return self.integer_value < other.integer_value
         return False
 
     def __le__(self, other) -> bool:
+        """Return true if self is less than oe equal to other."""
         if isinstance(other, Expression):
             return self.integer_value <= other.integer_value
         return False
 
     def __gt__(self, other) -> bool:
+        """Return true if self is greater  than other."""
         if isinstance(other, Expression):
             return self.integer_value > other.integer_value
         return False
 
     def __ge__(self, other) -> bool:
+        """Return true if self is greater than or equal to other."""
         if isinstance(other, Expression):
             return self.integer_value >= other.integer_value
         return False
 
     def __add__(self, other: Expression) -> Expression:
+        """Add other numeric Expression to to self."""
         _Validator().test_other_numeric(other)
         val = self.integer_value + other.integer_value
         if val > self.descriptor.limits.max-1:
@@ -149,6 +160,7 @@ class Expression:
         return self._new_expr_from_fmt(val)
 
     def __sub__(self, other: Expression) -> Expression:
+        """Subtract other numeric Expression to to self."""
         _Validator().test_other_numeric(other)
         val = self.integer_value - other.integer_value
         if val > 0:
@@ -156,23 +168,25 @@ class Expression:
         raise ValueError("Resulting Expression cannot be negative.")
 
     def __and__(self, other: Expression) -> Expression:
+        """Return bitwise AND value of self and other."""
         _Validator().test_other_numeric(other)
         new_val = self.integer_value & other.integer_value
         return self._new_expr_from_fmt(new_val)
 
     def __or__(self, other: Expression) -> Expression:
+        """Return bitwise OR value of self and other."""
         _Validator().test_other_numeric(other)
         new_val = self.integer_value | other.integer_value
         return self._new_expr_from_fmt(new_val)
 
     def __xor__(self, other: Expression) -> Expression:
+        """Return bitwise XOR value of self and other."""
         _Validator().test_other_numeric(other)
         new_val = self.integer_value ^ other.integer_value
         return self._new_expr_from_fmt(new_val)
 
     def _new_expr_from_fmt(self, value: int) -> Expression:
-        """Return a new numeric Expression with the same base and prefix
-        as the current."""
+        """Return a new numeric Expression with the same base and prefix."""
         prefix = self._components.pwords.prefix
         fmt = self._components.fmt
         return Expression(f"{prefix}{value:{fmt}}")
@@ -218,6 +232,11 @@ class Expression:
     def descriptor(self) -> BaseDescriptor:
         """Return the descriptor identified for this expression."""
         return self._components.descriptor
+
+    @property
+    def base(self) -> int:
+        """Return the base value of the expression."""
+        return self._components.descriptor.args.base
 
     @property
     def cleaned_str(self) -> str:
@@ -309,8 +328,8 @@ class _Validator:
     def validate(self, expr_str: str) -> _Components:
         """Validate the expression and return an ExprComponents object.
 
-        Arguments:
-        expr_str -- The expression as a string (i.e. 0xABCD, %10110011)
+        Parameter:
+          expr_str: The expression as a string (i.e. 0xABCD, %10110011)
         """
         if not isinstance(expr_str, str):
             raise TypeError("expr_str must be a string class.")

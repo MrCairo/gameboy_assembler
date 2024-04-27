@@ -10,7 +10,6 @@ from ..core.symbol import Symbol, Symbols
 from ..core.exception import DefineAssignmentError, DefineException, \
     DefineSymbolError, SectionException, InvalidSymbolName, \
     InvalidSymbolScope, ExpressionException
-from ..core.expression import Expression
 from ..tokens import Token, TokenGroup, TokenType
 from ..directives import Define, Section, Sections, Mnemonic, \
     Storage
@@ -20,7 +19,7 @@ from .application_store import Application
 INCL_PREFIX = "INCLUDE "
 
 
-class AsmUtils:
+class AssemblerUtils:
     """Assemble GameBoy Z80 source files into a binary file."""
 
     def __init__(self, env: Environment):
@@ -87,9 +86,10 @@ class AsmUtils:
         """Process an storage type directive."""
         if len(token_group) > 1:
             stor = Storage(token_group)
-            print(stor)
-            return token_group[1:]
-        return TokenGroup()
+            if stor is not None:
+                Application().append_code(stor.bytes())
+                return TokenGroup()
+        return token_group[1:]
 
     def resolve_any_instruction(self, token_group: TokenGroup) -> TokenGroup:
         """Process any gbz80 instruction."""
@@ -136,7 +136,7 @@ class AsmUtils:
             print(err)
             return None
         Sections().push(sec)
-        Application().current_address = sec.starting_address().integer_value
+        Application().create_new_address_entry(sec.starting_address)
         idx = sec.parser_info.last_idx + 1
         if idx < len(token_group):
             last_tok = token_group[idx]

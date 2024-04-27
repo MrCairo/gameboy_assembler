@@ -134,7 +134,7 @@ class DirectiveUnitTests(unittest.TestCase):
 
     # ===== Section and Sections Tests =====================
 
-    def test_section_from_string(self):
+    def test_tokenize_section_from_string(self):
         """Test the SECTION Directive supplied as a string."""
         section = 'SECTION "CoolStuff", WRAM0, BANK[2]'
         group = Tokenizer().tokenize_string(section)

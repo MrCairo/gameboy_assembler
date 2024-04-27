@@ -18,7 +18,8 @@ A quick set of terms:
 Symbols have the following format:
 * Can be upper or lower-case alpha characters.
 * Can contain numeric values as long as the symbol starts with an alpha.
-* Can be one to 10 characters in length (excluding key characters)
+* Can be one to 32 characters in length (excluding key characters)
+  (See the LBL_DSC descriptor)
 * Must end with a single or double colon ':' or '::'. These are used
   to identify different type ofs symbol (see below).
 * Can start with a '.' which is used to define the symbols scope.
@@ -32,12 +33,12 @@ Symbols can be one of three types:
    source file only. A LOCAL symbol ends with a single ':'.
 
 2. A **PRIVATE** symbol: this is a symbol who's scope is only within the
-   current LOCAL or GLOBAL symbol. This also means that a minor symbol cannot
-   be specified without first specifying a major symbol. A PRIVATE symbol must
-   start with a '.' and also end with a single ':'. This symbol can only be
-   referenced within it's current LOCAL or GLOBAL symbol. This also means that
-   LOCAL symbol names need only be unique under the current LOCAL/GLOBAL
-   symbol.
+   current LOCAL symbol (or in the same file where a GLOBAL symbol is
+   defined. This also means that a minor symbol cannot be specified without
+   first specifying a major symbol. A PRIVATE symbol must start with a '.' and
+   also end with a single ':'. This symbol can only be referenced within it's
+   current LOCAL or GLOBAL symbol. This also means that LOCAL symbol names need
+   only be unique under the current LOCAL/GLOBAL symbol.
 
 3. An **EXPORTED** (or GLOBAL) symbol: this is basically just a LOCAL system
    that is exported and can be used beyond just the current file.  A GLOBAL
@@ -227,7 +228,8 @@ class Symbol():
         """Initialize a new Symbol with a 16-bit address.
 
         'relative_symbol' can be used to represent a Symbol from which this
-        new Symbol is relative to."""
+        new Symbol is relative to.
+        """
         if not name or not SU.has_valid_name_characters(name):
             raise InvalidSymbolName(name)
         if not SU.has_valid_scope_designation(name):
@@ -329,6 +331,7 @@ class Symbols:
             raise KeyError("A key was not provided")
 
     def __delitem__(self, key: str):
+        """Delete an item in the list of symbols specified by 'key'."""
         if key:
             key = (key.lstrip(".")).rstrip(":.")
             key = key.upper()

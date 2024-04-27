@@ -115,6 +115,7 @@ NUMERIC_BASES = [2, 8, 10, 16]
 
 class StorageType(Enum):
     """Represent the storage class storage size type."""
+
     BLOCK = auto()
     BYTE = auto()
     WORD = auto()
@@ -144,6 +145,7 @@ MAX_8BIT_VALUE = 0xff
 @dataclass
 class Environment:
     """A set of values that the compiler/assembler uses to operate."""
+
     project_dir: str = None  # Absolute path to the project
     source_dir: str = None   # Source dir relative to project_dir
     include_dir: str = None  # Include source relative to project_dir
@@ -151,6 +153,7 @@ class Environment:
     def __init__(self, project_dir: str = os.getcwd(),
                  source_dir: str = None,
                  include_dir: str = None):
+        """Initialize the object."""
         if project_dir is None or len(project_dir) == 0:
             self.project_dir = os.getcwd()
         else:

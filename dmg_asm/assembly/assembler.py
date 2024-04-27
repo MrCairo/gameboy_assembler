@@ -4,7 +4,7 @@ from io import open, TextIOWrapper
 
 from ..tokens import Tokenizer, TokenGroup
 from ..core.constants import Environment
-from .asm_utils import AsmUtils
+from .assembler_utils import AssemblerUtils
 
 
 INCL_PREFIX = "INCLUDE "
@@ -14,9 +14,10 @@ class Assembler:
     """Compiles GBZ80 Source into a form that the Assember can use."""
 
     _env: Environment
-    _utils: AsmUtils
+    _utils: AssemblerUtils
 
     def __new__(cls):
+        """Create a new instance of this class."""
         if not hasattr(cls, 'instance'):
             cls.instance = super(Assembler, cls).__new__(cls)
             cls.instance._env = None
@@ -34,7 +35,7 @@ class Assembler:
             msg = "'environment' can only be assigned an Environment object."
             raise ValueError(msg)
         self._env = new_value
-        self._utils = AsmUtils(self._env)
+        self._utils = AssemblerUtils(self._env)
 
     def build(self, filename: str) -> bool:
         """Assemble a GB Z80 source file into binary."""
@@ -48,7 +49,8 @@ class Assembler:
         """Save the assembled code to the output file.
 
         The output file is specified in the environment object. If None or
-        blank, the output filename will default to "game.data"."""
+        blank, the output filename will default to "game.data".
+        """
 
     # -----[ Private methods ]----------------------------------------
 
@@ -67,22 +69,21 @@ class Assembler:
                 if line is not None and isinstance(line, str):
                     if len(line) == 0:
                         continue
-                    #
-                    # TODO: What about INCBIN?
-                    #
                     if line.upper().startswith("INCLUDE "):
                         self._process_file(self._get_include_filename(line))
                         continue
                     tokens: TokenGroup = Tokenizer().tokenize_string(line)
-                    print(line)
                     self._utils.process_tokens(tokens)
+                    print(f"{line} ** OK")
                 else:
                     break
         # end of function
 
     def _read_line(self, stream: TextIOWrapper) -> str:
-        """Reads one line from the data source.
-        Line is a sequence of bytes ending with \n."""
+        """Read one line from the data source.
+
+        Line is a sequence of bytes ending with CR.
+        """
         line = stream.readline()
         if len(line) == 0:
             return None

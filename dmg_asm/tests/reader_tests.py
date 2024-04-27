@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from ..core.reader import Reader, FileReader, BufferReader
+from ..core.reader import FileReader, BufferReader
 from ..tokens import TokenGroup, Tokenizer
 
 

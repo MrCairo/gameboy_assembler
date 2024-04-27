@@ -81,6 +81,6 @@ Press "C-c C-c" on the =begin_src= line below to execute the Python script. This
   print("===== Assembler Tests =============================")
   suite = loader.loadTestsFromTestCase(AssemblerUnitTests)
   unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
-  
+    
 #+end_src
 

@@ -28,10 +28,12 @@ from .expression import Expression
 @dataclass
 class Label:
     """Represent a single Label name and value."""
+
     _name: LBL_DSC = LBL_DSC  # Assign for descriptor validation assignment
     _value: Expression
 
     def __init__(self, name: str, value: Expression):
+        """Initialize the object."""
         if not isinstance(name, str) or not isinstance(value, Expression):
             raise TypeError("Label name and/or value are not correct types.")
         self._name = name
@@ -53,6 +55,7 @@ class Labels:
     Labels is a singleton so it can be allocated (i.e. Labels()) safely
     without the worry of creating a new Labels instance.
     """
+
     _labels: list
 
     def __new__(cls):
@@ -81,10 +84,12 @@ class Labels:
         self._labels[index] = value
 
     def __len__(self) -> int:
+        """Return the count of labels in this object."""
         return len(self._labels)
 
     def find(self, name_to_find: str) -> Label | None:
         """Find a label with the specified name.
+
         'name_to_find' is the name used when creating the Label.
         """
         if len(name_to_find):

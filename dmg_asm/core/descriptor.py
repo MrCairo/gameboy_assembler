@@ -14,6 +14,7 @@ from .exception import DescriptorMinMaxLengthError, \
 @dataclass
 class DescriptorArgs():
     """The format that describes a value."""
+
     __slots__ = ('chars', 'limits', 'base', 'charset')
     chars: MinMax
     limits: MinMax
@@ -31,6 +32,7 @@ class DescriptorArgs():
 
 class Validator(ABC):
     """Abstract class to validate something."""
+
     private_name = ""
     public_name = ""
 
@@ -60,6 +62,7 @@ class OneOf(Validator):
         self.options = set(options)
 
     def __repr__(self) -> str:
+        """Return a string representation of OnOf."""
         return f"OneOf({self.options})"
 
     def validate(self, value):
@@ -143,7 +146,8 @@ class BaseDescriptor(Validator):
         A non-base-0 descriptor's 'limits' value indicates the _value_ range of
         the object.  A base-0 or base -1 descriptor's 'limits' value indicates
         the min/max length of the object. This is reserved for strings/labels
-        only."""
+        only.
+        """
         if self.args.base in [BASE_STR, BASE_LAB]:
             return self.args.chars
         return self.args.limits

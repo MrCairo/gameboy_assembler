@@ -70,6 +70,7 @@ class DescriptorUnitTests(unittest.TestCase):
     generic: BaseDescriptor = None
 
     def test_decimal_descriptor(self):
+        """Test the decimal descriptor validation."""
         self.dec_value = "100"
         try:
             self.hex_value = "AF"

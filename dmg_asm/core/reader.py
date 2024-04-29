@@ -2,16 +2,19 @@
 Basic stream readers.
 """
 import locale
+from io import TextIOWrapper
 from typing import Optional
 
 
 class Reader:
-    """
-    Main subclass for the file readers. Not meant to be used directly
-    rather used as a base class for polymorphic behavior.
+    """Main subclass for the file readers.
+
+    Not meant to be used directly rather used as a base class for polymorphic
+    behavior.
     """
 
     def __init__(self, strip_comments=False):
+        """Initialize the object."""
         self._strip_comments: bool = strip_comments
         self._line: str = None
         self._eof: bool = False
@@ -28,13 +31,13 @@ class Reader:
             self.strip_comment()
 
     def get_position(self):
-        """Return the current read position"""
+        """Return the current read position."""
 
     def set_position(self, position):
-        """Set the current read position"""
+        """Set the current read position."""
 
     def filename(self) -> str:
-        """Return the filename of the file being read (if available)"""
+        """Return the filename of the file being read (if available)."""
 
     def is_eof(self) -> bool:
         """Return true if the reader is at the end of the stream."""
@@ -54,15 +57,18 @@ class Reader:
 
 
 class BufferReader(Reader):
-    """
+    """Support reader operations on a buffer.
+
     A Reader object that takes in a buffer and performs Reader operations
     on that buffer. An optional line_delimiter maybe specified which
-    represents the EOL or end of line. By default, this value is '\\n'.
+    represents the EOL or end of line. By default, this value is CR/LF.
     """
+
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, buffer, line_delimiter="\n",
                  debug=False, strip_comments=False):
+        """Initialize the object."""
         super().__init__(strip_comments=strip_comments)
         self._debug = debug
         self._buffer = buffer
@@ -86,7 +92,7 @@ class BufferReader(Reader):
         return self._line
 
     def get_position(self):
-        """Returns the current read position in the file."""
+        """Return the current read position in the file."""
         return self._read_position
 
     def set_position(self, position) -> bool:
@@ -122,18 +128,21 @@ class BufferReader(Reader):
         return None
 
     def filename(self) -> str:
+        """For a buffer reader, no filename is required."""
         return "no_filename_required"
 
 # end of class BufferReader
 
 
 class FileReader (Reader):
-    """
-    Class to encapsulate the reading of the source as a filesystem file.
-    """
+    """Class to encapsulate the reading of the source as a filesystem file."""
+
+    _filestream: TextIOWrapper
 
     def __init__(self, filename):
+        """Initialize the object."""
         super().__init__()
+        self._filestream = None
         self._filename = filename
         self._line = ""
         try:
@@ -144,8 +153,10 @@ class FileReader (Reader):
             print(f"Could not open the file: {filename}")
 
     def read_line(self) -> str:
-        """Reads one line from the data source.
-        Line is a sequence of bytes ending with \n."""
+        """Read one line from the data source.
+
+        Line is a sequence of bytes ending with CR/LF.
+        """
         if self._eof:
             return None
         _preread = self._filestream.readline()
@@ -160,6 +171,8 @@ class FileReader (Reader):
             return self._line
 
         self._eof = True
+        self._filestream.close()
+        self._filestream = None
         return None
 
     def close(self):
@@ -170,9 +183,11 @@ class FileReader (Reader):
             self._filestream = None
 
     def get_position(self):
+        """Return the read position in the file."""
         return self._filestream.tell()
 
     def set_position(self, position):
+        """Set the read position in the file."""
         pos = self._filestream.seek(position)
         self._line = ""
         if pos == position:
@@ -180,7 +195,7 @@ class FileReader (Reader):
         return pos
 
     def filename(self) -> str:
-        """Returns the string name of the file being read."""
+        """Return the string name of the file being read."""
         return self._filename
 
 # end of class FileReader

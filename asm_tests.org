@@ -7,12 +7,13 @@
 Press "C-c C-c" on the =begin_src= line below to execute the Python script. This will run the unit tests.
 
 #+begin_src python :python python3 :results output
-
   """GameBoy assembler unit tests."""
   import unittest
+  import os
   import sys
   from dmg_asm.tests.core_tests import ExpressionUnitTests, ConvertUnitTests, \
       DescriptorUnitTests, SymbolUnitTests
+  from dmg_asm.tests.assembler_tests import AssemblerUnitTests
   from dmg_asm.tests.token_tests import TokenUnitTests
   from dmg_asm.tests.directive_tests import DirectiveUnitTests
   from dmg_asm.tests.symbol_label_resolver_tests import SymbolAndLabelUnitTests
@@ -20,6 +21,8 @@ Press "C-c C-c" on the =begin_src= line below to execute the Python script. This
   from dmg_asm.tests.ip_tests import IPUnitTests
   from dmg_asm.tests.reader_tests import CoreReaderTests
 
+
+  os.environ["PROJECT_DIR"] = os.getcwd()
 
   # ---------------------------------------------------------------
   print("===== Instruction Decoding Unit Tests ==============")
@@ -74,193 +77,10 @@ Press "C-c C-c" on the =begin_src= line below to execute the Python script. This
   suite = loader.loadTestsFromTestCase(CoreReaderTests)
   unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
 
+  # ---------------------------------------------------------------
+  print("===== Assembler Tests =============================")
+  suite = loader.loadTestsFromTestCase(AssemblerUnitTests)
+  unittest.TextTestRunner(stream=sys.stdout, verbosity=1).run(suite)
+    
 #+end_src
-
-#+RESULTS:
-#+begin_example
-===== Instruction Decoding Unit Tests ==============
-............
-----------------------------------------------------------------------
-Ran 12 tests in 0.007s
-
-OK
-===== Descriptor Tests =============================
-.
-----------------------------------------------------------------------
-Ran 1 test in 0.000s
-
-OK
-===== Expression Tests =============================
-.........
-----------------------------------------------------------------------
-Ran 9 tests in 0.000s
-
-OK
-===== Conversion Unit Tests ========================
-....
-----------------------------------------------------------------------
-Ran 4 tests in 0.000s
-
-OK
-===== Symbol Unit Tests ============================
-.....
-----------------------------------------------------------------------
-Ran 5 tests in 0.000s
-
-OK
-===== Token Unit Tests =============================
-............
-----------------------------------------------------------------------
-Ran 12 tests in 0.003s
-
-OK
-===== Directive Unit Tests =========================
-........
-----------------------------------------------------------------------
-Ran 8 tests in 0.001s
-
-OK
-===== Symbol and Label Unit Tests ==================
-.....
-----------------------------------------------------------------------
-Ran 5 tests in 0.000s
-
-OK
-===== Instruction Pointer Tests ====================
-....
-----------------------------------------------------------------------
-Ran 4 tests in 0.000s
-
-OK
-===== Core Reader Tests ===========================
-
-00. type: literal, val: 'LCD_CTRL', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF40', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'LCD_STAT', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF41', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'LCD_SCROLL_Y', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF42', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'LCD_SCROLL_X', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF43', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'LCD_LINE_Y', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF44', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'LCD_LINE_Y_CP', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF45', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'OAM_DMA_TRANS', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF46', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'LCD_BG_PAL', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF47', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'OBJ0_PAL', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF48', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'OBJ1_PAL', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF49', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'WIN_Y', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF4A', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'WIN_X', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF4B', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'LCD_WIDTH', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: literal, val: '160', dat: <class 'NoneType'>
-
-00. type: literal, val: 'LCD_HEIGHT', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: literal, val: '144', dat: <class 'NoneType'>
-
-00. type: literal, val: 'VRAM_TILES_SPRITE', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$8000', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'VRAM_TILES_MIX', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$8800', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'VRAM_TILES_BACKGROUND', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$9000', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'VRAM_MAP_CHR', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$9800', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'VRAM_MAP_BG', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$9C00', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'VRAM_MAP_BLOCK0_SIZE', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$0800', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'USER_IO', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$FF00', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'NO_INPUT_P14', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$EF', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'NO_INPUT_P15', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$DF', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'BUTTON_RIGHT', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$00', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'BUTTON_LEFT', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$01', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'BUTTON_UP', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$02', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'BUTTON_DOWN', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$03', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'BUTTON_A', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$00', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'BUTTON_B', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$01', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'BUTTON_SELECT', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$02', dat: <class 'dmg_asm.core.expression.Expression'>
-
-00. type: literal, val: 'BUTTON_START', dat: <class 'NoneType'>
-01. type: operator, val: 'EQU', dat: <class 'NoneType'>
-02. type: expression, val: '$03', dat: <class 'dmg_asm.core.expression.Expression'>
-.
-----------------------------------------------------------------------
-Ran 1 test in 0.001s
-
-OK
-#+end_example
 

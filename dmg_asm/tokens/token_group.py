@@ -42,15 +42,28 @@ class TokenGroup:
         return len(self._group_store)
 
     def __iter__(self):
+        """Return an iterator for the list of tokens in the group."""
         return self._group_store.__iter__()
 
     def __reversed__(self):
+        """Return the list of tokens in reversed order."""
         return self._group_store.__reversed__()
+
+    @classmethod
+    def from_token_list(cls, tokens: list) -> TokenGroup | None:
+        """Return a new TokenGroup from a list of TokenFactory elements."""
+        if tokens is None or len(tokens) == 0:
+            return None
+        new_grp = TokenGroup()
+        for element in tokens:
+            new_grp.add(element)
+        return new_grp
 
     def index_of(self, token: Token) -> int | None:
         """Return the index in the group of the specified token.
 
-        Token equality is defined as an equal token value and token type."""
+        Token equality is defined as an equal token value and token type.
+        """
         for index, item in enumerate(self._group_store):
             if item == token:
                 return index

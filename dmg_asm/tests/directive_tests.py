@@ -38,7 +38,7 @@ class DirectiveUnitTests(unittest.TestCase):
         equ = Define.from_string("DEF my_var EQU $1000")
         self.assertTrue(equ is not None)
         self.assertTrue(equ.name.upper() == "MY_VAR")
-        self.assertEqual(Convert(equ.expression).to_decimal_int(),
+        self.assertEqual(Convert(equ.value).to_decimal_int(),
                          4096, "Expression not euqal to 4096.")
 
     # ===== Storage Tests ==================================
@@ -134,7 +134,7 @@ class DirectiveUnitTests(unittest.TestCase):
 
     # ===== Section and Sections Tests =====================
 
-    def test_section_from_string(self):
+    def test_tokenize_section_from_string(self):
         """Test the SECTION Directive supplied as a string."""
         section = 'SECTION "CoolStuff", WRAM0, BANK[2]'
         group = Tokenizer().tokenize_string(section)

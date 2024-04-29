@@ -69,6 +69,7 @@ class InstructionDecodingTests(unittest.TestCase):
         self.assertTrue(inst.instruction_detail.addr == Expression("$F0"))
 
     def test_ldh_with_label(self):
+        """Test the LDH with an immediate value."""
         Labels().push(Label("HIGH", Expression("$CB")))
         Labels().push(Label("LOW", Expression("$41")))
         # with label

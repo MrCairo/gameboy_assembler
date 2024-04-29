@@ -6,14 +6,19 @@ An expression is like:
     $AABC
     %010101
     &1777
-    "MY_LABEL"
+    "MY_STRING"
+
+The Expression class is used for most values that represent either some
+number or simple string, like a label or symbol. Because of this, it is
+important that this class be as performant as possible.
+
 """
 # from enum import StrEnum
 from __future__ import annotations
 from dataclasses import dataclass
 
-from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC, STR_DSC
-from .descriptor import LBL_DSC, BaseDescriptor
+from .descriptor import HEX_DSC, HEX16_DSC, BIN_DSC, OCT_DSC, DEC_DSC, \
+    STR_DSC, BaseDescriptor
 from .exception import ExpressionSyntaxError, \
     DescriptorException, ExpressionDescriptorError, ExpressionTypeError
 from ..core.constants import NUMERIC_BASES
@@ -54,13 +59,13 @@ class Expression:
     |   $$  | A 16-bit hexidecimal value only. Must be 4 digits in length.  |
     +-------+---------------------------------------------------------------+
     |   0   | A decimal value. Must be at least two digits (001 for 1)      |
-    |       | Note: a decimal expression is always considered 16-bit.
+    |       | Note: a decimal expression is always considered 16-bit.       |
     +-------+---------------------------------------------------------------+
     |   %   | An 8-bit only binary digit (i.e %10101011)                    |
     +-------+---------------------------------------------------------------+
     |       | Encloses a Symbolic string expression. Must start and end with|
-    | ", '  | the same character. 'Hello' "World". String length cannot     |
-    |       | exceed 16 chars and are validated by LBL_DSC                  |
+    | ", '  | the same character. 'Hello' "World". The valud is validated by|
+    |       | The STR_DSC descriptor.
     +-------+---------------------------------------------------------------+
     |   &   | An 8-bit octal value.                                         |
     +-------+---------------------------------------------------------------+
@@ -96,9 +101,9 @@ class Expression:
         """Return a representation of this object and how to re-create it."""
         desc = ""
         if self._components is not None and self._components.is_valid():
-            desc = f"Expression({self.clean_str})"
+            desc = f"Expression({self.cleaned_str})"
         else:
-            desc = f"Invalid: Expression({self.clean_str})"
+            desc = f"Invalid: Expression({self.cleaned_str})"
         return desc
 
     def __str__(self):
@@ -117,34 +122,79 @@ class Expression:
         return False
 
     def __ne__(self, other) -> bool:
+        """Return True if self is not equal to other."""
         if isinstance(other, Expression):
             return self.integer_value != other.integer_value
         return False
 
     def __lt__(self, other) -> bool:
+        """Return true if self is less than other."""
         if isinstance(other, Expression):
             return self.integer_value < other.integer_value
         return False
 
     def __le__(self, other) -> bool:
+        """Return true if self is less than oe equal to other."""
         if isinstance(other, Expression):
             return self.integer_value <= other.integer_value
         return False
 
     def __gt__(self, other) -> bool:
+        """Return true if self is greater  than other."""
         if isinstance(other, Expression):
             return self.integer_value > other.integer_value
         return False
 
     def __ge__(self, other) -> bool:
+        """Return true if self is greater than or equal to other."""
         if isinstance(other, Expression):
             return self.integer_value >= other.integer_value
         return False
 
+    def __add__(self, other: Expression) -> Expression:
+        """Add other numeric Expression to to self."""
+        _Validator().test_other_numeric(other)
+        val = self.integer_value + other.integer_value
+        if val > self.descriptor.limits.max-1:
+            raise OverflowError("Operation would exceed bounds.")
+        return self._new_expr_from_fmt(val)
+
+    def __sub__(self, other: Expression) -> Expression:
+        """Subtract other numeric Expression to to self."""
+        _Validator().test_other_numeric(other)
+        val = self.integer_value - other.integer_value
+        if val > 0:
+            return self._new_expr_from_fmt(val)
+        raise ValueError("Resulting Expression cannot be negative.")
+
+    def __and__(self, other: Expression) -> Expression:
+        """Return bitwise AND value of self and other."""
+        _Validator().test_other_numeric(other)
+        new_val = self.integer_value & other.integer_value
+        return self._new_expr_from_fmt(new_val)
+
+    def __or__(self, other: Expression) -> Expression:
+        """Return bitwise OR value of self and other."""
+        _Validator().test_other_numeric(other)
+        new_val = self.integer_value | other.integer_value
+        return self._new_expr_from_fmt(new_val)
+
+    def __xor__(self, other: Expression) -> Expression:
+        """Return bitwise XOR value of self and other."""
+        _Validator().test_other_numeric(other)
+        new_val = self.integer_value ^ other.integer_value
+        return self._new_expr_from_fmt(new_val)
+
+    def _new_expr_from_fmt(self, value: int) -> Expression:
+        """Return a new numeric Expression with the same base and prefix."""
+        prefix = self._components.pwords.prefix
+        fmt = self._components.fmt
+        return Expression(f"{prefix}{value:{fmt}}")
+
     @property
     def integer_value(self) -> int:
         """Return the positive decimal integer value of this Expression."""
-        if self._int_value == -1:  # -1 == uninitialized
+        if self._int_value == -1:  # -1 means uninitialized
             _value_str = self.prefixless_value
             _value_base = self.descriptor.args.base
             if _value_base in NUMERIC_BASES:
@@ -184,7 +234,12 @@ class Expression:
         return self._components.descriptor
 
     @property
-    def clean_str(self) -> str:
+    def base(self) -> int:
+        """Return the base value of the expression."""
+        return self._components.descriptor.args.base
+
+    @property
+    def cleaned_str(self) -> str:
         """Return the cleaned expression and includes prefix/suffix values."""
         return self._components.pwords.join()
 
@@ -225,9 +280,11 @@ class _Elements:
 class _Components:
     """Represent an expressions evaluated components."""
 
+    __slots__ = ("descriptor", "type", "pwords", "fmt")
     descriptor: BaseDescriptor
     type: ExpressionType
     pwords: _Elements
+    fmt: str
 
     def __str__(self) -> str:
         """Return string representation of this object."""
@@ -243,6 +300,7 @@ class _Components:
         if self.pwords is None:
             return False
         return self.pwords.is_valid()
+
 
 # |-----------------============<***>=============-----------------|
 #
@@ -270,8 +328,8 @@ class _Validator:
     def validate(self, expr_str: str) -> _Components:
         """Validate the expression and return an ExprComponents object.
 
-        Arguments:
-        expr_str -- The expression as a string (i.e. 0xABCD, %10110011)
+        Parameter:
+          expr_str: The expression as a string (i.e. 0xABCD, %10110011)
         """
         if not isinstance(expr_str, str):
             raise TypeError("expr_str must be a string class.")
@@ -325,26 +383,32 @@ class _Validator:
             case "$" | "0x":
                 descriptor = HEX16_DSC if len(pwords.word) > 2 else HEX_DSC
                 expr_type = ExpressionType.HEXIDECIMAL
+                fmt = "04X" if len(pwords.word) > 2 else "02X"
             case "$$":
                 descriptor = HEX16_DSC
                 expr_type = ExpressionType.HEXIDECIMAL
+                fmt = "04X"
             case "0":
                 descriptor = DEC_DSC
                 expr_type = ExpressionType.DECIMAL
+                fmt = "02d"
             case '"' | "'":
                 descriptor = STR_DSC
                 expr_type = ExpressionType.CHARACTER
+                fmt = ".255s"
             case "%":
                 descriptor = BIN_DSC
                 expr_type = ExpressionType.BINARY
+                fmt = "08b"
             case "&":
                 descriptor = OCT_DSC
                 expr_type = ExpressionType.OCTAL
+                fmt = "08o"
             case _:
                 msg = f"Expression prefix is invalid [{expr}]"
                 raise ExpressionSyntaxError(msg)
 
-        return _Components(descriptor, expr_type, pwords)
+        return _Components(descriptor, expr_type, pwords, fmt)
 
     @classmethod
     def get_elements(cls, expr: str) -> _Elements:
@@ -362,6 +426,15 @@ class _Validator:
                 return _Elements(prefix, None, None)
         word = expr.removeprefix(prefix).removesuffix(suffix)
         return _Elements(prefix, word, suffix)
+
+    @classmethod
+    def test_other_numeric(cls, other: Expression) -> None:
+        """Raise an exception if 'other' isn't a numeric expression."""
+        if not isinstance(other, Expression):
+            raise TypeError("Invalid operand type.")
+        if other.descriptor.args.base not in NUMERIC_BASES:
+            raise ValueError("Operand must be a Numeric base.")
+
 
 # |-----------------============<***>=============-----------------|
 

@@ -21,6 +21,7 @@ class InstructionDetail:
     Users of the Mnemonics class can then determine how the object should be
     represented 1, 2, or 3 bytes and when operand represents the data.
     """
+
     # __slots__ = ('addr', 'cycles', 'flags', 'length', 'mnemonic',
     #              'operand1', 'operand2')
     addr: str
@@ -42,7 +43,7 @@ class InstructionDetail:
 #
 # Special internal functions to generate a Python dictionary from JSON
 #
-def _gen_LR35902_inst() -> dict:
+def _gen_lr35902_inst() -> dict:
     # -------------------------------------------------------
     def _load_cpu_data() -> dict:
         try:
@@ -109,8 +110,9 @@ class InstructionSet():
     as a singleton object. The instruction set returned is done in a type
     of 'shorthand' that makes parsing and traversing easy.
 
-    Examples:
-        'ADD': { 'A': { '(HL)': { '!': 0x86 }}}
+    Example:
+    -------
+    'ADD': { 'A': { '(HL)': { '!': 0x86 }}}
         'LD': { '(a16)': { 'A': { '!': 0xea }}}
         'CPL': { '!': 0x2f }
 
@@ -143,7 +145,7 @@ class InstructionSet():
         """Implement a singleton by returning the existing or new instance."""
         if not hasattr(cls, 'instance'):
             cls.instance = super(InstructionSet, cls).__new__(cls)
-            cls.instance.data = _gen_LR35902_inst()
+            cls.instance.data = _gen_lr35902_inst()
             cls.instance.lr35902 = cls.instance.data["instructions"]
             cls.instance.lr35902_detail = cls.instance.data["raw_data"]
         return cls.instance

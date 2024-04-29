@@ -16,6 +16,7 @@ from ..tokens import Tokenizer, TokenGroup
 
 class Equate:
     """Represent an EQU statement."""
+
     __slots__ = ('label', 'expression', 'token_group')
     label: str | None
     expression: Expression | None
@@ -56,7 +57,8 @@ class Equate:
 
         Normally, the entire group is just the EQU but in the event that there
         are more tokens before and/or after the EQU statement, this function
-        will isolate them and return a new group."""
+        will isolate them and return a new group.
+        """
         idx = tokens.find_first_value(constants.EQU)
         if idx and idx > 0:
             new_group = TokenGroup()

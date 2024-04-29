@@ -4,20 +4,24 @@ from io import open, TextIOWrapper
 
 from ..tokens import Tokenizer, TokenGroup
 from ..core.constants import Environment
-from .gbz80asm import Assembler
+from .assembler_utils import AssemblerUtils
+
 
 INCL_PREFIX = "INCLUDE "
 
 
-class Compiler:
+class Assembler:
     """Compiles GBZ80 Source into a form that the Assember can use."""
 
     _env: Environment
+    _utils: AssemblerUtils
 
     def __new__(cls):
+        """Create a new instance of this class."""
         if not hasattr(cls, 'instance'):
-            cls.instance = super(Compiler, cls).__new__(cls)
-            cls.instance._env = Environment()
+            cls.instance = super(Assembler, cls).__new__(cls)
+            cls.instance._env = None
+            cls.instance._utils = None
         return cls.instance
 
     @property
@@ -31,9 +35,13 @@ class Compiler:
             msg = "'environment' can only be assigned an Environment object."
             raise ValueError(msg)
         self._env = new_value
+        self._utils = AssemblerUtils(self._env)
 
-    def compile(self, filename: str) -> bool:
+    def build(self, filename: str) -> bool:
         """Assemble a GB Z80 source file into binary."""
+        if self._env is None:
+            msg = "An environment must be set before calling 'build'."
+            raise ValueError(msg)
         self._process_file(filename)
         return True
 
@@ -41,7 +49,8 @@ class Compiler:
         """Save the assembled code to the output file.
 
         The output file is specified in the environment object. If None or
-        blank, the output filename will default to "game.data"."""
+        blank, the output filename will default to "game.data".
+        """
 
     # -----[ Private methods ]----------------------------------------
 
@@ -49,26 +58,32 @@ class Compiler:
         """Process the contents of the file through the assembler."""
         if filename is None or len(filename) == 0:
             return
-        fq_name = f"{self._env.project_dir}/{filename}"
+        if filename.startswith(self._env.project_dir):
+            fq_name = filename
+        else:
+            fq_name = f"{self._env.project_dir}/{filename}"
         line: str = ""
         with open(fq_name, "rt", encoding="utf-8") as filestream:
             while line is not None:
                 line = self._read_line(filestream)
-                if line is not None:
-                    #
-                    # TODO: What about INCBIN?
-                    #
+                if line is not None and isinstance(line, str):
+                    if len(line) == 0:
+                        continue
                     if line.upper().startswith("INCLUDE "):
                         self._process_file(self._get_include_filename(line))
                         continue
-                    self.compile_line(line)
+                    tokens: TokenGroup = Tokenizer().tokenize_string(line)
+                    self._utils.process_tokens(tokens)
+                    print(f"{line} ** OK")
                 else:
                     break
         # end of function
 
     def _read_line(self, stream: TextIOWrapper) -> str:
-        """Reads one line from the data source.
-        Line is a sequence of bytes ending with \n."""
+        """Read one line from the data source.
+
+        Line is a sequence of bytes ending with CR.
+        """
         line = stream.readline()
         if len(line) == 0:
             return None
@@ -81,13 +96,6 @@ class Compiler:
                     line = line.strip()
                     preread += line
         return preread
-
-    def compile_line(self, line: str) -> bool:
-        """Compile the cleaned line of text."""
-        if line and isinstance(line, str):
-            tokens: TokenGroup = Tokenizer().tokenize_string(line)
-            return Assembler(self.environment).assemble(tokens)
-        return False
 
     def _get_include_filename(self, code_line: str) -> str | None:
         """Return the fully-qualified include file from code_line."""

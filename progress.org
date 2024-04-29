@@ -1,0 +1,28 @@
+#+title: Diary of Progress
+#+author: Mitch Fisher
+#+date: <2024-02-14 Wed>
+
+
+* 2024-02-14
+Working on the assembly of code.
+Mostly working. Much is parsing correctly. Some thing don't work yet:
+
+** Forward reference aren't supported
+Symbols and Labels need to be defined first in order to be resolved. They can be resolved late but it could cause a problem in determining instruction size.
+
+*** Should there be a pre-processor step?
+
+** [] or () on Instructions
+The existing JSON extract of the mnemonics use () for things like ~ld a, (hl)~. RGBD uses ~[ ]~ characters instead. Should they both be supported or just one?
+
+* 2024-02-16
+Fixed an issue with the Storage object as it would crash if more than a single byte was added during processing.
+Updated the ApplicationStore so that ~current_address~ can no longet be set. The called must use the new ~create_new_address_entry~ to create an emty _Entry object.
+
+Note: The ApplicationStore ONLY supports adding code to the LAST entry added. This means that out of order sections may not dump correctly since they will not be in ascending order. THIS NEEDS to be addressed (hehe).
+
+* 2024-04-24
+It's been a long time since I last worked on the compiler. Most of my attention has been elsewhere - like eLisp and Emacs configurations.
+The last thing that was worked on was the ~assembler_tests.py~ unit testing script. Everything works up until the point that a forward reference symbol is used. Does this mean that the compiler must be a two pass? Is there a way to record the forward reference and then resolve it once the symbol is defined?
+
+It could be possible. The node / Instruction information of the reference to the unknown symbol needs to be marked in such a way as to store it's address, the symbol's expected size (8-bit/16-bit) and how it's referenced (relative, absolute address, constant)? Something to think about.

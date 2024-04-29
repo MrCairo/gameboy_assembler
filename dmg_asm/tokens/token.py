@@ -5,8 +5,7 @@ from enum import StrEnum, auto
 from ..core.constants import \
     VAL_T as value_t, NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
     DEFINE_OPERATORS, STORAGE_DIRECTIVES, PUNCTUATORS, DIRECTIVES, \
-    MEMORY_DIRECTIVES, MEMORY_OPTIONS, QUOTE_PUNCTUATORS, \
-    BEGIN_PUNCTUATORS, END_PUNCTUATORS
+    MEMORY_DIRECTIVES, MEMORY_OPTIONS, BEGIN_PUNCTUATORS, END_PUNCTUATORS
 from ..cpu.instruction_set import InstructionSet as IS
 from ..core.symbol import SymbolUtils, Symbol
 from ..core.exception import InvalidSymbolName, InvalidSymbolScope
@@ -15,6 +14,7 @@ from ..core import Expression
 
 class TokenType(StrEnum):
     """Convenient enums for token used during parsing."""
+
     COMMENT = auto()
     DIRECTIVE = auto()
     STORAGE_DIRECTIVE = auto()
@@ -109,6 +109,10 @@ class Token:
         return desc
 
     def __eq__(self, other: Token) -> bool:
+        """Return True if other is equal to this token.
+
+        Equality is defined as equal value and equal type.
+        """
         return self.value == other.value and self.type == other.type
 
     # Helper functions
@@ -129,14 +133,12 @@ class Token:
 
 
 class TokenFactory:
-    """
-    Returns a Token object given a list of elements to parse.
-    """
+    """Returns a Token object given a list of elements to parse."""
 
     def __init__(self, elements: list):
         """Initialize the object give a list of elements.
 
-        Parameters:
+        Parameter:
         -----------
         elements : list  An array (list) of individual values that can be
                          parsed into a token or set of tokens.
@@ -152,7 +154,7 @@ class TokenFactory:
     def assign(self, elements: list):
         """Assign list values to the Token.
 
-        Parameters:
+        Parameter:
         -----------
         elements : list  An array (list) of individual values that can be
                          parsed into a token or set of tokens.

@@ -54,6 +54,26 @@ class SectionTypeError(SectionException):
         super().__init__(message, line_text, line_number)
 
 
+class SectionBankError(SectionException):
+    """An exception thrown if the SECTION type is invalid."""
+
+    _def_msg = "BANK must be a value from 0 - 7."
+
+    def __init__(self, message=_def_msg, line_text="", line_number=-1):
+        """Initialize the exception."""
+        super().__init__(message, line_text, line_number)
+
+
+class SectionAlignError(SectionException):
+    """An exception thrown if the SECTION type is invalid."""
+
+    _def_msg = "ALIGN must be a power of 2 and a value no greater than 8"
+
+    def __init__(self, message=_def_msg, line_text="", line_number=-1):
+        """Initialize the exception."""
+        super().__init__(message, line_text, line_number)
+
+
 class ExpressionException(Exception):
     """A generic exception. Other exceptions are derrived from this."""
 
@@ -111,7 +131,8 @@ class DescriptorException(Exception):
 
 
 class DescriptorRadixError(DescriptorException):
-    """An unsupported base value was specified"""
+    """An unsupported base value was specified."""
+
     _def_msg = "Base can only 2, 8, 10 or 16"
 
     def __init__(self, message=_def_msg):
@@ -123,7 +144,9 @@ class DescriptorRadixDigitValueError(DescriptorException):
     """An exception when an invalid base character was encountered.
 
     For example, a HEX (base-16) value of "FH" is invlid since "H" is outside
-    of the supported characters (0-9, A-F)"""
+    of the supported characters (0-9, A-F).
+    """
+
     _def_msg = ("A character was used outside of the defined "
                 "base numbering character set")
 
@@ -134,6 +157,7 @@ class DescriptorRadixDigitValueError(DescriptorException):
 
 class DescriptorMinMaxValueError(DescriptorException):
     """A value is outside of the descriptor's defined limits."""
+
     _def_msg = "A value is outside of the min/max limits of this descriptor."
 
     def __init__(self, message=_def_msg):
@@ -143,6 +167,7 @@ class DescriptorMinMaxValueError(DescriptorException):
 
 class DescriptorMinMaxLengthError(DescriptorException):
     """A value is outside of the descriptor's defined length."""
+
     _def_msg = "A value is outside of the min/max length of this descriptor."
 
     def __init__(self, message=_def_msg):

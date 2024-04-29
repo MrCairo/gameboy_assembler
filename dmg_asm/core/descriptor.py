@@ -14,6 +14,7 @@ from .exception import DescriptorMinMaxLengthError, \
 @dataclass
 class DescriptorArgs():
     """The format that describes a value."""
+
     __slots__ = ('chars', 'limits', 'base', 'charset')
     chars: MinMax
     limits: MinMax
@@ -31,6 +32,7 @@ class DescriptorArgs():
 
 class Validator(ABC):
     """Abstract class to validate something."""
+
     private_name = ""
     public_name = ""
 
@@ -60,6 +62,7 @@ class OneOf(Validator):
         self.options = set(options)
 
     def __repr__(self) -> str:
+        """Return a string representation of OnOf."""
         return f"OneOf({self.options})"
 
     def validate(self, value):
@@ -92,6 +95,7 @@ class BaseDescriptor(Validator):
 
     str_base = f"{string.digits}{string.ascii_letters}"
     punct = f"{string.punctuation}".replace("'", "").replace('"', '')
+    args: DescriptorArgs
 
     bases = {
         BASE_STR: f"{str_base}{punct} ",
@@ -142,8 +146,9 @@ class BaseDescriptor(Validator):
         A non-base-0 descriptor's 'limits' value indicates the _value_ range of
         the object.  A base-0 or base -1 descriptor's 'limits' value indicates
         the min/max length of the object. This is reserved for strings/labels
-        only."""
-        if self.args.base == BASE_STR or self.args.base == BASE_LAB:
+        only.
+        """
+        if self.args.base in [BASE_STR, BASE_LAB]:
             return self.args.chars
         return self.args.limits
 
@@ -205,7 +210,7 @@ BIN_DSC = BaseDescriptor(chars=MinMax(2, 9),
 OCT_DSC = BaseDescriptor(chars=MinMax(1, 7),
                          limits=MinMax(0, MAX_16BIT_VALUE + 1),
                          base=BASE_BYTE)
-LBL_DSC = BaseDescriptor(chars=MinMax(1, 16),
+LBL_DSC = BaseDescriptor(chars=MinMax(1, 33),
                          limits=MinMax(0, 0),
                          base=BASE_LAB)
 STR_DSC = BaseDescriptor(chars=MinMax(1, 256),

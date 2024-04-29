@@ -28,24 +28,26 @@ from .expression import Expression
 @dataclass
 class Label:
     """Represent a single Label name and value."""
-    name: LBL_DSC = LBL_DSC
-    value: Expression
+
+    _name: LBL_DSC = LBL_DSC  # Assign for descriptor validation assignment
+    _value: Expression
 
     def __init__(self, name: str, value: Expression):
+        """Initialize the object."""
         if not isinstance(name, str) or not isinstance(value, Expression):
             raise TypeError("Label name and/or value are not correct types.")
-        self.name = name
-        self.value = value
+        self._name = name
+        self._value = value
 
-    # @property
-    # def name(self) -> str:
-    #     """Return the label's name."""
-    #     return self._name
+    @property
+    def name(self) -> str:
+        """Return the label's name."""
+        return self._name
 
-    # @property
-    # def value(self) -> Expression:
-    #     """Return the label's Expression value."""
-    #     return self._value
+    @property
+    def value(self) -> Expression:
+        """Return the label's Expression value."""
+        return self._value
 
 
 class Labels:
@@ -53,8 +55,8 @@ class Labels:
 
     Labels is a singleton so it can be allocated (i.e. Labels()) safely
     without the worry of creating a new Labels instance.
-
     """
+
     _labels: list
 
     def __new__(cls):
@@ -83,6 +85,7 @@ class Labels:
         self._labels[index] = value
 
     def __len__(self) -> int:
+        """Return the count of labels in this object."""
         return len(self._labels)
 
     def find(self, name_to_find: str) -> Label | None:
@@ -119,7 +122,8 @@ class Labels:
         existing = self.find(new_label.name)
         if existing is not None:
             if replace is True:
-                existing.value = new_label.value
+                self._labels.remove(existing)
+                self._labels.append(new_label)
             return replace
         self._labels.append(new_label)
         return True

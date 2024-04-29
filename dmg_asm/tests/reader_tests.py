@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from ..core.reader import Reader, FileReader, BufferReader
+from ..core.reader import FileReader, BufferReader
 from ..tokens import TokenGroup, Tokenizer
 
 
@@ -14,7 +14,7 @@ class CoreReaderTests(unittest.TestCase):
         """Test if a file can be opened and read."""
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        reader = FileReader(f"{dir_path}/resources/constants.z80")
+        reader = FileReader(f"{dir_path}/resources/includes/constants.z80")
         self.assertIsNotNone(reader)
         lines_read: int = 0
         line = reader.read_line()

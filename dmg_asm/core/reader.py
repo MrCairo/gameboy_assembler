@@ -57,13 +57,13 @@ class Reader:
 
 
 class BufferReader(Reader):
-    """
-    Support reader operations on a buffer.
+    """Support reader operations on a buffer.
 
     A Reader object that takes in a buffer and performs Reader operations
     on that buffer. An optional line_delimiter maybe specified which
-    represents the EOL or end of line. By default, this value is '\\n'.
+    represents the EOL or end of line. By default, this value is CR/LF.
     """
+
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, buffer, line_delimiter="\n",

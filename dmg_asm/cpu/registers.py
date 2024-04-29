@@ -6,6 +6,7 @@ Class that represent the GBZ80 registers.
 
 class Registers:
     """Class that represents and validates the GBZ80 registers."""
+
     __slots__ = ('all_registers', 'working_registers')
 
     def __new__(cls):
@@ -20,7 +21,7 @@ class Registers:
         return cls.instance
 
     def is_valid_register(self, register):
-        """Returns True/False if the register provided is a known register."""
+        """Return True/False if the register provided is a known register."""
         if register:
             # _special = ["(HL+)", "(HL-)", "SP+"]
             clean = register.strip("() +-")

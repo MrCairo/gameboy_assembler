@@ -24,13 +24,16 @@ class AddrRange(NamedTuple):
     """Tuple that represents an address range for a memory bank.
 
     start is an Expression representing the beginning of the address range.
-    end is an Expression representing the end of the address range."""
+    end is an Expression representing the end of the address range.
+    """
+
     start: Expr
     end: Expr
 
 
 class MemoryBlock(NamedTuple):
     """Represents a memory block consisting of a start and end address."""
+
     id: int
     range: AddrRange
 
@@ -40,6 +43,7 @@ class SectionMemBlock(NamedTuple):
 
     Optionally, an numeric ID can be added to further help identify the bank.
     """
+
     name: str
     addr_range: AddrRange
 
@@ -52,8 +56,7 @@ class SectionMemBlock(NamedTuple):
 
 
 class SectionType:
-    """
-    A class of address types from WRAM0 to OAM.
+    """A class of address types from WRAM0 to OAM.
     These names are used to easily
     reference special address blocks of the Game Boy system.
     """
@@ -156,6 +159,7 @@ class SectionType:
 @dataclass
 class SectionData:
     """Data that represents the various data values of a section."""
+
     # pylint: disable=too-many-instance-attributes
     section_key: bool = False
     label: str = None
@@ -177,6 +181,7 @@ class Section:
     __slots__ = ('_tokens', '_data')
 
     def __init__(self, tokens: TokenGroup | None):
+        """Initialize the object."""
         self._tokens: TokenGroup = tokens
         if tokens is None:
             raise TypeError("Tokens passed to a Section cannot be None.")
@@ -187,10 +192,12 @@ class Section:
         self._data = _SectionParser(tokens).parse()
 
     def __repr__(self) -> str:
+        """Representation on how this object was instantiated."""
         desc = f"Section({self._tokens.__repr__()})"
         return desc
 
     def __str__(self) -> str:
+        """Representation of this object in a friendly string."""
         desc = "SECTION "
         desc += f"\"{self.label}\" {self.memory_block.name}"
         if self.memory_block_offset:
@@ -204,7 +211,7 @@ class Section:
 
     @classmethod
     def section_from_string(cls, text: str) -> Section:
-        """Creates a new Section given it's command in a text string."""
+        """Create a new Section given it's command in a text string."""
         group = Tokenizer().tokenize_string(text)
         return Section(group)
 
@@ -234,8 +241,9 @@ class Section:
 
     @property
     def memory_block_offset(self) -> Expr | None:
-        """Return the memory block offset as an expression or None if the
-        expression was invalid or missing.
+        """Return the memory block offset as an expression.
+
+        Or return None if the expression was invalid or missing.
         """
         expr = None
         if self._data and self._data.block_offset:

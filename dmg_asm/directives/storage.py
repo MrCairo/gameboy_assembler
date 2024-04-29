@@ -28,19 +28,23 @@ class _ParserData:
 
 class Storage:
     """Represent an amount of storage that is reserved or just defined."""
+
     _tokens: TokenGroup
     _data: _ParserData
 
     def __init__(self, token_group: TokenGroup):
+        """Initialize the object."""
         if token_group is None or not isinstance(token_group, TokenGroup):
             raise TypeError("'token_group' must be a valid TokenGroup")
         self._tokens = token_group
         self._data = _StorageParser(token_group).parse()
 
     def __str__(self):
+        """Return a String representation of this object."""
         return f"Store( {self._tokens.__str__()} )"
 
     def __repr__(self):
+        """Return a String set to how this object was insteantiated."""
         return f"Storage({self._tokens.__repr__()})"
 
     def bytes(self) -> bytes | None:
@@ -51,7 +55,8 @@ class Storage:
     def address(self) -> Expression:
         """Return the address of this Object or None if not yet assigned.
 
-        The address is returned as a 16-bit Expression."""
+        The address is returned as a 16-bit Expression.
+        """
         return self._data.address
 
     @address.setter
@@ -64,9 +69,8 @@ class Storage:
 
 
 class _StorageParser:
-    """
-    Parses storage types in tokenized format.
-    """
+    """Parses storage types in tokenized format."""
+
     types = {
         "DS": StorageType.BLOCK,
         "DB": StorageType.BYTE,
@@ -116,12 +120,14 @@ class _StorageParser:
     # -----=====< End of public methods >=====----- #
 
     def _to_space(self) -> _ParserData:
-        """DS [size] [byte1, byte2, ... byteN]
+        """DS [size] [byte1, byte2, ... byteN].
+
         The first is the number of bytes to allocate with a maximum of 4096 (4
         Kib). The remaining parameters (if any exist) are the single-byte
         values used to fill the storage. All expressions are AND'ed to be
         8-bit only.  space. The values are repeated until the space is filled.
-        If none are provided, the space is filled with $00."""
+        If none are provided, the space is filled with $00.
+        """
         size: Expression = Expression("$01")  # Default of 1 byte
         parsed = _ParserData()
         parsed.data = None
@@ -159,7 +165,7 @@ class _StorageParser:
         return parsed
 
     def _to_bytes(self) -> _ParserData:
-        """DB $01 "Hello" """
+        """DB $01 "Hello"."""
         parsed = _ParserData()
         if self._tok_len <= 1:
             return None
@@ -179,7 +185,7 @@ class _StorageParser:
         return parsed
 
     def _to_words(self) -> _ParserData:
-        """DW $FFD2, $1234"""
+        """DW $FFD2, $1234."""
         parsed = _ParserData()
         hexstr = ""
         if self._tok_len < 2:

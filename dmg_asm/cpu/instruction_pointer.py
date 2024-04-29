@@ -15,6 +15,7 @@ from ..core.constants import MAX_8BIT_VALUE, MAX_16BIT_VALUE
 
 class InstructionPointer:
     """The CPU's IP or Instruction Pointer."""
+
     _pointer: Expression
     _section_base: Expression
 
@@ -27,6 +28,7 @@ class InstructionPointer:
         return cls.instance
 
     def __repr__(self) -> str:
+        """Return the representation of how this object was instantiated."""
         return "InstructionPointer()"
 
     def __str__(self) -> str:
@@ -40,7 +42,8 @@ class InstructionPointer:
         """Return the current position of the InstructionPointer.
 
         This is function equivalent to the 'pointer' getter property except
-        this function will return a copy of the actual pointer."""
+        this function will return a copy of the actual pointer.
+        """
         return Expression(Convert(self._pointer).to_hex16_string())
 
     @property
@@ -50,10 +53,11 @@ class InstructionPointer:
 
     @pointer.setter
     def pointer(self, value: Expression) -> None:
-        """Set the current location or IP as a 16-bit value."
+        """Set the current location or IP as a 16-bit value.
 
         A ValueError will be raised in an 8-bit or base-0 expression
-        is passed."""
+        is passed.
+        """
         if value.descriptor.limits.max < MAX_16BIT_VALUE:
             msg = "The IP pointer value must be set to a 16-bit value."
             raise ValueError(msg)
@@ -66,7 +70,8 @@ class InstructionPointer:
         to the current location. The resulting value must not move the IP to
         less than 0 or greater than 65535 otherwise a ValueError exception will
         be raised. This method differs from then move_relative() method in that
-        the direction is not limited to +/- 127/128."""
+        the direction is not limited to +/- 127/128.
+        """
         if not isinstance(val, int):
             raise TypeError("The passed in value must be an integer.")
         curr: int = Convert(self._pointer).to_decimal_int()
@@ -116,7 +121,8 @@ class InstructionPointer:
 
         relative is a single byte. 0 - 127 is positive branch
         128 - 255 is negative branch. The relative value must be
-        an 8-bit value."""
+        an 8-bit value.
+        """
         if not isinstance(relative, Expression):
             raise TypeError("base_address() must be passed an Expression.")
         if relative.descriptor.limits.max > MAX_8BIT_VALUE + 1:

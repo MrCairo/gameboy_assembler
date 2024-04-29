@@ -52,6 +52,7 @@ class Label:
 
 class Labels:
     """A specialized dictionary that maintains all symbols.
+
     Labels is a singleton so it can be allocated (i.e. Labels()) safely
     without the worry of creating a new Labels instance.
     """

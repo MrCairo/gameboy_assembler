@@ -21,6 +21,7 @@ class InstructionDetail:
     Users of the Mnemonics class can then determine how the object should be
     represented 1, 2, or 3 bytes and when operand represents the data.
     """
+
     # __slots__ = ('addr', 'cycles', 'flags', 'length', 'mnemonic',
     #              'operand1', 'operand2')
     addr: str
@@ -109,8 +110,9 @@ class InstructionSet():
     as a singleton object. The instruction set returned is done in a type
     of 'shorthand' that makes parsing and traversing easy.
 
-    Examples:
-        'ADD': { 'A': { '(HL)': { '!': 0x86 }}}
+    Example:
+    -------
+    'ADD': { 'A': { '(HL)': { '!': 0x86 }}}
         'LD': { '(a16)': { 'A': { '!': 0xea }}}
         'CPL': { '!': 0x2f }
 

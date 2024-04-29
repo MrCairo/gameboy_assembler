@@ -14,6 +14,7 @@ from ..core import Expression
 
 class TokenType(StrEnum):
     """Convenient enums for token used during parsing."""
+
     COMMENT = auto()
     DIRECTIVE = auto()
     STORAGE_DIRECTIVE = auto()
@@ -108,6 +109,10 @@ class Token:
         return desc
 
     def __eq__(self, other: Token) -> bool:
+        """Return True if other is equal to this token.
+
+        Equality is defined as equal value and equal type.
+        """
         return self.value == other.value and self.type == other.type
 
     # Helper functions
@@ -128,14 +133,12 @@ class Token:
 
 
 class TokenFactory:
-    """
-    Returns a Token object given a list of elements to parse.
-    """
+    """Returns a Token object given a list of elements to parse."""
 
     def __init__(self, elements: list):
         """Initialize the object give a list of elements.
 
-        Parameters:
+        Parameter:
         -----------
         elements : list  An array (list) of individual values that can be
                          parsed into a token or set of tokens.
@@ -151,7 +154,7 @@ class TokenFactory:
     def assign(self, elements: list):
         """Assign list values to the Token.
 
-        Parameters:
+        Parameter:
         -----------
         elements : list  An array (list) of individual values that can be
                          parsed into a token or set of tokens.

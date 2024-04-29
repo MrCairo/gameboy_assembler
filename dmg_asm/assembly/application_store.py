@@ -36,7 +36,8 @@ class Application:
         set to the new address and then incremented the length of the included
         bytes.
 
-        Return True if the address and code were created and added."""
+        Return True if the address and code were created and added.
+        """
         if not isinstance(address, Expression):
             raise ValueError("address was not a valid Expression object.")
         if address.base not in NUMERIC_BASES:

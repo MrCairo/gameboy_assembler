@@ -30,8 +30,7 @@ class Mnemonic:
     instruction_detail: InstructionDetail
 
     def __init__(self, tokens: TokenGroup):
-        """Initialize a mnemonic with an instruction that has been
-        tokenized."""
+        """Initialize a mnemonic with a tokenized instruction."""
         if tokens is None or len(tokens) == 0:
             raise ExpressionSyntaxError("Invalid Mnemonic")
         if tokens[0].type != TokenType.INSTRUCTION:
@@ -63,7 +62,8 @@ class Mnemonic:
 
         This will force, for example, re-evaluating the Symbols and Labels
         which would be necessary if they have changed since this object was
-        created."""
+        created.
+        """
         self.instruction_detail = _Utils.instruction_detail(self.token_group)
 
 # --------========[ End of Mnemonic class ]========-------- #
@@ -188,7 +188,8 @@ class _Utils:
     def instruction_detail(cls, token_group: TokenGroup) -> InstructionDetail:
         """Return the detail of the decoded instruction.
 
-        A 'None' will be returned if the token group couldn't be decoded."""
+        A 'None' will be returned if the token group couldn't be decoded.
+        """
         (elements, special) = _Utils.listify(token_group)
         length = len(elements)
         if length == 0:
@@ -235,7 +236,7 @@ class _Utils:
     @classmethod
     def _assign_if_special(cls, special: dict, operand: str,
                            node: dict) -> dict:
-        """Special is basically something like SP+LABEL or ($FF00+C)."""
+        """Assign special is basically something like SP+LABEL or ($FF00+C)."""
         if len(special) > 0 and operand in special:
             _label_value = ""
             to_find: str = special.pop(operand)
@@ -310,7 +311,8 @@ class _Utils:
     def _complete_node(cls, operands: list, node: dict) -> InstructionDetail:
         """Complete the node parsing.
 
-        This function assumes that `node` points to a '!' value."""
+        This function assumes that `node` points to a '!' value.
+        """
         hex_str = Convert(Expression(f"0{node['!']}")).to_hex_string()
         detail = IS().instruction_detail_from_byte(hex_str.lower())
         # Convert the actual operand into what was parsed by the Mnemonic.

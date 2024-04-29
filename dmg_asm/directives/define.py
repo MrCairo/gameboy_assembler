@@ -23,7 +23,8 @@ class Define(Label):
     well as the assignment text used ('EQU' or '=').
 
     The 'name' value must begin with a letter and only contain letters,
-    numbers or an underscore '_'."""
+    numbers or an underscore '_'.
+    """
 
     __slots__ = ('_assignment', '_token_group')
     _assignment: str | None
@@ -32,7 +33,8 @@ class Define(Label):
     def __init__(self, tokens: TokenGroup):
         """Create a 'Define' object instance given an initial dictionary.
 
-        Define(token_group: TokenGroup)"""
+        Define(token_group: TokenGroup).
+        """
         group: TokenGroup = Define._validate(tokens)
         name: str = group[1].value
         value: Expression = group[3].data

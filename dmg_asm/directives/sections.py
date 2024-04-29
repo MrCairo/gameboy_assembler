@@ -10,6 +10,7 @@ class Sections:
     _store: list
 
     def __new__(cls):
+        """Create a new class instance."""
         if not hasattr(cls, 'instance'):
             cls.instance = super(Sections, cls).__new__(cls)
             cls.instance._store: list = []
@@ -36,16 +37,19 @@ class Sections:
         return len(self._store)
 
     def __iter__(self):
+        """Return an iterator of the list of Sections."""
         return self._store.__iter__()
 
     def __reversed__(self):
+        """Return a reverse iterator of the list of Sections."""
         return self._store.__reversed__()
 
     def find_first_index(self, name: str) -> int | None:
         """Return the index in the group that matches the passed value.
 
         If the value element appears more than once in the group, only the
-        first one found is returned."""
+        first one found is returned.
+        """
         up = name.upper()
         for index, item in enumerate(self._store):
             if item.label.upper() == up:
@@ -59,7 +63,8 @@ class Sections:
         False unless 'replace' is set to True in which case the old section is
         replaced with this new one.
 
-        If the section is added (or replaced), this function returns True."""
+        If the section is added (or replaced), this function returns True.
+        """
         if not section:
             raise ValueError("Section cannot be None.")
         if self.find_first_index(section.label):
@@ -74,7 +79,8 @@ class Sections:
         """Remove the first Section found by label name.
 
         This method will raise a ValueError exception if the section wasn't
-        found."""
+        found.
+        """
         if not name:
             raise ValueError("Parameter cannot be None.")
         if not isinstance(name, str):
@@ -85,7 +91,7 @@ class Sections:
         return self._store.pop(existing)
 
     def clear(self):
-        """Removes all stored Section objects. Resets the internal store."""
+        """Remove all stored Section objects. Resets the internal store."""
         self._store.clear()
 
     def replace(self, section: Section) -> bool:

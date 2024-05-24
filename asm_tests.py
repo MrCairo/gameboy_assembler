@@ -1,4 +1,5 @@
 """GameBoy assembler unit tests."""
+
 import unittest
 import os
 import sys

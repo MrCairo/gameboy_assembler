@@ -2,6 +2,7 @@
 
 from __future__ import annotations   # Forward references
 from enum import StrEnum, auto
+
 from ..core.constants import \
     VAL_T as value_t, NEXT_T as next_t, TYPE_T as type_t, DATA_T as datum_t, \
     DEFINE_OPERATORS, STORAGE_DIRECTIVES, PUNCTUATORS, DIRECTIVES, \
@@ -108,12 +109,13 @@ class Token:
             desc += f"\n{self.next.__str__()}"
         return desc
 
-    def __eq__(self, other: Token) -> bool:
+    def __eq__(self, other) -> bool:
         """Return True if other is equal to this token.
 
         Equality is defined as equal value and equal type.
         """
-        return self.value == other.value and self.type == other.type
+        new_tok: Token = other
+        return self.value == new_tok.value and self.type == new_tok.type
 
     # Helper functions
     def shallow_copy(self) -> Token:

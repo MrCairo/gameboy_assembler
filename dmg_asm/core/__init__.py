@@ -1,4 +1,5 @@
 """Core classes."""
+
 from .convert import Convert
 from .descriptor import DescriptorArgs, BaseDescriptor, BaseValue, \
     BASE_BIN, BASE_BYTE, BASE_DEC, BASE_LAB, BASE_STR, BASE_WORD

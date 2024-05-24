@@ -17,7 +17,7 @@ class _Entry:
 class Application:
     """Store sequence of data that builds an application."""
 
-    _app_data = []
+    _app_data = list[_Entry]
     _address: int
     _to_resolve = []
 

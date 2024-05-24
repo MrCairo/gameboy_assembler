@@ -1,6 +1,7 @@
 # -*- mode: python; fill-column: 79;     -*-
 """Assemble a GameBoy Z80 program into binary."""
 
+
 # from io import open, TextIOWrapper
 # from dataclasses import dataclass
 

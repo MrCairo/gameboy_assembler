@@ -62,7 +62,7 @@ class Assembler:
             fq_name = filename
         else:
             fq_name = f"{self._env.project_dir}/{filename}"
-        line: str = ""
+        line: str | None = ""
         with open(fq_name, "rt", encoding="utf-8") as filestream:
             while line is not None:
                 line = self._read_line(filestream)
@@ -79,7 +79,7 @@ class Assembler:
                     break
         # end of function
 
-    def _read_line(self, stream: TextIOWrapper) -> str:
+    def _read_line(self, stream: TextIOWrapper) -> str | None:
         """Read one line from the data source.
 
         Line is a sequence of bytes ending with CR.
@@ -112,7 +112,7 @@ class Assembler:
             fq_file = self._env.include_dir
         return f"{self._env.project_dir}/{fq_file}/{inc_file}"
 
-    def _drop_comments(self, line_of_text) -> str:
+    def _drop_comments(self, line_of_text) -> str | None:
         if line_of_text is not None:
             return line_of_text.strip().split(";")[0]
         return None

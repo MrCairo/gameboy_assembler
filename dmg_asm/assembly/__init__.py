@@ -1,4 +1,4 @@
-"""Compiler Imports"""
+"""Assembly related Imports."""
 
 from .application_store import Application
 from .assembler_utils import AssemblerUtils

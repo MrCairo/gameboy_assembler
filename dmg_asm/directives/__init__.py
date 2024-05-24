@@ -1,3 +1,5 @@
+"""Module for all compiler directive related classes."""
+
 from .equate import Equate
 from .define import Define
 from .section import Section, SectionData, SectionMemBlock, SectionType

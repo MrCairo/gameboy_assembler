@@ -65,10 +65,12 @@ class Expression:
     +-------+---------------------------------------------------------------+
     |       | Encloses a Symbolic string expression. Must start and end with|
     | ", '  | the same character. 'Hello' "World". The valud is validated by|
-    |       | The STR_DSC descriptor.
+    |       | The STR_DSC descriptor.                                       |
     +-------+---------------------------------------------------------------+
     |   &   | An 8-bit octal value.                                         |
     +-------+---------------------------------------------------------------+
+
+    Example: exp = Expression("$10")
     """
 
     __slots__ = ("_components", "_int_value")

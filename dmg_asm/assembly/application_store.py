@@ -19,7 +19,6 @@ class Application:
 
     _app_data = list[_Entry]
     _address: int
-    _to_resolve = []
 
     def __new__(cls):
         """Implement a singleton by returning the existing or new instance."""

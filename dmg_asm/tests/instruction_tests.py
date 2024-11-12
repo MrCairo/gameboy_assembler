@@ -3,12 +3,12 @@
 # import os
 import unittest
 
-from ..tokens import Tokenizer
-from ..core.reader import BufferReader
-from ..core.label import Labels, Label
-from ..core.symbol import Symbol, Symbols
 from ..core.expression import Expression
+from ..core.label import Label, Labels
+from ..core.reader import BufferReader
+from ..core.symbol import Symbol, Symbols
 from ..directives.mnemonic import Mnemonic
+from ..tokens import Tokenizer
 
 ASM_1 = """
 USER_IO    EQU $FF00

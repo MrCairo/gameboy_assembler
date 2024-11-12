@@ -1,5 +1,5 @@
 """
-A set of helper functions used during processing of instructions.
+An Instruction Pointer as a singleton object.
 """
 from ..core.convert import Convert
 from ..core.expression import Expression
@@ -16,6 +16,7 @@ from ..core.constants import MAX_8BIT_VALUE, MAX_16BIT_VALUE
 class InstructionPointer:
     """The CPU's IP or Instruction Pointer."""
 
+    __slots__ = ("_pointer", "_section_base")
     _pointer: Expression
     _section_base: Expression
 
@@ -38,13 +39,7 @@ class InstructionPointer:
             desc = f"Address: {self._pointer:04x}".upper()
         return desc
 
-    def curr_pos(self) -> Expression:
-        """Return the current position of the InstructionPointer.
-
-        This is function equivalent to the 'pointer' getter property except
-        this function will return a copy of the actual pointer.
-        """
-        return Expression(Convert(self._pointer).to_hex16_string())
+    # ----- <Properties> -----------------------------------------------------#
 
     @property
     def pointer(self) -> Expression:
@@ -62,25 +57,6 @@ class InstructionPointer:
             msg = "The IP pointer value must be set to a 16-bit value."
             raise ValueError(msg)
         self._pointer = Expression(f"0{value.integer_value:04d}")
-
-    def move_pointer_relative(self, val: int) -> bool:
-        """Move the IP relative to it's current position.
-
-        Moves the location (pointer) val distance positive or negative relative
-        to the current location. The resulting value must not move the IP to
-        less than 0 or greater than 65535 otherwise a ValueError exception will
-        be raised. This method differs from then move_relative() method in that
-        the direction is not limited to +/- 127/128.
-        """
-        if not isinstance(val, int):
-            raise TypeError("The passed in value must be an integer.")
-        curr: int = Convert(self._pointer).to_decimal_int()
-        curr += val
-        if 65536 > curr >= 0:
-            self._pointer = Expression(f"0{curr:04d}")
-            return True
-        msg = "The resulting pointer would not be in the 0-65535 range."
-        raise ValueError(msg)
 
     @property
     def base_address(self) -> Expression:
@@ -110,11 +86,42 @@ class InstructionPointer:
         self._section_base = new_base
         self._pointer = new_ip
 
+    # ------ </Properties> ---------------------------------------------------#
+
+    def curr_pos(self) -> Expression:
+        """Return the current position of the InstructionPointer.
+
+        This is function equivalent to the 'pointer' getter property except
+        this function will return a copy of the actual pointer.
+        """
+        return Expression(Convert(self._pointer).to_hex16_string())
+
     def offset_from_base(self) -> int:
         """Return the offset value from the original base of the IP."""
         curr = Convert(self.pointer).to_decimal_int()
         base = Convert(self._section_base).to_decimal_int()
         return curr - base
+
+    def move_pointer_relative(self, val: int) -> bool:
+        """Move the IP relative to it's current position.
+
+        Moves the location (pointer) val distance positive or negative relative
+        to the current location. The resulting value must not move the IP to
+        less than 0 or greater than 65535 otherwise a ValueError exception will
+        be raised. This method differs from then move_relative() method in that
+        the direction is not limited to +/- 127/128. However, the new position
+        cannot be less that the section base.
+        """
+        if not isinstance(val, int):
+            raise TypeError("The passed in value must be an integer.")
+        curr: int = Convert(self._pointer).to_decimal_int()
+        base: int = Convert(self._section_base).to_decimal_int()
+        curr += val
+        if 65536 > curr >= base:
+            self._pointer = Expression(f"0{curr:04d}")
+            return True
+        msg = "The resulting pointer would not be in the 0-65535 range."
+        raise ValueError(msg)
 
     def move_relative(self, relative: Expression) -> bool:
         """Move the IP relative by a single byte's value.

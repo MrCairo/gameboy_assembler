@@ -1,6 +1,6 @@
 # GameBoy (dmg) Assember
 
-GameBoy assembler/linker in Python
+GameBoy assembler/linker in Python!
 
 This is an experimental project that will compile LR35902 (Z80-ish) assembly
 and create an executable that is compatible with a Game Boy (DMG) ROM that
@@ -64,5 +64,6 @@ strictly alpha software and doesn't generate a binary file (yet). It's almost
 to that point though :)
 
 Cheers,
-- mitch
+
+  -- mitch
 

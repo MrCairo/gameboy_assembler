@@ -70,7 +70,9 @@ class Assembler:
                     if len(line) == 0:
                         continue
                     if line.upper().startswith("INCLUDE "):
-                        self._process_file(self._get_include_filename(line))
+                        incl_filename = self._get_include_filename(line)
+                        if incl_filename:
+                            self._process_file(incl_filename)
                         continue
                     tokens: TokenGroup = Tokenizer().tokenize_string(line)
                     self._utils.process_tokens(tokens)

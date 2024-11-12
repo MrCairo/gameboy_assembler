@@ -1,18 +1,18 @@
 """GameBoy assembler unit tests."""
 
-import unittest
 import os
 import sys
-from dmg_asm.tests.core_tests import ExpressionUnitTests, ConvertUnitTests, \
-    DescriptorUnitTests, SymbolUnitTests
+import unittest
+
 from dmg_asm.tests.assembler_tests import AssemblerUnitTests
-from dmg_asm.tests.token_tests import TokenUnitTests
+from dmg_asm.tests.core_tests import (ConvertUnitTests, DescriptorUnitTests,
+                                      ExpressionUnitTests, SymbolUnitTests)
 from dmg_asm.tests.directive_tests import DirectiveUnitTests
-from dmg_asm.tests.symbol_label_resolver_tests import SymbolAndLabelUnitTests
 from dmg_asm.tests.instruction_tests import InstructionDecodingTests
 from dmg_asm.tests.ip_tests import IPUnitTests
 from dmg_asm.tests.reader_tests import CoreReaderTests
-
+from dmg_asm.tests.symbol_label_resolver_tests import SymbolAndLabelUnitTests
+from dmg_asm.tests.token_tests import TokenUnitTests
 
 os.environ["PROJECT_DIR"] = os.getcwd()
 

@@ -2,6 +2,13 @@
 
 from .expression import Expression
 
+#
+# Oringally, these converstions were part of the Expression class but
+# it made sense to leave Expression as (mostly) pure to a specific
+# expressions. Based up on that decision, all conversion functions are
+# moved here.
+#
+
 
 class Convert:
     """Class to convert an exression from one base to another."""

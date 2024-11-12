@@ -1,2 +1,0 @@
-Icecream is used instead of 'print()'.
-make sure to run 'pip install icecream'

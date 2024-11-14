@@ -23,10 +23,12 @@ class InstructionDecodingTests(unittest.TestCase):
     labels: Labels
 
     def setUp(self):
+        """Setup the test."""
         self.labels = Labels()
         self.labels.clear()
 
     def tearDown(self):
+        """Clean up the test."""
         self.labels.clear()
 
     def test_ld_reg_reg(self):

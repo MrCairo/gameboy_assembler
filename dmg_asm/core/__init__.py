@@ -11,6 +11,7 @@ from .constants import MinMax, DIRECTIVES, STORAGE_DIRECTIVES, \
     MEMORY_DIRECTIVES, MEMORY_OPTIONS, REGISTERS, DEFINE_OPERATORS, \
     PUNCTUATORS, QUOTE_PUNCTUATORS, BEGIN_PUNCTUATORS, END_PUNCTUATORS, \
     DPair, DelimData
+from .environment import Environment
 from .exception import ExpressionSyntaxError, \
     EquateSymbolError, EquateExpressionError, DefineExpressionError, \
     DefineSymbolError, DefineAssignmentError, DescriptorMinMaxLengthError, \
@@ -21,23 +22,19 @@ from .exception import ExpressionSyntaxError, \
     StorageException, StorageValueError
 
 __all__ = [
-    "Convert", "Expression", "ExpressionType",
-    "DescriptorArgs", "BaseDescriptor", "BaseValue",
-    "ExpressionSyntaxError",
-    "EquateSymbolError", "EquateExpressionError",
-    "DefineExpressionError", "DefineSymbolError", "DefineAssignmentError",
-    "DescriptorMinMaxLengthError", "DescriptorMinMaxValueError",
-    "DescriptorRadixDigitValueError", "DescriptorRadixError",
-    "ParserException", "DefineDataError", "DefineException",
-    "SectionException", "SectionDeclarationError", "SectionTypeError",
-    "StorageException", "StorageValueError",
-    "UpdateSymbolAddressError", "Error", "ErrorCode",
-    "Symbol", "SymbolAffix", "Symbols", "SymbolUtils", "SymbolScope",
-    "Label", "Labels",
-    "Reader", "BufferReader", "FileReader",
-    "MinMax", "DIRECTIVES", "STORAGE_DIRECTIVES",
+    "Convert", "Expression", "ExpressionType", "DescriptorArgs",
+    "BaseDescriptor", "BaseValue", "Environment", "ExpressionSyntaxError",
+    "EquateSymbolError", "EquateExpressionError", "DefineExpressionError",
+    "DefineSymbolError", "DefineAssignmentError", "DescriptorMinMaxLengthError",
+    "DescriptorMinMaxValueError", "DescriptorRadixDigitValueError",
+    "DescriptorRadixError", "ParserException", "DefineDataError",
+    "DefineException", "SectionException", "SectionDeclarationError",
+    "SectionTypeError", "StorageException", "StorageValueError",
+    "UpdateSymbolAddressError", "Error", "ErrorCode", "Symbol", "SymbolAffix",
+    "Symbols", "SymbolUtils", "SymbolScope", "Label", "Labels", "Reader",
+    "BufferReader", "FileReader", "MinMax", "DIRECTIVES", "STORAGE_DIRECTIVES",
     "MEMORY_DIRECTIVES", "MEMORY_OPTIONS", "REGISTERS", "DEFINE_OPERATORS",
     "PUNCTUATORS", "QUOTE_PUNCTUATORS", "BEGIN_PUNCTUATORS", "END_PUNCTUATORS",
-    "DPair", "DelimData",
-    "BASE_BIN", "BASE_BYTE", "BASE_DEC", "BASE_LAB", "BASE_STR", "BASE_WORD"
+    "DPair", "DelimData", "BASE_BIN", "BASE_BYTE", "BASE_DEC", "BASE_LAB",
+    "BASE_STR", "BASE_WORD"
 ]

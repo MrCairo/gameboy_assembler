@@ -1,5 +1,5 @@
-# -*- mode: python; fill-column: 79;     -*-
 """Assemble a GameBoy Z80 program into binary."""
+# -*- mode: python; fill-column: 79;     -*-
 
 
 # from io import open, TextIOWrapper
@@ -20,7 +20,7 @@ from .application_store import Application
 INCL_PREFIX = "INCLUDE "
 
 
-class AssemblerUtils:
+class AsmTokenResolver:
     """Assemble GameBoy Z80 source files into a binary file."""
 
     def __init__(self, env: Environment):
@@ -36,14 +36,14 @@ class AssemblerUtils:
         Anything that resolves into something that would either result into
         code or alter the IP is then stored into the Application() singleton.
         Anything else, like a label or a symbol is stored in their respective
-        storages.
+        storage areas.
 
         The first element of the token group is processed. During processing,
         all elements that are needed are consumed and the NEXT token is then
         returned. This allows for things like a Symbol and a directive or
         instruction to be written on a single line.
 
-        This function is then called recusrively until all token elements have
+        This function is then called recursively until all token elements have
         been processed.
         """
         group_len = len(token_group)

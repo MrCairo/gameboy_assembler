@@ -1,27 +1,26 @@
 """Compile GameBoy Z80 Source and pass it to the gbz80 Assember."""
 
-from io import open, TextIOWrapper
-
-from ..tokens import Tokenizer, TokenGroup
 from ..core.constants import Environment
-from .assembler_utils import AssemblerUtils
+from .asm_token_resolver import AsmTokenResolver
+from .asm_file_handler import AsmFileHandler
 
 
 INCL_PREFIX = "INCLUDE "
 
 
 class Assembler:
-    """Compiles GBZ80 Source into a form that the Assember can use."""
+    """Compiles GBZ80 Source into a form that the Assembler can use."""
 
     _env: Environment
-    _utils: AssemblerUtils
+    _resolver: AsmTokenResolver
+    _fhandler: AsmFileHandler
 
     def __new__(cls):
         """Create a new instance of this class."""
         if not hasattr(cls, 'instance'):
             cls.instance = super(Assembler, cls).__new__(cls)
             cls.instance._env = None
-            cls.instance._utils = None
+            cls.instance._resolver = None
         return cls.instance
 
     @property
@@ -35,14 +34,15 @@ class Assembler:
             msg = "'environment' can only be assigned an Environment object."
             raise ValueError(msg)
         self._env = new_value
-        self._utils = AssemblerUtils(self._env)
+        self._resolver = AsmTokenResolver(self._env)
+        self._fhandler = AsmFileHandler(self._env)
 
     def build(self, filename: str) -> bool:
         """Assemble a GB Z80 source file into binary."""
         if self._env is None:
             msg = "An environment must be set before calling 'build'."
             raise ValueError(msg)
-        self._process_file(filename)
+        self._fhandler.process_file(filename)
         return True
 
     def save(self):
@@ -53,68 +53,3 @@ class Assembler:
         """
 
     # -----[ Private methods ]----------------------------------------
-
-    def _process_file(self, filename: str) -> None:
-        """Process the contents of the file through the assembler."""
-        if filename is None or len(filename) == 0:
-            return
-        if filename.startswith(self._env.project_dir):
-            fq_name = filename
-        else:
-            fq_name = f"{self._env.project_dir}/{filename}"
-        line: str | None = ""
-        with open(fq_name, "rt", encoding="utf-8") as filestream:
-            while line is not None:
-                line = self._read_line(filestream)
-                if line is not None and isinstance(line, str):
-                    if len(line) == 0:
-                        continue
-                    if line.upper().startswith("INCLUDE "):
-                        incl_filename = self._get_include_filename(line)
-                        if incl_filename:
-                            self._process_file(incl_filename)
-                        continue
-                    tokens: TokenGroup = Tokenizer().tokenize_string(line)
-                    self._utils.process_tokens(tokens)
-                    print(f"{line} ** OK")
-                else:
-                    break
-        # end of function
-
-    def _read_line(self, stream: TextIOWrapper) -> str | None:
-        """Read one line from the data source.
-
-        Line is a sequence of bytes ending with CR.
-        """
-        line = stream.readline()
-        if len(line) == 0:
-            return None
-        preread = self._drop_comments(line)
-        if preread is not None and len(preread) > 1:
-            while preread[-1] == "\\":  # Line continuation
-                preread = preread.strip(" \\")  # Space here is intentional
-                line = stream.readline()
-                if len(line):
-                    line = line.strip()
-                    preread += line
-        return preread
-
-    def _get_include_filename(self, code_line: str) -> str | None:
-        """Return the fully-qualified include file from code_line."""
-        fq_file = ""
-        if not code_line.upper().startswith(INCL_PREFIX):
-            return None
-        file_part = code_line[len(INCL_PREFIX):]
-        inc_file = file_part.strip(" '\"")
-        if len(inc_file) == 0:
-            return None
-        if inc_file.startswith("/"):
-            return None  # INCLUDE must be relative to the environment
-        if len(self._env.include_dir):
-            fq_file = self._env.include_dir
-        return f"{self._env.project_dir}/{fq_file}/{inc_file}"
-
-    def _drop_comments(self, line_of_text) -> str | None:
-        if line_of_text is not None:
-            return line_of_text.strip().split(";")[0]
-        return None

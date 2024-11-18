@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from ..core.constants import Environment
+from ..core.environment import Environment
 from ..assembly import Assembler
 
 

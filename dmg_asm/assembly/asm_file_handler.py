@@ -2,7 +2,7 @@
 from io import open, TextIOWrapper
 
 from ..tokens import Tokenizer, TokenGroup
-from ..core.constants import Environment
+from ..core.environment import Environment
 from .asm_token_resolver import AsmTokenResolver
 
 INCL_PREFIX = "INCLUDE "

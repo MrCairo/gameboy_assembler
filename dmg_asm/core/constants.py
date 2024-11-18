@@ -12,7 +12,7 @@ DIR_T = "directive"
 INST_T = "instruction"
 MULT_T = "multiple"
 NEXT_T = "next"
-NODE_T = "node"  # Rpresents an internal tokenized node.
+NODE_T = "node"  # Represents an internal tokenized node.
 PARM_T = "parameters"
 REMN_T = "remainder"
 STOR_T = "storage"
@@ -142,7 +142,7 @@ MAX_8BIT_VALUE = 0xff
 # NODE_FORMAT = {
 # ORG: { "Directive": ORG,
 # "Identifier": None,  # String
-# "AddressType": AddressType.AbsolueAddress,
+# "AddressType": AddressType.AbsoluteAddress,
 # "Address": AddressSpread}
 # EQU: {}
 # }

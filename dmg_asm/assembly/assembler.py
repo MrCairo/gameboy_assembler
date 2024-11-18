@@ -1,6 +1,6 @@
 """Compile GameBoy Z80 Source and pass it to the gbz80 Assember."""
 
-from ..core.constants import Environment
+from ..core.environment import Environment
 from .asm_token_resolver import AsmTokenResolver
 from .asm_file_handler import AsmFileHandler
 

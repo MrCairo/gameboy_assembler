@@ -5,7 +5,7 @@
 # from io import open, TextIOWrapper
 # from dataclasses import dataclass
 
-from ..core.constants import Environment
+from ..core.environment import Environment
 from ..core.label import Label, Labels
 from ..core.symbol import Symbol, Symbols
 from ..core.exception import DefineAssignmentError, DefineException, \
